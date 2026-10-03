@@ -1,6 +1,33 @@
 # Mobile Colony Counter — Research Summary & Build Plan
 
-_Status: draft v0.1 · 2026-10-03_
+_Status: v0.2 · 2026-10-03, decisions recorded; Phase 0/1 started_
+
+## Decisions (2026-10-03)
+
+| Question | Decision | Consequence for the plan |
+|---|---|---|
+| Commercial or academic? | **Academic** | AGAR (CC BY-NC) may be used for pre-training. Ultralytics YOLO (AGPL-3.0) is acceptable *if the app is released as open source under an AGPL-compatible licence*. Plan: open-source the project, but keep the detector swappable so an Apache model (RF-DETR / D-FINE) can be dropped in. |
+| Platforms | **Android and iOS** | Flutter, as recommended in §3.2 |
+| Users and rules | **Research labs; no audit trail** | Drop Part 11 / GLP features and formal validation. Keep a simple history and CSV/PDF export. The calculator defaults to the FDA BAM range (25–250), switchable to ISO 7218 or 30–300 |
+| Media and dishes | **Nutrient Agar, 90 mm** | One translucent medium makes dark-field lighting ideal. Scale is fixed: 90 mm = known mm-per-pixel |
+| Hardware | **3D-printed lightbox acceptable** | Designed in `hardware/`: dark-field LED base plus phone shroud at 120 mm. The app still supports freehand capture with guidance, but the box is the reference setup |
+
+### What exists in the repo now
+- `ml/`: Python reference pipeline (`pip install -e ml`):
+  - plate finder (Hough circle), rim mask, and mm-per-pixel from the 90 mm dish
+  - background correction (wide median) with automatic bright or dark polarity
+  - classical detector: noise-adaptive threshold, then distance-transform peaks to split touching colonies, plus cluster estimates and spreader / TNTC flags
+  - CFU calculator with FDA BAM / ISO 7218 / 30–300 presets, pooled weighted mean, and estimated / < / > reporting
+  - metrics: MAE, MAPE, Bland–Altman, Lin's CCC, point-matched precision and recall
+  - synthetic plate generator
+  - CLI: `colonycounter count | evaluate | synth`
+  - 17 unit tests
+- Baseline on synthetic dark-field plates (12 plates, 0–300 colonies): median error
+  1.8 %, all plates within ±10 %, precision 0.98, recall 0.96. The misses are small
+  colonies sitting on the edge of a large one. **Synthetic results only show the code
+  works. Real accuracy has to be measured on real photos (`docs/DATA_PROTOCOL.md`).**
+- `hardware/`: parametric OpenSCAD lightbox (base + shroud), parts list, capture settings.
+- `docs/DATA_PROTOCOL.md`: what to plate, photograph and label.
 
 Goal: a phone app that photographs an agar plate, counts the viable colonies
 (CFU) automatically, lets the user check and correct the count, and turns the
@@ -128,17 +155,18 @@ smartphone dataset** (§4).
 ## 2. Product scope
 
 ### Version 1 (MVP)
-- Count colonies on standard round Petri dishes (90 mm first; 60 and 150 mm later),
-  spread plates and pour plates.
-- Media: start with 2–3 clear or translucent media (for example nutrient agar, TSA, LB),
-  then add blood, MacConkey and chromogenic media.
+- Count colonies on **90 mm** Petri dishes of **Nutrient Agar**, spread plates first,
+  then pour plates.
+- Reference capture with the dark-field lightbox; freehand capture with guidance as a
+  secondary mode.
 - Guided capture, automatic count, review and edit, CFU/mL calculator, history,
   CSV export.
 - Works fully offline on the phone.
 
 ### Later versions
 - Counting by colour or morphology class (for example blue vs pink on chromogenic agar).
-- Team sync, LIMS export, audit trail and e-signatures (21 CFR Part 11 / GLP).
+- Other media (TSA, LB, then blood, MacConkey, chromogenic) and dish sizes (60 / 150 mm).
+- Optional sync between devices (no audit trail planned).
 - Spiral plates, membrane filters, Petrifilm, square plates.
 - Colony size distribution and time-lapse growth.
 
@@ -161,7 +189,7 @@ smartphone dataset** (§4).
 │     filter, TNTC/spreader     lasso exclude,       ISO 7218, custom)       images, │
 │     flags)                    zoom)                                        CSV/PDF)│
 └──────────────────────────────────────────────────────────────────────────────────┘
-                    │ optional sync (phase 4)
+                    │ optional sync
 ┌──────────── Backend ────────────┐   ┌──────────── ML pipeline ─────────────┐
 │ API (FastAPI), Postgres,        │   │ Data lake of images + corrections    │
 │ object storage, users/teams,    │──▶│ Pre-label (Grounded-SAM2/classical)  │
@@ -229,7 +257,7 @@ smartphone dataset** (§4).
 | Local data | SQLite (drift), images in the app sandbox | Offline first |
 | Training | PyTorch, plus SAHI-style tiling, Albumentations, MLflow or W&B | Standard, reproducible |
 | Annotation | CVAT or Label Studio (point and box), with Grounded-SAM2 pre-labels | Faster labelling |
-| Backend (phase 4) | FastAPI, Postgres, S3-compatible storage, Auth (OIDC) | Sync, teams, audit trail, model registry |
+| Backend | FastAPI, Postgres, S3-compatible storage, Auth (OIDC) | Sync, teams, audit trail, model registry |
 
 ### 3.3 Proposed repository layout
 ```
@@ -238,7 +266,7 @@ smartphone dataset** (§4).
 /ml/notebooks   exploration
 /vision-core    shared classical computer vision and post-processing (Python reference + C++/Dart port)
 /hardware       3D-printable stand / lightbox (STL + build notes)
-/backend        (phase 4) API service
+/backend        API service
 /docs           plan, data protocol, validation reports
 ```
 Keep a **Python reference implementation** of the whole pipeline in `/ml`. The
@@ -303,7 +331,7 @@ mobile version must match it on a fixed test set (the "golden images" test, see
 - Every model release comes with a model card (data, metrics by group, known failure
   modes).
 
-### 5.4 Formal validation (for regulated or quality-control labs, phase 4+)
+### 5.4 Formal validation (not planned: research use, no audit needed; kept for reference)
 - Follow the alternative-method validation ideas in USP <1223> and ISO 16140:
   accuracy, precision (repeatability and intermediate precision across operators and
   phones), linearity, range, limits of detection and quantification, robustness, and
@@ -317,15 +345,16 @@ mobile version must match it on a fixed test set (the "golden images" test, see
 
 | Phase | Duration | Deliverables |
 |---|---|---|
-| **0. Foundations** | 2 wks | Requirements and choice of rule presets; data collection protocol; 3D-printed stand / lightbox v1; first 200–300 plates imaged and counted manually; licence decisions (§8) |
-| **1. Algorithm prototype** (Python) | 4–6 wks | Evaluation harness and metrics; plate finder; classical baseline; first detector (tiled) trained with pre-training plus own data; cluster-count head; error analysis report |
-| **2. Mobile MVP** | 6–8 wks | Flutter app: guided capture, on-device inference (LiteRT / Core ML), classical fallback, review/edit UI, CFU calculator with presets, history, CSV export; internal beta with 5–10 lab users |
-| **3. Accuracy hardening** | 6 wks | Corrections fed back into training (active learning); more media (blood, MacConkey, chromogenic) and colour-class counting; TNTC / spreader / low-confidence flags; testing across the phone set; v1 acceptance test |
-| **4. Team & compliance** | 6–8 wks | Backend sync, workspaces, PDF reports, LIMS export, audit trail; validation study (§5.4); App Store / Play release |
-| **5. Extensions** | ongoing | Membrane filters, Petrifilm, spiral plates; colony size statistics; time-lapse early counts; optional server "second opinion" model |
+| Phase | Duration | Deliverables | Status |
+|---|---|---|---|
+| **0. Foundations** | 2 wks | Data protocol; lightbox; first 300 Nutrient Agar plates imaged and counted manually | Protocol and lightbox design done. **Next: print the box, start imaging** |
+| **1. Algorithm prototype** (Python) | 4–6 wks | Evaluation harness; plate finder; classical baseline; then a tiled detector (pre-trained on AGAR, fine-tuned on own photos) with a cluster-count head; error-analysis report | Harness and classical baseline done. Detector waits on data |
+| **2. Mobile MVP** | 6–8 wks | Flutter app: guided capture, on-device inference (LiteRT / Core ML), classical fallback, review/edit UI, CFU calculator, history, CSV export; beta in your lab | Not started |
+| **3. Accuracy hardening** | 4–6 wks | Corrections fed back into training; low-confidence flags; testing across the phone set; v1 acceptance test (§5.2); App Store / Play or open-source release | Not started |
+| **4. Extensions** | ongoing | More media and dish sizes; pour plates; colony size statistics; time-lapse; optional sync | — |
 
-Rough total to a validated v1: **about 6–8 months** for a team of 1 mobile developer,
-1 machine-learning engineer and a part-time microbiologist (who can also handle quality assurance).
+Rough total to v1: **about 4–6 months** with one developer, plus lab time for imaging
+and labelling.
 
 ---
 
@@ -338,33 +367,30 @@ Rough total to a validated v1: **about 6–8 months** for a team of 1 mobile dev
 | Touching or merged colonies | Cluster-count head, watershed refinement, "×N" editing in the UI |
 | Rim false positives (a known failure of Promega's app) | Strict rim mask, rim-region training negatives, user-adjustable inner region |
 | Coloured or opaque media | Per-medium normalisation, a medium chosen in the UI as a model input, staged media support |
-| Licences (AGPL models, non-commercial data) | Apache/MIT detectors; owned training data for production weights |
+| Licences (AGPL models, non-commercial data) | Academic and open source, so both are acceptable; keep the detector swappable for Apache models |
 | Users trusting a wrong automatic count | Always show the overlay and flags; require review for flagged plates; never hide uncertainty |
 | Regulatory scope creep (species ID) | Keep claims to "enumeration aid"; any ID feature on a separate regulatory track |
 
 ---
 
-## 8. Decisions needed from you
-1. **Commercial or academic/internal?** This decides whether AGAR and Ultralytics
-   YOLO can be used, or Apache models and owned data only.
-2. **Platforms:** Android only, iOS only, or both (Flutter assumes both)?
-3. **Target users and rules:** food/water quality control (FDA BAM / ISO presets),
-   pharma (USP), or research labs? Is GLP / Part 11 needed?
-4. **Media and plate types for v1:** which 2–3 media and which dish sizes?
-5. **Hardware accessory:** is an optional 3D-printed stand or lightbox acceptable,
-   or must the app work freehand only?
-6. **Team and budget:** who labels data, and roughly how many plates per week can
-   the lab produce?
+## 8. Open questions (not blocking)
+1. **Lab capacity:** who will image and label plates, and how many per week? This sets
+   the Phase 1 timeline.
+2. **Phones available:** which models can the lab use for the multi-phone image set?
+3. **Licence for the code:** AGPL-3.0 (allows Ultralytics) or Apache-2.0/MIT (rules
+   it out, and an Apache detector would be used). Either way, the dataset could be
+   published as CC BY 4.0.
 
-## 9. Immediate next steps (proposed)
-1. Answer §8.
-2. Set up the repository (`/app`, `/ml`, `/docs`) with CI, and add a data
-   collection protocol document.
-3. Image and manually count 200–300 plates (several phones, 2–3 media).
-4. Build the Python evaluation harness and the classical baseline, and get first
-   numbers.
-5. Train the first tiled detector, compare it with the baseline, and choose the
-   on-device model.
+## 9. Immediate next steps
+1. Print the lightbox (`hardware/`), fit the LED strip, and check the framing with
+   your phones. Adjust `camera_height` if needed.
+2. Image and manually count the first 100 plates following `docs/DATA_PROTOCOL.md`.
+3. Run `colonycounter evaluate` on them to get the baseline's real-world accuracy,
+   and tune its parameters.
+4. Label points on those plates and train the first tiled detector (AGAR pre-training
+   plus fine-tuning on your photos); compare it with the baseline.
+5. In parallel: scaffold the Flutter app (capture screen with the circle guide and
+   quality checks, plus the review screen).
 
 ---
 

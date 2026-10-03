@@ -1,0 +1,65 @@
+"""Accuracy metrics for comparing automatic counts with manual ground truth."""
+
+from __future__ import annotations
+
+import numpy as np
+from scipy.optimize import linear_sum_assignment
+
+
+def count_metrics(pred, true, tol_frac: float = 0.10, tol_abs: int = 5) -> dict:
+    """Per-plate count agreement. ``pred`` and ``true`` are equal-length sequences."""
+    p = np.asarray(pred, float)
+    t = np.asarray(true, float)
+    err = p - t
+    nz = t > 0
+    ape = np.abs(err[nz]) / t[nz]
+    ba = bland_altman(p, t)
+    return {
+        "n_plates": int(len(t)),
+        "mae": float(np.mean(np.abs(err))),
+        "bias": ba["bias"],
+        "loa_low": ba["loa_low"],
+        "loa_high": ba["loa_high"],
+        "median_ape": float(np.median(ape)) if ape.size else float("nan"),
+        "mape": float(np.mean(ape)) if ape.size else float("nan"),
+        f"within_{int(tol_frac * 100)}pct": float(np.mean(np.abs(err) <= tol_frac * t)),
+        f"within_{tol_abs}": float(np.mean(np.abs(err) <= tol_abs)),
+        "lins_ccc": lins_ccc(p, t),
+    }
+
+
+def bland_altman(a, b) -> dict:
+    d = np.asarray(a, float) - np.asarray(b, float)
+    bias = float(d.mean())
+    sd = float(d.std(ddof=1)) if d.size > 1 else 0.0
+    return {"bias": bias, "loa_low": bias - 1.96 * sd, "loa_high": bias + 1.96 * sd}
+
+
+def lins_ccc(a, b) -> float:
+    """Lin's concordance correlation coefficient."""
+    x = np.asarray(a, float)
+    y = np.asarray(b, float)
+    if x.size < 2:
+        return float("nan")
+    sxy = np.mean((x - x.mean()) * (y - y.mean()))
+    denom = x.var() + y.var() + (x.mean() - y.mean()) ** 2
+    return float(2 * sxy / denom) if denom > 0 else 1.0
+
+
+def match_points(pred, gt, radius: float) -> dict:
+    """One-to-one match of predicted and true colony centres within ``radius`` px."""
+    pred = np.asarray(pred, float).reshape(-1, 2)
+    gt = np.asarray(gt, float).reshape(-1, 2)
+    if len(pred) == 0 or len(gt) == 0:
+        tp = 0
+    else:
+        d = np.linalg.norm(pred[:, None, :] - gt[None, :, :], axis=2)
+        cost = np.where(d <= radius, d, 1e9)
+        rows, cols = linear_sum_assignment(cost)
+        tp = int(np.sum(cost[rows, cols] <= radius))
+    fp = len(pred) - tp
+    fn = len(gt) - tp
+    precision = tp / (tp + fp) if tp + fp else 1.0
+    recall = tp / (tp + fn) if tp + fn else 1.0
+    f1 = 2 * precision * recall / (precision + recall) if precision + recall else 0.0
+    return {"tp": tp, "fp": fp, "fn": fn, "precision": precision, "recall": recall, "f1": f1}
