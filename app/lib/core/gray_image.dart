@@ -4,7 +4,7 @@ import 'dart:typed_data';
 /// A single-channel float image stored row by row.
 class GrayImage {
   GrayImage(this.width, this.height, [Float32List? data])
-      : data = data ?? Float32List(width * height) {
+    : data = data ?? Float32List(width * height) {
     assert(this.data.length == width * height);
   }
 
@@ -26,9 +26,11 @@ class GrayImage {
     final out = GrayImage(w, h);
     final sx = width / w, sy = height / h;
     for (var y = 0; y < h; y++) {
-      final y0 = (y * sy).floor(), y1 = math.max(y0 + 1, ((y + 1) * sy).floor());
+      final y0 = (y * sy).floor(),
+          y1 = math.max(y0 + 1, ((y + 1) * sy).floor());
       for (var x = 0; x < w; x++) {
-        final x0 = (x * sx).floor(), x1 = math.max(x0 + 1, ((x + 1) * sx).floor());
+        final x0 = (x * sx).floor(),
+            x1 = math.max(x0 + 1, ((x + 1) * sx).floor());
         var sum = 0.0;
         var n = 0;
         for (var yy = y0; yy < y1 && yy < height; yy++) {
@@ -119,7 +121,8 @@ class GrayImage {
     final out = GrayImage(width, height);
     final hist = Int32List(256);
     // Edge pixels are replicated (border clamp).
-    int px(int x, int y) => q[y.clamp(0, height - 1) * width + x.clamp(0, width - 1)];
+    int px(int x, int y) =>
+        q[y.clamp(0, height - 1) * width + x.clamp(0, width - 1)];
     final half = (k * k) ~/ 2;
     for (var y = 0; y < height; y++) {
       hist.fillRange(0, 256, 0);

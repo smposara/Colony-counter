@@ -9,6 +9,7 @@ photographed in a 3D-printed dark-field lightbox.
 |---|---|
 | [`docs/PLAN.md`](docs/PLAN.md) | Research summary, architecture, roadmap, decisions |
 | [`docs/DATA_PROTOCOL.md`](docs/DATA_PROTOCOL.md) | How to plate, photograph and label the training/test set |
+| [`app/`](app/) | Flutter app (Android + iOS): guided capture, on-device counting, review/edit, CFU/mL |
 | [`ml/`](ml/) | Python reference pipeline: plate finder, colony detection, CFU calculator, evaluation |
 | [`hardware/`](hardware/) | Printable dark-field lightbox and phone stand (OpenSCAD) |
 
@@ -19,4 +20,8 @@ colonycounter count my_plate.jpg --overlay out/
 colonycounter synth demo/ --n 10 && colonycounter evaluate demo/
 pytest ml
 ```
-The mobile app (Flutter) is Phase 2. See the roadmap in `docs/PLAN.md`.
+## App
+```
+cd app && flutter pub get && flutter test && flutter run
+```
+See [`app/README.md`](app/README.md) for features and screenshots.

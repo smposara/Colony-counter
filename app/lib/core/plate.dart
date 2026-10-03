@@ -7,7 +7,12 @@ const double kDefaultPlateDiameterMm = 90.0;
 
 /// A circular plate in image pixel coordinates.
 class Plate {
-  const Plate(this.cx, this.cy, this.radius, {this.diameterMm = kDefaultPlateDiameterMm});
+  const Plate(
+    this.cx,
+    this.cy,
+    this.radius, {
+    this.diameterMm = kDefaultPlateDiameterMm,
+  });
 
   final double cx;
   final double cy;
@@ -16,23 +21,30 @@ class Plate {
 
   double get mmPerPx => diameterMm / (2 * radius);
 
-  Plate scaled(double s) => Plate(cx * s, cy * s, radius * s, diameterMm: diameterMm);
+  Plate scaled(double s) =>
+      Plate(cx * s, cy * s, radius * s, diameterMm: diameterMm);
 
-  Plate copyWith({double? cx, double? cy, double? radius}) =>
-      Plate(cx ?? this.cx, cy ?? this.cy, radius ?? this.radius, diameterMm: diameterMm);
+  Plate copyWith({double? cx, double? cy, double? radius}) => Plate(
+    cx ?? this.cx,
+    cy ?? this.cy,
+    radius ?? this.radius,
+    diameterMm: diameterMm,
+  );
 
   /// 1 inside the counted area (radius x [rimFraction]), 0 outside.
   Uint8List mask(int width, int height, {double rimFraction = 0.95}) {
     final m = Uint8List(width * height);
     final r = radius * rimFraction;
     final r2 = r * r;
-    final y0 = math.max(0, (cy - r).floor()), y1 = math.min(height - 1, (cy + r).ceil());
+    final y0 = math.max(0, (cy - r).floor()),
+        y1 = math.min(height - 1, (cy + r).ceil());
     for (var y = y0; y <= y1; y++) {
       final dy = y - cy;
       final rem = r2 - dy * dy;
       if (rem < 0) continue;
       final half = math.sqrt(rem);
-      final x0 = math.max(0, (cx - half).ceil()), x1 = math.min(width - 1, (cx + half).floor());
+      final x0 = math.max(0, (cx - half).ceil()),
+          x1 = math.min(width - 1, (cx + half).floor());
       for (var x = x0; x <= x1; x++) {
         m[y * width + x] = 1;
       }
@@ -40,15 +52,20 @@ class Plate {
     return m;
   }
 
-  Map<String, dynamic> toJson() =>
-      {'cx': cx, 'cy': cy, 'radius': radius, 'diameter_mm': diameterMm};
+  Map<String, dynamic> toJson() => {
+    'cx': cx,
+    'cy': cy,
+    'radius': radius,
+    'diameter_mm': diameterMm,
+  };
 
   factory Plate.fromJson(Map<String, dynamic> j) => Plate(
-        (j['cx'] as num).toDouble(),
-        (j['cy'] as num).toDouble(),
-        (j['radius'] as num).toDouble(),
-        diameterMm: (j['diameter_mm'] as num?)?.toDouble() ?? kDefaultPlateDiameterMm,
-      );
+    (j['cx'] as num).toDouble(),
+    (j['cy'] as num).toDouble(),
+    (j['radius'] as num).toDouble(),
+    diameterMm:
+        (j['diameter_mm'] as num?)?.toDouble() ?? kDefaultPlateDiameterMm,
+  );
 }
 
 /// Finds the dish as the circle with the strongest radial edge.
@@ -97,7 +114,15 @@ Plate findPlate(
   }
 
   var best = (score: -1.0, cx: w / 2, cy: h / 2, r: short * 0.4);
-  void search(double cx0, double cy0, double cRange, double cStep, double r0, double r1, double rStep) {
+  void search(
+    double cx0,
+    double cy0,
+    double cRange,
+    double cStep,
+    double r0,
+    double r1,
+    double rStep,
+  ) {
     for (var cy = cy0 - cRange; cy <= cy0 + cRange; cy += cStep) {
       for (var cx = cx0 - cRange; cx <= cx0 + cRange; cx += cStep) {
         for (var r = r0; r <= r1; r += rStep) {
@@ -111,12 +136,25 @@ Plate findPlate(
   final rMin = short * minFill / 2, rMax = short * maxFill / 2;
   search(w / 2, h / 2, short * 0.2, short * 0.02, rMin, rMax, short * 0.01);
   final b1 = best;
-  search(b1.cx, b1.cy, short * 0.02, 1, b1.r - short * 0.01, b1.r + short * 0.01, 0.5);
+  search(
+    b1.cx,
+    b1.cy,
+    short * 0.02,
+    1,
+    b1.r - short * 0.01,
+    b1.r + short * 0.01,
+    0.5,
+  );
   final b2 = best;
   search(b2.cx, b2.cy, 1, 0.25, b2.r - 1, b2.r + 1, 0.25);
 
   if (best.score <= 0) {
     throw StateError('No plate found in image');
   }
-  return Plate(best.cx / scale, best.cy / scale, best.r / scale, diameterMm: diameterMm);
+  return Plate(
+    best.cx / scale,
+    best.cy / scale,
+    best.r / scale,
+    diameterMm: diameterMm,
+  );
 }

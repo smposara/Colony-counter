@@ -349,7 +349,7 @@ mobile version must match it on a fixed test set (the "golden images" test, see
 |---|---|---|---|
 | **0. Foundations** | 2 wks | Data protocol; lightbox; first 300 Nutrient Agar plates imaged and counted manually | Protocol and lightbox design done. **Next: print the box, start imaging** |
 | **1. Algorithm prototype** (Python) | 4–6 wks | Evaluation harness; plate finder; classical baseline; then a tiled detector (pre-trained on AGAR, fine-tuned on own photos) with a cluster-count head; error-analysis report | Harness and classical baseline done. Detector waits on data |
-| **2. Mobile MVP** | 6–8 wks | Flutter app: guided capture, on-device inference (LiteRT / Core ML), classical fallback, review/edit UI, CFU calculator, history, CSV export; beta in your lab | Not started |
+| **2. Mobile MVP** | 6–8 wks | Flutter app: guided capture, on-device inference (LiteRT / Core ML), classical fallback, review/edit UI, CFU calculator, history, CSV export; beta in your lab | **v0.1 built** (`app/`): capture with live checks, pure-Dart classical counter matching Python, review/edit, calculator, history, CSV. Analyzer clean, 24 tests passing. Not yet run on a physical phone. Trained-model inference waits on Phase 1 data |
 | **3. Accuracy hardening** | 4–6 wks | Corrections fed back into training; low-confidence flags; testing across the phone set; v1 acceptance test (§5.2); App Store / Play or open-source release | Not started |
 | **4. Extensions** | ongoing | More media and dish sizes; pour plates; colony size statistics; time-lapse; optional sync | — |
 
@@ -389,8 +389,9 @@ and labelling.
    and tune its parameters.
 4. Label points on those plates and train the first tiled detector (AGAR pre-training
    plus fine-tuning on your photos); compare it with the baseline.
-5. In parallel: scaffold the Flutter app (capture screen with the circle guide and
-   quality checks, plus the review screen).
+5. Install the app on your lab phones (`flutter run`, or the APK from the CI
+   artifact). Try it on real plates in the lightbox and report what's off: framing,
+   the live checks, speed, counts.
 
 ---
 
