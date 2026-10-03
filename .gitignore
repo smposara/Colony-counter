@@ -6,5 +6,5 @@ __pycache__/
 build/
 dist/
 *.stl
-data/
-out/
+/data/
+/out/
