@@ -13,6 +13,7 @@ class SampleSetupScreen extends StatefulWidget {
     required this.store,
     this.edit,
     this.template,
+    this.initialId,
   });
 
   final PlateStore store;
@@ -23,6 +24,9 @@ class SampleSetupScreen extends StatefulWidget {
   /// Settings to start a new sample from ("New sample like this").
   final SampleInfo? template;
 
+  /// Sample ID to start with (e.g. from a scanned label).
+  final String? initialId;
+
   @override
   State<SampleSetupScreen> createState() => _SampleSetupScreenState();
 }
@@ -30,7 +34,7 @@ class SampleSetupScreen extends StatefulWidget {
 class _SampleSetupScreenState extends State<SampleSetupScreen> {
   late final SampleInfo? _base = widget.edit ?? widget.template;
   late final _id = TextEditingController(
-    text: widget.edit?.sampleId ?? _suggestId(),
+    text: widget.edit?.sampleId ?? widget.initialId ?? _suggestId(),
   );
   late final _experiment = TextEditingController(text: _base?.experiment ?? '');
   late final _condition = TextEditingController(text: _base?.condition ?? '');
@@ -46,6 +50,30 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
     text: fixed(_base?.dropVolumeUl ?? 10, 0),
   );
   late final _notes = TextEditingController(text: _base?.notes ?? '');
+  late final _strain = TextEditingController(text: _base?.strain ?? '');
+  late final _medium = TextEditingController(
+    text: _base?.medium ?? widget.store.defaultMedium,
+  );
+  late final _mediumBatch = TextEditingController(
+    text: _base?.mediumBatch ?? '',
+  );
+  late final _incTemp = TextEditingController(
+    text: _base?.incubationTempC == null
+        ? ''
+        : fixed(
+            _base!.incubationTempC!,
+            _base.incubationTempC! % 1 == 0 ? 0 : 1,
+          ),
+  );
+  late final _incHours = TextEditingController(
+    text: _base?.incubationH == null
+        ? ''
+        : fixed(_base!.incubationH!, _base.incubationH! % 1 == 0 ? 0 : 1),
+  );
+  late final _operator = TextEditingController(
+    text: _base?.operator ?? widget.store.defaultOperator,
+  );
+  late final _tags = TextEditingController(text: _base?.tags.join(', ') ?? '');
   late PlatingMethod _method = _base?.method ?? PlatingMethod.spread;
   late DropLayout _layout = _base?.dropLayout ?? DropLayout.replicates;
   late ColourMode _colour = _base?.colourMode ?? ColourMode.none;
@@ -92,9 +120,21 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
       dropLayout: _layout,
       colourMode: _colour,
       notes: _notes.text.trim(),
+      strain: _strain.text.trim(),
+      medium: _medium.text.trim(),
+      mediumBatch: _mediumBatch.text.trim(),
+      incubationTempC: _num(_incTemp),
+      incubationH: _num(_incHours),
+      operator: _operator.text.trim(),
+      tags: [
+        for (final t in _tags.text.split(','))
+          if (t.trim().isNotEmpty) t.trim(),
+      ],
       createdAt: widget.edit?.createdAt,
     );
     widget.store.upsertSample(info, previousId: widget.edit?.sampleId);
+    // Remember operator and medium for the next sample.
+    widget.store.setDefaults(operator: info.operator, medium: info.medium);
     Navigator.of(context).pop(info);
   }
 
@@ -108,6 +148,13 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
       _volume,
       _dropVolume,
       _notes,
+      _strain,
+      _medium,
+      _mediumBatch,
+      _incTemp,
+      _incHours,
+      _operator,
+      _tags,
     ]) {
       c.dispose();
     }
@@ -355,16 +402,116 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
             ColourMode.twoColours => 'Colonies are split into two colour groups (e.g. chromogenic agar).',
           }, style: t.bodySmall),
           gap,
+          _detailsSection(),
+          gap,
           TextField(
             controller: _notes,
             maxLines: 3,
             decoration: const InputDecoration(
-              labelText: 'Notes (strain, medium batch, incubation…)',
+              labelText: 'Notes',
               border: OutlineInputBorder(),
             ),
           ),
           const SizedBox(height: 24),
           FilledButton(onPressed: _save, child: const Text('Save sample')),
+        ],
+      ),
+    );
+  }
+
+  /// Strain, medium, incubation, operator and tags: optional, collapsed when
+  /// empty so quick setups stay short.
+  Widget _detailsSection() {
+    final strains = {
+      for (final s in widget.store.allSamples())
+        if (s.strain.isNotEmpty) s.strain,
+    }.toList()..sort();
+    final operators = {
+      for (final s in widget.store.allSamples())
+        if (s.operator.isNotEmpty) s.operator,
+    }.toList()..sort();
+    final hasAny = [
+      _strain,
+      _mediumBatch,
+      _incTemp,
+      _incHours,
+      _tags,
+    ].any((c) => c.text.isNotEmpty);
+    InputDecoration deco(String label, {String? suffix, String? helper}) =>
+        InputDecoration(
+          labelText: label,
+          suffixText: suffix,
+          helperText: helper,
+          border: const OutlineInputBorder(),
+        );
+    final number = [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]'))];
+    const gap = SizedBox(height: 12);
+    return Card.outlined(
+      margin: EdgeInsets.zero,
+      child: ExpansionTile(
+        initiallyExpanded: hasAny,
+        shape: const Border(),
+        title: const Text('Experiment details'),
+        subtitle: const Text('Strain, medium, incubation, operator, tags'),
+        childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+        children: [
+          _suggestField(_strain, 'Strain / organism', strains),
+          gap,
+          Row(
+            children: [
+              Expanded(
+                flex: 3,
+                child: TextField(
+                  controller: _medium,
+                  decoration: deco('Medium'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                flex: 2,
+                child: TextField(
+                  controller: _mediumBatch,
+                  decoration: deco('Batch / lot'),
+                ),
+              ),
+            ],
+          ),
+          gap,
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _incHours,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  inputFormatters: number,
+                  decoration: deco('Incubation', suffix: 'h'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: TextField(
+                  controller: _incTemp,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  inputFormatters: number,
+                  decoration: deco('Temperature', suffix: '°C'),
+                ),
+              ),
+            ],
+          ),
+          gap,
+          _suggestField(_operator, 'Operator', operators),
+          gap,
+          TextField(
+            controller: _tags,
+            decoration: deco(
+              'Tags',
+              helper: 'Comma-separated, e.g. thesis, batch 3',
+            ),
+          ),
         ],
       ),
     );

@@ -43,6 +43,7 @@ String platesCsv(PlateStore store) {
       'colour_mode',
       'class_0',
       'class_1',
+      'median_diameter_mm',
       'spots',
       'notes',
       'image',
@@ -74,6 +75,7 @@ String platesCsv(PlateStore store) {
       r.colourMode.name,
       classes.isNotEmpty ? classes[0] : null,
       classes.length > 1 ? classes[1] : null,
+      medianDiameterMm(r),
       // e.g. "1e-5/r1:12; 1e-5/r2:9"
       [
         for (final s in r.spots)
@@ -94,6 +96,13 @@ String samplesCsv(PlateStore store) {
       'experiment',
       'condition',
       'time_h',
+      'strain',
+      'medium',
+      'medium_batch',
+      'incubation_temp_c',
+      'incubation_h',
+      'operator',
+      'tags',
       'method',
       'rule',
       'plates',
@@ -117,6 +126,13 @@ String samplesCsv(PlateStore store) {
       info.experiment,
       info.condition,
       info.timeH,
+      info.strain,
+      info.medium,
+      info.mediumBatch,
+      info.incubationTempC,
+      info.incubationH,
+      info.operator,
+      info.tags.join('; '),
       info.method.name,
       info.ruleFor(store.rule).label,
       plates.length,
@@ -137,6 +153,78 @@ String samplesCsv(PlateStore store) {
   return _csv(rows);
 }
 
+/// Median diameter (mm) of single colonies (clusters excluded), or null.
+double? medianDiameterMm(PlateRecord r) {
+  final d = [
+    for (final c in r.colonies)
+      if (c.n == 1 && !c.manual) 2 * c.radiusPx * r.plate.mmPerPx,
+  ]..sort();
+  if (d.isEmpty) return null;
+  final m = d.length.isOdd
+      ? d[d.length ~/ 2]
+      : (d[d.length ~/ 2 - 1] + d[d.length ~/ 2]) / 2;
+  return (m * 100).round() / 100;
+}
+
+/// One row per colony mark, for size distributions and spatial analyses.
+///
+/// Positions are in mm from the plate centre (x right, y down), so they
+/// compare across photos. Diameters of hand-added marks are nominal.
+String coloniesCsv(PlateStore store) {
+  double r3(double v) => (v * 1000).round() / 1000;
+  final rows = <List<Object?>>[
+    [
+      'plate_id',
+      'sample_id',
+      'dilution',
+      'replicate',
+      'colony',
+      'x_mm',
+      'y_mm',
+      'diameter_mm',
+      'colonies_in_mark',
+      'added_by_hand',
+      'colour_class',
+      'colour_class_name',
+      'lab_l',
+      'lab_a',
+      'lab_b',
+      'drop',
+      'drop_dilution',
+      'drop_replicate',
+    ],
+  ];
+  for (final r in store.records) {
+    final mm = r.plate.mmPerPx;
+    for (var i = 0; i < r.colonies.length; i++) {
+      final c = r.colonies[i];
+      final drop = r.spots.indexWhere((s) => s.contains(c.x, c.y));
+      final names = r.colourMode.classNames;
+      rows.add([
+        r.id,
+        r.sampleId,
+        r.isDropPlate ? '' : '1e-${r.dilutionExp}',
+        r.isDropPlate ? '' : r.replicate,
+        i + 1,
+        r3((c.x - r.plate.cx) * mm),
+        r3((c.y - r.plate.cy) * mm),
+        r3(2 * c.radiusPx * mm),
+        c.n,
+        c.manual,
+        c.cls,
+        names[c.cls.clamp(0, names.length - 1)],
+        c.colour?.l,
+        c.colour?.a,
+        c.colour?.b,
+        drop < 0 ? '' : drop + 1,
+        drop < 0 ? '' : '1e-${r.spots[drop].dilutionExp}',
+        drop < 0 ? '' : r.spots[drop].replicate,
+      ]);
+    }
+  }
+  return _csv(rows);
+}
+
 const _manifest = 'colony-counter-backup.json';
 
 /// Everything (plates, sample plans, settings, photos) in one zip.
@@ -146,7 +234,12 @@ Future<Uint8List> buildBackup(PlateStore store) async {
     'format': 'colony-counter-backup',
     'version': 1,
     'created_at': DateTime.now().toIso8601String(),
-    'settings': {'rule': store.rule.name, 'volume_ml': store.defaultVolumeMl},
+    'settings': {
+      'rule': store.rule.name,
+      'volume_ml': store.defaultVolumeMl,
+      'operator': store.defaultOperator,
+      'medium': store.defaultMedium,
+    },
     'samples': [for (final s in store.samplePlans) s.toJson()],
     'plates': [for (final r in store.records) r.toJson()],
   };
@@ -160,10 +253,14 @@ Future<Uint8List> buildBackup(PlateStore store) async {
       ArchiveFile.noCompress('photos/${r.imagePath}', bytes.length, bytes),
     );
   }
-  archive.addFile(ArchiveFile('plates.csv', 0, utf8.encode(platesCsv(store))));
-  archive.addFile(
-    ArchiveFile('samples.csv', 0, utf8.encode(samplesCsv(store))),
-  );
+  for (final (name, csv) in [
+    ('plates.csv', platesCsv(store)),
+    ('samples.csv', samplesCsv(store)),
+    ('colonies.csv', coloniesCsv(store)),
+  ]) {
+    final bytes = utf8.encode(csv);
+    archive.addFile(ArchiveFile(name, bytes.length, bytes));
+  }
   return Uint8List.fromList(ZipEncoder().encode(archive));
 }
 

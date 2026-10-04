@@ -1,7 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:share_plus/share_plus.dart';
 
+import '../core/labels.dart';
 import '../data/plate_store.dart';
 import '../data/sample_info.dart';
 import 'capture_screen.dart';
@@ -60,3 +62,50 @@ Future<void> countNewPlate(
     ),
   );
 }
+
+/// Photographs (or picks) a plate label and reads its QR code. Shows a message
+/// and returns null when no Colony Counter label is found.
+Future<PlateLabel?> scanPlateLabel(
+  BuildContext context, {
+  bool fromGallery = false,
+}) async {
+  final messenger = ScaffoldMessenger.of(context);
+  final picked = await ImagePicker().pickImage(
+    source: fromGallery ? ImageSource.gallery : ImageSource.camera,
+    maxWidth: 2000,
+    maxHeight: 2000,
+  );
+  if (picked == null) return null;
+  final bytes = await picked.readAsBytes();
+  messenger.showSnackBar(
+    const SnackBar(
+      content: Text('Reading label…'),
+      duration: Duration(seconds: 1),
+    ),
+  );
+  final label = await compute(readLabelFromPhoto, bytes);
+  if (label == null) {
+    messenger.showSnackBar(
+      const SnackBar(
+        content: Text(
+          'No plate label found. Fill the frame with the QR code and try again.',
+        ),
+      ),
+    );
+  }
+  return label;
+}
+
+/// Shares a generated file; browsers that cannot share files download it.
+Future<void> shareBytes(
+  Uint8List bytes,
+  String name,
+  String mimeType, {
+  String? subject,
+}) => SharePlus.instance.share(
+  ShareParams(
+    files: [XFile.fromData(bytes, mimeType: mimeType, name: name)],
+    fileNameOverrides: [name],
+    subject: subject ?? name,
+  ),
+);

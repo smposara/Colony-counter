@@ -53,6 +53,13 @@ class SampleInfo {
     this.dropLayout = DropLayout.replicates,
     this.colourMode = ColourMode.none,
     this.notes = '',
+    this.strain = '',
+    this.medium = '',
+    this.mediumBatch = '',
+    this.incubationTempC,
+    this.incubationH,
+    this.operator = '',
+    this.tags = const [],
     DateTime? createdAt,
   }) : createdAt = createdAt ?? DateTime.now();
 
@@ -80,6 +87,39 @@ class SampleInfo {
   final DropLayout dropLayout;
   final ColourMode colourMode;
   final String notes;
+
+  // Experiment details, kept with the results and exported.
+  final String strain;
+  final String medium;
+  final String mediumBatch;
+  final double? incubationTempC;
+  final double? incubationH;
+  final String operator;
+
+  /// Free labels for finding samples later, e.g. "thesis", "batch 3".
+  final List<String> tags;
+
+  /// True when [query] (case-insensitive, every word) appears in any of the
+  /// sample's text fields.
+  bool matches(String query) {
+    final hay = [
+      sampleId,
+      experiment,
+      condition,
+      strain,
+      medium,
+      mediumBatch,
+      operator,
+      notes,
+      ...tags,
+    ].join(' ').toLowerCase();
+    return query
+        .toLowerCase()
+        .split(RegExp(r'\s+'))
+        .where((w) => w.isNotEmpty)
+        .every(hay.contains);
+  }
+
   final DateTime createdAt;
 
   bool get isDrop => method == PlatingMethod.drop;
@@ -134,6 +174,13 @@ class SampleInfo {
     'drop_layout': dropLayout.name,
     'colour_mode': colourMode.name,
     'notes': notes,
+    'strain': strain,
+    'medium': medium,
+    'medium_batch': mediumBatch,
+    'incubation_temp_c': incubationTempC,
+    'incubation_h': incubationH,
+    'operator': operator,
+    'tags': tags,
     'created_at': createdAt.toIso8601String(),
   };
 
@@ -162,6 +209,13 @@ class SampleInfo {
       orElse: () => ColourMode.none,
     ),
     notes: j['notes'] as String? ?? '',
+    strain: j['strain'] as String? ?? '',
+    medium: j['medium'] as String? ?? '',
+    mediumBatch: j['medium_batch'] as String? ?? '',
+    incubationTempC: (j['incubation_temp_c'] as num?)?.toDouble(),
+    incubationH: (j['incubation_h'] as num?)?.toDouble(),
+    operator: j['operator'] as String? ?? '',
+    tags: [for (final t in j['tags'] as List? ?? const []) t as String],
     createdAt: DateTime.tryParse(j['created_at'] as String? ?? ''),
   );
 

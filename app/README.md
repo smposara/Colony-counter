@@ -9,7 +9,7 @@ tapping, and turn plate counts into CFU/mL. Everything runs on the phone, offlin
 
 _Screenshots from the web build in Chromium on synthetic plates and demo data._
 
-## Features (v0.2)
+## Features (v0.3)
 - **Guided capture** (`ui/capture_screen.dart`, phones): circle guide for the dish and
   live checks for level, focus and glare; tap to focus, focus and exposure lock.
 - **Automatic count** (`core/`): a pure-Dart port of the Python reference pipeline in
@@ -43,10 +43,27 @@ _Screenshots from the web build in Chromium on synthetic plates and demo data._
     point, or the control's only one).
   - A **time-kill / growth chart** with error bars when there are two or more time
     points.
+- **Experiment details** (sample setup → *Experiment details*): strain, medium and
+  batch, incubation time and temperature, operator and tags. The operator and medium
+  are remembered for the next sample. The Samples tab has a search box that matches
+  any of these, e.g. `pim pilot` or `NA-0923`.
+- **QR plate labels** (`core/labels.dart`, `data/label_sheet.dart`):
+  - Sample menu → *Print plate labels* makes an A4 PDF of 70 × 37 mm labels (3 × 8,
+    24 per sheet), one per planned plate, with a QR code, the sample ID, dilution and
+    replicate.
+  - Scan a label (QR button on the Samples tab, or next to *Sample ID* when saving)
+    to fill in the sample, dilution and replicate. Scanning a planned plate that
+    has no photo yet offers to photograph it straight away.
+- **Annotated photo** (`core/annotate.dart`): review screen menu → *Share annotated
+  photo* makes a JPEG with the counted area, every colony mark (same colours as the
+  app), drops with their counts, and a banner with sample, dilution, count and
+  CFU/mL, for lab notebooks and reports.
 - **Export and backup**:
-  - *Export CSV* shares two files: one row per plate (including drops and colour
-    classes), and one row per sample with mean, SD, CV and log₁₀.
-  - *Back up all data* makes one zip with every plate, plan, photo and both CSVs.
+  - *Export CSV* shares three files: one row per plate (including drops, colour
+    classes and median colony diameter), one row per sample with mean, SD, CV, log₁₀
+    and the experiment details, and one row per colony (position in mm from the
+    plate centre, diameter in mm, colour class and Lab colour, drop).
+  - *Back up all data* makes one zip with every plate, plan, photo and all three CSVs.
   - *Restore from backup* merges a zip back in; plates already present are kept.
     Use this to move data between phones and browsers, or to protect the web
     version's data.
@@ -56,8 +73,10 @@ _Screenshots from the web build in Chromium on synthetic plates and demo data._
 lib/
   core/   gray_image, plate, normalize, classical, pipeline   ← counting (pure Dart)
           colour (Lab, blue/white), spots (drop plates)
+          annotate (marked-up photo), labels (QR payload, read from photo)
           calculator, stats (replicates, log reduction), capture_quality
-  data/   plate_record, sample_info (plans, slots), plate_store, export (CSV, backup)
+  data/   plate_record, sample_info (plans, slots, details), plate_store,
+          export (CSV, backup), label_sheet (PDF labels)
           storage/ (files on phones, IndexedDB on web)
   ui/     home (tabs), capture, photo_flow, review, save sheet,
           samples, sample_setup, compare (table + chart)
@@ -68,6 +87,8 @@ test/
   ui_flows_test.dart    sample setup, replicate stats + next plate, log reduction
   features_test.dart    replicate stats, colour classes, drop-spot detection
   data_test.dart        CSVs, plan slots, backup → restore round trip
+  records_test.dart     QR labels (encode, read from a photo, PDF sheet), details
+                        and search, per-colony CSV, annotated photo
   capture_quality_test.dart
   fixtures/          synthetic plates + labels (ml/scripts/make_app_fixtures.py)
 tool/compare.dart    prints Dart vs Python vs true counts
@@ -76,7 +97,7 @@ tool/compare.dart    prints Dart vs Python vs true counts
 ## Run it
 ```
 flutter pub get
-flutter test             # 42 tests
+flutter test             # 51 tests
 python tool/check_font_coverage.py   # every character in lib/ is in the bundled fonts
 flutter run              # on a connected phone
 dart run tool/compare.dart

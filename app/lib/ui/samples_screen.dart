@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../core/calculator.dart';
+import '../core/labels.dart';
 import '../core/stats.dart';
 import '../data/plate_record.dart';
+import '../data/label_sheet.dart';
 import '../data/plate_store.dart';
 import '../data/sample_info.dart';
 import 'format.dart';
@@ -16,11 +19,16 @@ Future<void> openSampleSetup(
   PlateStore store, {
   SampleInfo? edit,
   SampleInfo? template,
+  String? initialId,
 }) async {
   final saved = await Navigator.of(context).push<SampleInfo>(
     MaterialPageRoute(
-      builder: (_) =>
-          SampleSetupScreen(store: store, edit: edit, template: template),
+      builder: (_) => SampleSetupScreen(
+        store: store,
+        edit: edit,
+        template: template,
+        initialId: initialId,
+      ),
     ),
   );
   if (saved == null || !context.mounted || edit != null) return;
@@ -28,6 +36,89 @@ Future<void> openSampleSetup(
     MaterialPageRoute(
       builder: (_) =>
           SampleDetailScreen(store: store, sampleId: saved.sampleId),
+    ),
+  );
+}
+
+/// Opens the sample a scanned label points to. When the label names a plate
+/// that has not been counted yet, offers to photograph it straight away.
+Future<void> openFromLabel(
+  BuildContext context,
+  PlateStore store,
+  PlateLabel label,
+) async {
+  final known = store.allSamples().any((s) => s.sampleId == label.sampleId);
+  if (!known) {
+    final create = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Sample “${label.sampleId}” not found'),
+        content: const Text('Set up this sample now?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Set up'),
+          ),
+        ],
+      ),
+    );
+    if ((create ?? false) && context.mounted) {
+      await openSampleSetup(context, store, initialId: label.sampleId);
+    }
+    return;
+  }
+  final info = store.sampleInfo(label.sampleId);
+  final slot = store.hasPlan(label.sampleId)
+      ? info.slots
+            .where(
+              (s) =>
+                  s.dilutionExp == label.dilutionExp &&
+                  s.replicate == label.replicate,
+            )
+            .firstOrNull
+      : null;
+  final done = slot != null && store.platesOf(label.sampleId).any(slot.matches);
+  if (slot != null && !done) {
+    final shoot = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(label.caption.replaceAll('10^-', '10⁻')),
+        content: const Text('Photograph this plate now?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Just open sample'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Photograph'),
+          ),
+        ],
+      ),
+    );
+    if (!context.mounted) return;
+    if (shoot ?? false) {
+      await countNewPlate(
+        context,
+        store,
+        preset: PlatePreset(info: info, slot: slot),
+      );
+      return;
+    }
+  } else if (done) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('${label.caption} is already counted.')),
+    );
+  }
+  if (!context.mounted) return;
+  await Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (_) =>
+          SampleDetailScreen(store: store, sampleId: label.sampleId),
     ),
   );
 }
@@ -43,18 +134,31 @@ String resultSummary(SampleResult r) {
 String hoursLabel(double h) => '${fixed(h, h % 1 == 0 ? 0 : 1)} h';
 
 /// Samples grouped by experiment, newest first.
-class SamplesTab extends StatelessWidget {
+class SamplesTab extends StatefulWidget {
   const SamplesTab({super.key, required this.store});
 
   final PlateStore store;
+
+  @override
+  State<SamplesTab> createState() => _SamplesTabState();
+}
+
+class _SamplesTabState extends State<SamplesTab> {
+  String _query = '';
+
+  PlateStore get store => widget.store;
 
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
       listenable: store,
       builder: (context, _) {
-        final samples = store.allSamples();
-        if (samples.isEmpty) {
+        final all = store.allSamples();
+        final samples = [
+          for (final s in all)
+            if (s.matches(_query)) s,
+        ];
+        if (all.isEmpty) {
           return const Center(
             child: Padding(
               padding: EdgeInsets.all(32),
@@ -85,6 +189,23 @@ class SamplesTab extends StatelessWidget {
         return ListView(
           padding: const EdgeInsets.only(bottom: 96),
           children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+              child: TextField(
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.search),
+                  hintText: 'Search sample, strain, operator, tag…',
+                  border: OutlineInputBorder(),
+                  isDense: true,
+                ),
+                onChanged: (v) => setState(() => _query = v),
+              ),
+            ),
+            if (samples.isEmpty)
+              const Padding(
+                padding: EdgeInsets.all(24),
+                child: Text('No samples match.', textAlign: TextAlign.center),
+              ),
             for (final name in names) ...[
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
@@ -167,6 +288,23 @@ class SampleDetailScreen extends StatelessWidget {
     preset: PlatePreset(info: info, slot: slot),
   );
 
+  Future<void> _printLabels(BuildContext context, SampleInfo info) async {
+    final regular = await rootBundle.load('assets/fonts/Roboto-Regular.ttf');
+    final bold = await rootBundle.load('assets/fonts/Roboto-Bold.ttf');
+    final pdf = await buildLabelSheet(
+      labelsForSample(info),
+      fontData: regular,
+      boldFontData: bold,
+    );
+    final safe = info.sampleId.replaceAll(RegExp(r'[^A-Za-z0-9_-]+'), '_');
+    await shareBytes(
+      pdf,
+      'labels_$safe.pdf',
+      'application/pdf',
+      subject: 'Plate labels for ${info.sampleId}',
+    );
+  }
+
   Future<void> _delete(BuildContext context, SampleInfo info) async {
     final plates = store.platesOf(info.sampleId).length;
     final choice = await showDialog<String>(
@@ -224,6 +362,7 @@ class SampleDetailScreen extends StatelessWidget {
                 onSelected: (v) => switch (v) {
                   'edit' => openSampleSetup(context, store, edit: info),
                   'copy' => openSampleSetup(context, store, template: info),
+                  'labels' => _printLabels(context, info),
                   _ => _delete(context, info),
                 },
                 itemBuilder: (_) => [
@@ -235,6 +374,11 @@ class SampleDetailScreen extends StatelessWidget {
                     value: 'copy',
                     child: Text('New sample like this'),
                   ),
+                  if (planned)
+                    const PopupMenuItem(
+                      value: 'labels',
+                      child: Text('Print plate labels (PDF)'),
+                    ),
                   const PopupMenuItem(
                     value: 'delete',
                     child: Text('Delete sample'),
@@ -313,11 +457,7 @@ class SampleDetailScreen extends StatelessWidget {
                 const SizedBox(height: 8),
                 for (final p in plates) RecordTile(store: store, record: p),
               ],
-              if (info.notes.isNotEmpty) ...[
-                const SizedBox(height: 16),
-                Text('Notes', style: t.titleSmall),
-                Text(info.notes),
-              ],
+              _DetailsSection(info: info),
             ],
           ),
         );
@@ -453,6 +593,61 @@ class _ResultCard extends StatelessWidget {
             ],
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Experiment details and notes, when any are set.
+class _DetailsSection extends StatelessWidget {
+  const _DetailsSection({required this.info});
+
+  final SampleInfo info;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    final rows = [
+      ('Strain', info.strain),
+      (
+        'Medium',
+        [
+          info.medium,
+          if (info.mediumBatch.isNotEmpty) 'batch ${info.mediumBatch}',
+        ].where((e) => e.isNotEmpty).join(', '),
+      ),
+      (
+        'Incubation',
+        [
+          if (info.incubationH != null) hoursLabel(info.incubationH!),
+          if (info.incubationTempC != null)
+            '${fixed(info.incubationTempC!, info.incubationTempC! % 1 == 0 ? 0 : 1)} °C',
+        ].join(' at '),
+      ),
+      ('Operator', info.operator),
+      ('Tags', info.tags.join(', ')),
+      ('Notes', info.notes),
+    ].where((r) => r.$2.isNotEmpty).toList();
+    if (rows.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Details', style: t.titleMedium),
+          const SizedBox(height: 6),
+          for (final (k, v) in rows)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(width: 96, child: Text(k, style: t.bodySmall)),
+                  Expanded(child: Text(v, style: t.bodyMedium)),
+                ],
+              ),
+            ),
+        ],
       ),
     );
   }

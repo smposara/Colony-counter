@@ -5,6 +5,7 @@ import '../core/calculator.dart';
 import '../data/plate_record.dart';
 import '../data/plate_store.dart';
 import 'format.dart';
+import 'photo_flow.dart';
 
 /// Sample details for a plate, with a live CFU/mL preview. Pops with the
 /// updated [PlateRecord].
@@ -41,6 +42,22 @@ class _SaveSheetState extends State<SaveSheet> {
   late int _dilutionExp = widget.draft.dilutionExp;
   late bool _spreader = widget.draft.spreader;
   late bool _tntc = widget.draft.tntc;
+
+  /// Bumped when a scanned label fills the fields, so they rebuild with it.
+  int _scanned = 0;
+
+  Future<void> _scanLabel() async {
+    final label = await scanPlateLabel(context);
+    if (label == null || !mounted) return;
+    setState(() {
+      _sample.text = label.sampleId;
+      final d = label.dilutionExp;
+      if (d != null && d >= 0 && d <= 10) _dilutionExp = d;
+      final r = label.replicate;
+      if (r != null && r >= 1 && r <= 12) _replicate = r;
+      _scanned++;
+    });
+  }
 
   static String _fmtVolume(double v) =>
       v == v.roundToDouble() ? v.toStringAsFixed(0) : v.toString();
@@ -105,6 +122,7 @@ class _SaveSheetState extends State<SaveSheet> {
               )
             else
               Autocomplete<String>(
+                key: ValueKey('sample$_scanned'),
                 initialValue: TextEditingValue(text: _sample.text),
                 optionsBuilder: (v) => knownSamples.where(
                   (s) =>
@@ -116,10 +134,15 @@ class _SaveSheetState extends State<SaveSheet> {
                   return TextField(
                     controller: controller,
                     focusNode: focus,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Sample ID',
                       helperText: 'Plates with the same sample ID are pooled for CFU/mL',
-                      border: OutlineInputBorder(),
+                      border: const OutlineInputBorder(),
+                      suffixIcon: IconButton(
+                        tooltip: 'Scan plate label',
+                        icon: const Icon(Icons.qr_code_scanner),
+                        onPressed: _scanLabel,
+                      ),
                     ),
                     textInputAction: TextInputAction.next,
                     onChanged: (v) => setState(() => _sample.text = v),
@@ -132,6 +155,7 @@ class _SaveSheetState extends State<SaveSheet> {
                 children: [
                   Expanded(
                     child: DropdownButtonFormField<int>(
+                      key: ValueKey('dilution$_scanned'),
                       initialValue: _dilutionExp,
                       decoration: const InputDecoration(
                         labelText: 'Plated dilution',
@@ -150,6 +174,7 @@ class _SaveSheetState extends State<SaveSheet> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: DropdownButtonFormField<int>(
+                      key: ValueKey('replicate$_scanned'),
                       initialValue: _replicate,
                       decoration: const InputDecoration(
                         labelText: 'Replicate',

@@ -1,6 +1,6 @@
 # Mobile Colony Counter — Research Summary & Build Plan
 
-_Status: v0.2 · 2026-10-03, decisions recorded; Phase 0/1 started_
+_Status: v0.3 · 2026-10-04, decisions recorded; Phase 0/1 started_
 
 ## Decisions (2026-10-03)
 
@@ -349,7 +349,7 @@ mobile version must match it on a fixed test set (the "golden images" test, see
 |---|---|---|---|
 | **0. Foundations** | 2 wks | Data protocol; lightbox; first 300 Nutrient Agar plates imaged and counted manually | Protocol and lightbox design done. **Next: print the box, start imaging** |
 | **1. Algorithm prototype** (Python) | 4–6 wks | Evaluation harness; plate finder; classical baseline; then a tiled detector (pre-trained on AGAR, fine-tuned on own photos) with a cluster-count head; error-analysis report | Harness and classical baseline done. Detector waits on data |
-| **2. Mobile MVP** | 6–8 wks | Flutter app (Android, iOS, web): capture, on-device counting, review/edit, CFU/mL, history, CSV | **v0.2 built**: plus sample plans with dilution series and replicates (mean ± SD, log₁₀), drop plates, blue/white colour classes, log reduction and time-kill charts, backup/restore, web build for iPhone. 42 app tests and browser end-to-end checks. Not yet tried on a physical phone |
+| **2. Mobile MVP** | 6–8 wks | Flutter app (Android, iOS, web): capture, on-device counting, review/edit, CFU/mL, history, CSV | **v0.3 built**: plus sample plans with dilution series and replicates (mean ± SD, log₁₀), drop plates, blue/white colour classes, log reduction and time-kill charts, backup/restore, web build for iPhone; v0.3 adds annotated photo export, a per-colony CSV, searchable experiment details and QR plate labels. 51 app tests and browser end-to-end checks. Not yet tried on a physical phone |
 | **3. Accuracy hardening** | 4–6 wks | Corrections fed back into training; low-confidence flags; testing across the phone set; v1 acceptance test (§5.2); App Store / Play or open-source release | Not started |
 | **4. Extensions** | ongoing | More media and dish sizes; pour plates; colony size statistics; time-lapse; optional sync | — |
 

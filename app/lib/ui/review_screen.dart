@@ -1,8 +1,9 @@
 import 'dart:math' as math;
-import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../core/annotate.dart';
 import '../core/background.dart';
 import '../core/classical.dart';
 import '../core/colour.dart';
@@ -476,6 +477,71 @@ class _ReviewScreenState extends State<ReviewScreen> {
     if (mounted) Navigator.of(context).pop();
   }
 
+  /// Banner lines for the annotated photo: what the plate is and its count.
+  List<String> _annotationHeader() {
+    final r = widget.record;
+    final info = widget.preset?.info;
+    final sample = r?.sampleId ?? info?.sampleId ?? '';
+    final what = _drop
+        ? 'drop plate (${_spots.length} drops)'
+        : [
+            dilutionLabel(
+              r?.dilutionExp ?? widget.preset?.slot.dilutionExp ?? 0,
+            ),
+            'R${r?.replicate ?? widget.preset?.slot.replicate ?? 1}',
+          ].join(' · ');
+    final classes = _colourMode == ColourMode.none
+        ? ''
+        : ' (${[for (var k = 0; k < 2; k++) '${_colourMode.classNames[k]} ${_colonies.where((c) => c.cls == k).fold(0, (s, c) => s + c.n)}'].join(', ')})';
+    var count = 'Count: $_count$classes';
+    if (r != null && !_drop && r.volumeMl > 0) {
+      count += ' · ${sciValue(_count / (r.volumeMl * r.dilution))} CFU/mL';
+    }
+    return [
+      '${sample.isEmpty ? 'Unlabelled' : sample} · $what',
+      count,
+      [
+        shortDate(r?.createdAt ?? DateTime.now()),
+        if (_flags.isNotEmpty) _flags.map(flagLabel).join(', '),
+      ].join(' · '),
+    ];
+  }
+
+  Future<void> _shareAnnotated() async {
+    final photo = _photo, plate = _plate;
+    if (photo == null || plate == null) return;
+    setState(() => _busy = true);
+    try {
+      final jpeg = await compute(
+        annotatePhoto,
+        AnnotationJob(
+          photo: photo,
+          plate: plate,
+          colonies: _colonies,
+          spots: _drop ? _spots : const [],
+          colourMode: _colourMode,
+          header: _annotationHeader(),
+        ),
+      );
+      final id = widget.record?.sampleId ?? widget.preset?.info.sampleId ?? '';
+      final safe = id.replaceAll(RegExp(r'[^A-Za-z0-9_-]+'), '_');
+      await shareBytes(
+        jpeg,
+        'plate_${safe.isEmpty ? 'count' : safe}_${DateTime.now().millisecondsSinceEpoch}.jpg',
+        'image/jpeg',
+        subject: 'Colony count',
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not share the photo: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
   // --- UI ------------------------------------------------------------------
 
   @override
@@ -525,9 +591,22 @@ class _ReviewScreenState extends State<ReviewScreen> {
             PopupMenuButton<Object>(
               enabled: _plate != null,
               tooltip: 'Plate type and colours',
-              onSelected: (v) =>
-                  v is ColourMode ? _setColourMode(v) : _setDrop(!_drop),
+              onSelected: (v) => v is ColourMode
+                  ? _setColourMode(v)
+                  : v == 'share'
+                  ? _shareAnnotated()
+                  : _setDrop(!_drop),
               itemBuilder: (_) => [
+                PopupMenuItem(
+                  value: 'share',
+                  enabled: _photo != null && !_busy,
+                  child: const ListTile(
+                    leading: Icon(Icons.share),
+                    title: Text('Share annotated photo'),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+                const PopupMenuDivider(),
                 CheckedPopupMenuItem(
                   value: 'drop',
                   checked: _drop,

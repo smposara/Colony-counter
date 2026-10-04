@@ -48,6 +48,17 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: const Icon(Icons.photo_library_outlined),
               onPressed: () => countNewPlate(context, store, fromGallery: true),
             ),
+          if (_tab == 1)
+            IconButton(
+              tooltip: 'Scan plate label',
+              icon: const Icon(Icons.qr_code_scanner),
+              onPressed: () async {
+                final label = await scanPlateLabel(context);
+                if (label != null && context.mounted) {
+                  await openFromLabel(context, store, label);
+                }
+              },
+            ),
           _DataMenu(store: store),
         ],
       ),
@@ -143,6 +154,7 @@ class _DataMenu extends StatelessWidget {
     await _share([
       ('plates_$stamp.csv', utf8.encode(platesCsv(store)), 'text/csv'),
       ('samples_$stamp.csv', utf8.encode(samplesCsv(store)), 'text/csv'),
+      ('colonies_$stamp.csv', utf8.encode(coloniesCsv(store)), 'text/csv'),
     ], 'Colony counts');
   }
 

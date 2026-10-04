@@ -19,6 +19,10 @@ class PlateStore extends ChangeNotifier {
   CountingRule rule = CountingRule.fdaBam;
   double defaultVolumeMl = 0.1;
 
+  /// Pre-filled in new samples.
+  String defaultOperator = '';
+  String defaultMedium = 'Nutrient Agar';
+
   static const _recordsKey = 'plates';
   static const _settingsKey = 'settings';
   static const _samplesKey = 'samples';
@@ -58,6 +62,8 @@ class PlateStore extends ChangeNotifier {
         orElse: () => CountingRule.fdaBam,
       );
       defaultVolumeMl = (s['volume_ml'] as num?)?.toDouble() ?? 0.1;
+      defaultOperator = s['operator'] as String? ?? '';
+      defaultMedium = s['medium'] as String? ?? 'Nutrient Agar';
     }
     notifyListeners();
   }
@@ -107,6 +113,12 @@ class PlateStore extends ChangeNotifier {
 
   Future<void> setDefaultVolume(double v) async {
     defaultVolumeMl = v;
+    await _saveSettings();
+  }
+
+  Future<void> setDefaults({String? operator, String? medium}) async {
+    defaultOperator = operator ?? defaultOperator;
+    defaultMedium = medium ?? defaultMedium;
     await _saveSettings();
   }
 
@@ -230,7 +242,12 @@ class PlateStore extends ChangeNotifier {
   Future<void> _saveSettings() async {
     await backend.writeText(
       _settingsKey,
-      jsonEncode({'rule': rule.name, 'volume_ml': defaultVolumeMl}),
+      jsonEncode({
+        'rule': rule.name,
+        'volume_ml': defaultVolumeMl,
+        'operator': defaultOperator,
+        'medium': defaultMedium,
+      }),
     );
     notifyListeners();
   }
