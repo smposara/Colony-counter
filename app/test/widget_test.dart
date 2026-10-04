@@ -42,6 +42,8 @@ void main() {
     addTearDown(tester.view.reset);
 
     final store = (await tester.runAsync(_tempStore))!;
+    // Ask for an accuracy check on every plate.
+    store.accuracyCheckEvery = 1;
     final label = jsonDecode(
       File('test/fixtures/sparse.json').readAsStringSync(),
     );
@@ -75,6 +77,7 @@ void main() {
       () => find.byType(CircularProgressIndicator).evaluate().isEmpty,
     );
     expect(find.text('automatic'), findsOneWidget);
+    expect(find.textContaining('Accuracy check'), findsOneWidget);
 
     final auto = int.parse(
       (tester.widget<Text>(find.textContaining(RegExp(r'^\d+$')).first)).data!,
@@ -122,6 +125,10 @@ void main() {
     expect(store.records.single.count, auto - 1);
     expect(store.records.single.autoCount, auto);
     expect(store.records.single.guided, isTrue);
+    // The removed automatic mark is kept as a negative example, and the
+    // accuracy check made this a reference count.
+    expect(store.records.single.rejected.length, 1);
+    expect(store.records.single.verified, isTrue);
     final saved = await tester.runAsync(
       () => store.readPhoto(store.records.single),
     );

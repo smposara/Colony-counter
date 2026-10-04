@@ -80,7 +80,25 @@ Uint8List annotatePhoto(AnnotationJob job) {
   final font = photo.width >= 1400 ? img.arial48 : img.arial24;
 
   final p = job.plate;
-  ring(p.cx, p.cy, p.radius * job.rimFraction, cyan);
+  if (p.isSquare) {
+    final pts = p.outline(rimFraction: job.rimFraction);
+    for (var i = 0; i < pts.length; i++) {
+      final (x0, y0) = pts[i];
+      final (x1, y1) = pts[(i + 1) % pts.length];
+      img.drawLine(
+        photo,
+        x1: (x0 * s).round(),
+        y1: (y0 * s).round(),
+        x2: (x1 * s).round(),
+        y2: (y1 * s).round(),
+        color: cyan,
+        thickness: line,
+        antialias: true,
+      );
+    }
+  } else {
+    ring(p.cx, p.cy, p.radius * job.rimFraction, cyan);
+  }
 
   for (final c in job.colonies) {
     final r = math.max(c.radiusPx * 1.25, 4 / s);

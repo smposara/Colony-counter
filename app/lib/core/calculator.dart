@@ -14,7 +14,11 @@ enum CountingRule {
   range30to300('30–300', 30, 300),
 
   /// Drop plates (Miles–Misra): colonies per 10–20 µL spot.
-  dropPlate('Drop 3–30', 3, 30);
+  dropPlate('Drop 3–30', 3, 30),
+
+  /// Membrane filters: 20–80 for coliforms / E. coli, 20–200 for total counts.
+  membrane80('Membrane 20–80', 20, 80),
+  membrane200('Membrane 20–200', 20, 200);
 
   const CountingRule(this.label, this.min, this.max);
 
@@ -24,6 +28,7 @@ enum CountingRule {
 
   /// Rules a user can choose for whole (spread / pour) plates.
   static const spreadRules = [fdaBam, iso7218, range30to300];
+  static const membraneRules = [membrane80, membrane200];
 }
 
 class PlateCount {
@@ -64,7 +69,11 @@ class Estimate {
   final String note;
 
   @override
-  String toString() {
+  String toString() => describe();
+
+  /// e.g. "est. 1.2 × 10^4 CFU/mL"; [factor] rescales for other units, e.g.
+  /// 100 for CFU/100 mL.
+  String describe({double factor = 1, String unit = 'CFU/mL'}) {
     if (value.isNaN) return 'no estimate';
     final q = switch (qualifier) {
       Qualifier.exact => '',
@@ -72,7 +81,7 @@ class Estimate {
       Qualifier.lessThan => '< ',
       Qualifier.greaterThan => '> ',
     };
-    return '$q${formatSci(value)} CFU/mL';
+    return '$q${formatSci(value * factor)} $unit';
   }
 }
 

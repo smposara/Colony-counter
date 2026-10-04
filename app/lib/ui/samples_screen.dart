@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../core/calculator.dart';
 import '../core/labels.dart';
+import '../core/plate.dart';
 import '../core/stats.dart';
 import '../data/plate_record.dart';
 import '../data/label_sheet.dart';
@@ -10,6 +11,7 @@ import '../data/plate_store.dart';
 import '../data/sample_info.dart';
 import 'format.dart';
 import 'home_screen.dart';
+import 'multi_plate_screen.dart';
 import 'photo_flow.dart';
 import 'review_screen.dart';
 import 'sample_setup_screen.dart';
@@ -345,7 +347,7 @@ class SampleDetailScreen extends StatelessWidget {
       listenable: store,
       builder: (context, _) {
         final info = store.sampleInfo(sampleId);
-        final plates = store.platesOf(sampleId)
+        final plates = latestOfSeries(store.platesOf(sampleId))
           ..sort(
             (a, b) => a.dilutionExp != b.dilutionExp
                 ? a.dilutionExp.compareTo(b.dilutionExp)
@@ -363,6 +365,7 @@ class SampleDetailScreen extends StatelessWidget {
                   'edit' => openSampleSetup(context, store, edit: info),
                   'copy' => openSampleSetup(context, store, template: info),
                   'labels' => _printLabels(context, info),
+                  'multi' => countSeveralPlates(context, store, info: info),
                   _ => _delete(context, info),
                 },
                 itemBuilder: (_) => [
@@ -374,6 +377,11 @@ class SampleDetailScreen extends StatelessWidget {
                     value: 'copy',
                     child: Text('New sample like this'),
                   ),
+                  if (next != null)
+                    const PopupMenuItem(
+                      value: 'multi',
+                      child: Text('Photograph several plates at once'),
+                    ),
                   if (planned)
                     const PopupMenuItem(
                       value: 'labels',
@@ -400,8 +408,12 @@ class SampleDetailScreen extends StatelessWidget {
                     info.method.label,
                     if (info.isDrop)
                       '${fixed(info.dropVolumeUl, 0)} µL drops'
+                    else if (info.isMembrane)
+                      '${fixed(info.volumeMl, info.volumeMl % 1 == 0 ? 0 : 1)} mL filtered'
                     else
                       '${info.volumeMl} mL per plate',
+                    if (!info.isMembrane && info.format != PlateFormat.dish90)
+                      info.format.label,
                     if (info.isDrop) info.dropLayout.label,
                   ].join(' · '),
                   style: t.bodySmall,
@@ -528,6 +540,8 @@ class _ResultCard extends StatelessWidget {
     final rule = info.ruleFor(store.rule);
     final res = info.analyse(plates, store.rule);
     final s = res.stats;
+    final f = info.unitFactor, unit = info.unitLabel;
+    final logShift = info.isMembrane ? 2 : 0;
     final details = [
       if (info.experiment.isNotEmpty) info.experiment,
       if (info.condition.isNotEmpty) info.condition,
@@ -545,14 +559,14 @@ class _ResultCard extends StatelessWidget {
             Text(
               s.n == 0
                   ? 'No countable plates yet'
-                  : '${sciValue(s.mean)} CFU/mL',
+                  : '${sciValue(s.mean * f)} $unit',
               style: t.headlineSmall,
             ),
             if (s.n > 0) ...[
               const SizedBox(height: 4),
               Text(
                 [
-                  if (s.n > 1) 'SD ${sciValue(s.sd)}',
+                  if (s.n > 1) 'SD ${sciValue(s.sd * f)}',
                   if (s.n > 1) 'CV ${fixed(s.cvPercent, 1)} %',
                   'n = ${s.n} replicate${s.n == 1 ? '' : 's'}',
                 ].join(' · '),
@@ -560,7 +574,7 @@ class _ResultCard extends StatelessWidget {
               ),
               const SizedBox(height: 2),
               Text(
-                'log₁₀ CFU/mL ${fixed(s.log10Mean)}'
+                'log₁₀ $unit ${fixed(s.log10Mean + logShift)}'
                 '${s.n > 1 ? ' ± ${fixed(s.log10Sd)}' : ''}',
                 style: t.titleMedium,
               ),
@@ -568,18 +582,22 @@ class _ResultCard extends StatelessWidget {
             const SizedBox(height: 8),
             for (final e in res.perReplicate.entries)
               Text(
-                'R${e.key}: ${prettySci(e.value.toString())}'
+                'R${e.key}: ${prettySci(e.value.describe(factor: f, unit: unit))}'
                 '${e.value.note.isNotEmpty ? ' — ${e.value.note}' : ''}',
                 style: t.bodySmall,
               ),
             const SizedBox(height: 8),
             Text(
-              'Each replicate pools its countable ${info.isDrop ? 'drops' : 'plates'} '
+              'Each replicate pools its countable ${info.isDrop
+                  ? 'drops'
+                  : info.isMembrane
+                  ? 'filters'
+                  : 'plates'} '
               '(${rule.min}–${rule.max} colonies, ${rule.label}) as ΣC / Σ(V × d); '
               'log₁₀ is the mean ± SD of the replicates\' log values.',
               style: t.bodySmall,
             ),
-            if (!info.isDrop) ...[
+            if (!info.isDrop && !info.isMembrane) ...[
               const SizedBox(height: 8),
               SegmentedButton<CountingRule>(
                 showSelectedIcon: false,

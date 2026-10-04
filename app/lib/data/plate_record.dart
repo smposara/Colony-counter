@@ -30,6 +30,11 @@ class PlateRecord {
     this.replicate = 1,
     this.spots = const [],
     this.colourMode = ColourMode.none,
+    this.format = PlateFormat.dish90,
+    this.verified = false,
+    this.rejected = const [],
+    this.seriesId = '',
+    this.incubationH,
   });
 
   final String id;
@@ -65,6 +70,23 @@ class PlateRecord {
   /// [volumeMl] is the volume of one drop.
   final List<Spot> spots;
   final ColourMode colourMode;
+
+  /// Dish or filter type.
+  final PlateFormat format;
+
+  /// The user checked every colony, so [count] is a reference count and
+  /// [autoCount] can be scored against it (accuracy tracking).
+  final bool verified;
+
+  /// Automatic detections the user removed (false positives); kept as
+  /// negative examples for training a detector.
+  final List<Colony> rejected;
+
+  /// Time-lapse: photos of the same plate share the first photo's id.
+  final String seriesId;
+
+  /// Hours since plating when photographed, if known.
+  final double? incubationH;
 
   bool get isDropPlate => spots.isNotEmpty;
 
@@ -107,9 +129,17 @@ class PlateRecord {
   }
 
   /// CFU/mL from this plate alone (all its drops pooled for a drop plate).
-  Estimate estimateAlone(CountingRule spreadRule) => estimate([
-    for (final o in observations()) o.count,
-  ], rule: isDropPlate ? CountingRule.dropPlate : spreadRule);
+  Estimate estimateAlone(
+    CountingRule spreadRule, {
+    CountingRule membraneRule = CountingRule.membrane80,
+  }) => estimate(
+    [for (final o in observations()) o.count],
+    rule: isDropPlate
+        ? CountingRule.dropPlate
+        : format.membrane
+        ? membraneRule
+        : spreadRule,
+  );
 
   PlateRecord copyWith({
     String? sampleId,
@@ -122,13 +152,20 @@ class PlateRecord {
     int? replicate,
     List<Spot>? spots,
     ColourMode? colourMode,
+    PlateFormat? format,
+    Plate? plate,
+    bool? verified,
+    List<Colony>? rejected,
+    String? seriesId,
+    double? incubationH,
+    bool clearIncubation = false,
   }) => PlateRecord(
     id: id,
     createdAt: createdAt,
     imagePath: imagePath,
     imageWidth: imageWidth,
     imageHeight: imageHeight,
-    plate: plate,
+    plate: plate ?? this.plate,
     colonies: colonies ?? this.colonies,
     autoCount: autoCount,
     flags: flags,
@@ -143,6 +180,11 @@ class PlateRecord {
     replicate: replicate ?? this.replicate,
     spots: spots ?? this.spots,
     colourMode: colourMode ?? this.colourMode,
+    format: format ?? this.format,
+    verified: verified ?? this.verified,
+    rejected: rejected ?? this.rejected,
+    seriesId: seriesId ?? this.seriesId,
+    incubationH: clearIncubation ? null : incubationH ?? this.incubationH,
   );
 
   Map<String, dynamic> toJson() => {
@@ -166,6 +208,11 @@ class PlateRecord {
     'replicate': replicate,
     if (spots.isNotEmpty) 'spots': [for (final s in spots) s.toJson()],
     if (colourMode != ColourMode.none) 'colour_mode': colourMode.name,
+    if (format != PlateFormat.dish90) 'format': format.name,
+    if (verified) 'verified': true,
+    if (rejected.isNotEmpty) 'rejected': [for (final c in rejected) c.toJson()],
+    if (seriesId.isNotEmpty) 'series_id': seriesId,
+    if (incubationH != null) 'incubation_h': incubationH,
   };
 
   factory PlateRecord.fromJson(Map<String, dynamic> j) => PlateRecord(
@@ -198,5 +245,35 @@ class PlateRecord {
       (m) => m.name == j['colour_mode'],
       orElse: () => ColourMode.none,
     ),
+    format: PlateFormat.byName(j['format'] as String?),
+    verified: j['verified'] as bool? ?? false,
+    rejected: [
+      for (final c in j['rejected'] as List? ?? const [])
+        Colony.fromJson(c as Map<String, dynamic>),
+    ],
+    seriesId: j['series_id'] as String? ?? '',
+    incubationH: (j['incubation_h'] as num?)?.toDouble(),
   );
+}
+
+/// Whether [a] was photographed later than [b] in incubation time.
+bool _later(PlateRecord a, PlateRecord b) {
+  final ha = a.incubationH, hb = b.incubationH;
+  if (ha != null && hb != null && ha != hb) return ha > hb;
+  return a.createdAt.isAfter(b.createdAt);
+}
+
+/// Time-lapse photos are one plate: only the latest photo of each series
+/// counts towards CFU/mL.
+List<PlateRecord> latestOfSeries(List<PlateRecord> plates) {
+  final latest = <String, PlateRecord>{};
+  for (final p in plates) {
+    if (p.seriesId.isEmpty) continue;
+    final cur = latest[p.seriesId];
+    if (cur == null || _later(p, cur)) latest[p.seriesId] = p;
+  }
+  return [
+    for (final p in plates)
+      if (p.seriesId.isEmpty || identical(latest[p.seriesId], p)) p,
+  ];
 }

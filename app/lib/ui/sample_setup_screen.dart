@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../core/calculator.dart';
 import '../core/colour.dart';
+import '../core/plate.dart';
 import '../data/plate_store.dart';
 import '../data/sample_info.dart';
 import 'format.dart';
@@ -75,6 +77,9 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
   );
   late final _tags = TextEditingController(text: _base?.tags.join(', ') ?? '');
   late PlatingMethod _method = _base?.method ?? PlatingMethod.spread;
+  late PlateFormat _format = _base?.format ?? widget.store.defaultFormat;
+  late CountingRule _membraneRule =
+      _base?.membraneRule ?? CountingRule.membrane80;
   late DropLayout _layout = _base?.dropLayout ?? DropLayout.replicates;
   late ColourMode _colour = _base?.colourMode ?? ColourMode.none;
   late int _from = _base?.dilutions.first ?? 4;
@@ -91,6 +96,24 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
       final id = '$stem$i';
       if (!existing.contains(id)) return id;
     }
+  }
+
+  void _setMethod(PlatingMethod m) {
+    setState(() {
+      final wasMembrane = _method == PlatingMethod.membrane;
+      _method = m;
+      if (m == PlatingMethod.membrane && !wasMembrane) {
+        // Water samples are usually filtered neat, 100 mL at a time.
+        _format = PlateFormat.membrane47;
+        _from = 0;
+        _to = 0;
+        _volume.text = '100';
+      } else if (m != PlatingMethod.membrane && wasMembrane) {
+        final d = widget.store.defaultFormat;
+        _format = d.membrane ? PlateFormat.dish90 : d;
+        _volume.text = '${widget.store.defaultVolumeMl}';
+      }
+    });
   }
 
   double? _num(TextEditingController c) =>
@@ -130,11 +153,17 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
         for (final t in _tags.text.split(','))
           if (t.trim().isNotEmpty) t.trim(),
       ],
+      format: _format,
+      membraneRule: _membraneRule,
       createdAt: widget.edit?.createdAt,
     );
     widget.store.upsertSample(info, previousId: widget.edit?.sampleId);
     // Remember operator and medium for the next sample.
-    widget.store.setDefaults(operator: info.operator, medium: info.medium);
+    widget.store.setDefaults(
+      operator: info.operator,
+      medium: info.medium,
+      format: _format.membrane ? null : _format,
+    );
     Navigator.of(context).pop(info);
   }
 
@@ -194,6 +223,7 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
         if (s.condition.isNotEmpty) s.condition,
     }.toList()..sort();
     final drop = _method == PlatingMethod.drop;
+    final membrane = _method == PlatingMethod.membrane;
     final dilutionCount = _to - _from + 1;
     final plates = !drop
         ? dilutionCount * _replicates
@@ -266,18 +296,50 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
           SegmentedButton<PlatingMethod>(
             showSelectedIcon: false,
             segments: const [
+              ButtonSegment(value: PlatingMethod.spread, label: Text('Spread')),
+              ButtonSegment(value: PlatingMethod.drop, label: Text('Drop')),
               ButtonSegment(
-                value: PlatingMethod.spread,
-                label: Text('Spread / pour'),
-              ),
-              ButtonSegment(
-                value: PlatingMethod.drop,
-                label: Text('Drop plate'),
+                value: PlatingMethod.membrane,
+                label: Text('Membrane'),
               ),
             ],
             selected: {_method},
-            onSelectionChanged: (s) => setState(() => _method = s.first),
+            onSelectionChanged: (s) => _setMethod(s.first),
           ),
+          const SizedBox(height: 4),
+          Text(_method.label, style: t.bodySmall),
+          gap,
+          if (membrane) ...[
+            DropdownButtonFormField<CountingRule>(
+              isExpanded: true,
+              initialValue: _membraneRule,
+              decoration: const InputDecoration(
+                labelText: 'Countable range per filter',
+                helperText: 'Results are reported as CFU/100 mL',
+                border: OutlineInputBorder(),
+              ),
+              items: [
+                for (final r in CountingRule.membraneRules)
+                  DropdownMenuItem(value: r, child: Text(r.label)),
+              ],
+              onChanged: (v) => setState(() => _membraneRule = v!),
+            ),
+          ] else
+            DropdownButtonFormField<PlateFormat>(
+              isExpanded: true,
+              key: ValueKey(_method),
+              initialValue: _format.membrane ? PlateFormat.dish90 : _format,
+              decoration: const InputDecoration(
+                labelText: 'Plate type',
+                border: OutlineInputBorder(),
+              ),
+              items: [
+                for (final f in PlateFormat.values)
+                  if (!f.membrane)
+                    DropdownMenuItem(value: f, child: Text(f.label)),
+              ],
+              onChanged: (v) => setState(() => _format = v!),
+            ),
           gap,
           Row(
             children: [
@@ -341,10 +403,10 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
               ],
-              decoration: const InputDecoration(
-                labelText: 'Volume per plate',
+              decoration: InputDecoration(
+                labelText: membrane ? 'Volume filtered' : 'Volume per plate',
                 suffixText: 'mL',
-                border: OutlineInputBorder(),
+                border: const OutlineInputBorder(),
               ),
             )
           else ...[
@@ -380,7 +442,9 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
           ],
           const SizedBox(height: 8),
           Text(
-            '$plates plate${plates == 1 ? '' : 's'}$perPlate.',
+            membrane
+                ? '$plates filter${plates == 1 ? '' : 's'}.'
+                : '$plates plate${plates == 1 ? '' : 's'}$perPlate.',
             style: t.bodyMedium,
           ),
           const SizedBox(height: 24),

@@ -6,11 +6,16 @@ import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../core/calculator.dart';
+import '../core/pipeline.dart';
+import '../core/plate.dart';
 import '../data/export.dart';
 import '../data/plate_record.dart';
 import '../data/plate_store.dart';
+import '../data/training_export.dart';
+import 'accuracy_screen.dart';
 import 'compare_screen.dart';
 import 'format.dart';
+import 'multi_plate_screen.dart';
 import 'photo_flow.dart';
 import 'review_screen.dart';
 import 'samples_screen.dart';
@@ -42,6 +47,12 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: Text(const ['Colony Counter', 'Samples', 'Compare'][_tab]),
         actions: [
+          if (_tab == 0)
+            IconButton(
+              tooltip: 'Several plates in one photo',
+              icon: const Icon(Icons.grid_view_outlined),
+              onPressed: () => countSeveralPlates(context, store),
+            ),
           if (_tab == 0)
             IconButton(
               tooltip: 'Import photo',
@@ -158,6 +169,43 @@ class _DataMenu extends StatelessWidget {
     ], 'Colony counts');
   }
 
+  Future<void> _trainingExport(BuildContext context) async {
+    final selection = await showDialog<TrainingSelection>(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: const Text('Export training data'),
+        children: [
+          const Padding(
+            padding: EdgeInsets.fromLTRB(24, 0, 24, 8),
+            child: Text(
+              'Photos with every colony mark, in COCO and YOLO formats, for '
+              'training a colony detector on your own plates.',
+            ),
+          ),
+          for (final s in TrainingSelection.values)
+            ListTile(
+              title: Text(s.label),
+              trailing: Text('${trainingPlates(store, s).length}'),
+              onTap: () => Navigator.pop(context, s),
+            ),
+        ],
+      ),
+    );
+    if (selection == null || !context.mounted) return;
+    if (trainingPlates(store, selection).isEmpty) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('No plates to export.')));
+      return;
+    }
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.showSnackBar(const SnackBar(content: Text('Preparing export…')));
+    final zip = await buildTrainingExport(store, selection: selection);
+    messenger.hideCurrentSnackBar();
+    await _share([
+      ('training_${_stamp()}.zip', zip, 'application/zip'),
+    ], 'Colony Counter training data');
+  }
+
   Future<void> _backup(BuildContext context) async {
     final messenger = ScaffoldMessenger.of(context);
     messenger.showSnackBar(const SnackBar(content: Text('Preparing backup…')));
@@ -200,6 +248,10 @@ class _DataMenu extends StatelessWidget {
         'csv' => _exportCsv(),
         'backup' => _backup(context),
         'restore' => _restore(context),
+        'accuracy' => Navigator.of(context).push(
+          MaterialPageRoute<void>(builder: (_) => AccuracyScreen(store: store)),
+        ),
+        'training' => _trainingExport(context),
         _ => showSettingsSheet(context, store),
       },
       itemBuilder: (_) => [
@@ -216,6 +268,16 @@ class _DataMenu extends StatelessWidget {
         const PopupMenuItem(
           value: 'restore',
           child: Text('Restore from backup'),
+        ),
+        const PopupMenuDivider(),
+        const PopupMenuItem(
+          value: 'accuracy',
+          child: Text('Counting accuracy'),
+        ),
+        PopupMenuItem(
+          value: 'training',
+          enabled: store.records.isNotEmpty,
+          child: const Text('Export training data'),
         ),
         const PopupMenuDivider(),
         const PopupMenuItem(value: 'settings', child: Text('Settings')),
@@ -238,7 +300,7 @@ class _SettingsLauncher {
       showDragHandle: true,
       builder: (context) => ListenableBuilder(
         listenable: store,
-        builder: (context, _) => Padding(
+        builder: (context, _) => SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -277,6 +339,22 @@ class _SettingsLauncher {
                 ],
                 selected: {store.defaultVolumeMl},
                 onSelectionChanged: (s) => store.setDefaultVolume(s.first),
+              ),
+              const SizedBox(height: 20),
+              DropdownButtonFormField<PlateFormat>(
+                isExpanded: true,
+                initialValue: store.defaultFormat,
+                decoration: const InputDecoration(
+                  labelText: 'Default plate type',
+                  helperText: 'For quick counts and new samples',
+                  border: OutlineInputBorder(),
+                ),
+                items: [
+                  for (final f in PlateFormat.values)
+                    if (!f.membrane)
+                      DropdownMenuItem(value: f, child: Text(f.label)),
+                ],
+                onChanged: (f) => store.setDefaults(format: f),
               ),
             ],
           ),
@@ -334,6 +412,13 @@ class RecordTile extends StatelessWidget {
         r.tntc ||
         r.flags.contains('tntc') ||
         r.flags.contains('spreader');
+    // Flagged for checking but saved without any correction or check.
+    final unchecked =
+        !warn &&
+        !r.verified &&
+        r.count == r.autoCount &&
+        r.rejected.isEmpty &&
+        r.flags.any(kCheckFlags.contains);
     return Dismissible(
       key: ValueKey(r.id),
       direction: DismissDirection.endToStart,
@@ -374,6 +459,25 @@ class RecordTile extends StatelessWidget {
           children: [
             if (warn)
               Icon(Icons.warning_amber_rounded, color: cs.error, size: 20),
+            if (unchecked)
+              Tooltip(
+                message: 'Flagged for checking',
+                child: Icon(Icons.help_outline, color: cs.tertiary, size: 20),
+              ),
+            if (r.verified)
+              Tooltip(
+                message: 'Checked every colony',
+                child: Icon(
+                  Icons.fact_check_outlined,
+                  color: cs.primary,
+                  size: 20,
+                ),
+              ),
+            if (r.seriesId.isNotEmpty)
+              Tooltip(
+                message: 'Time-lapse',
+                child: Icon(Icons.timeline, color: cs.secondary, size: 20),
+              ),
             const SizedBox(width: 6),
             Text('${r.count}', style: Theme.of(context).textTheme.titleLarge),
           ],

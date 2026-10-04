@@ -44,6 +44,11 @@ String platesCsv(PlateStore store) {
       'class_0',
       'class_1',
       'median_diameter_mm',
+      'plate_type',
+      'checked_by_hand',
+      'auto_removed',
+      'incubation_h',
+      'timelapse_series',
       'spots',
       'notes',
       'image',
@@ -51,7 +56,10 @@ String platesCsv(PlateStore store) {
   ];
   for (final r in store.records) {
     final info = r.sampleId.isEmpty ? null : store.sampleInfo(r.sampleId);
-    final est = r.estimateAlone(store.rule);
+    final est = r.estimateAlone(
+      store.rule,
+      membraneRule: info?.membraneRule ?? CountingRule.membrane80,
+    );
     final classes = r.classCounts;
     rows.add([
       r.id,
@@ -60,7 +68,11 @@ String platesCsv(PlateStore store) {
       info?.experiment,
       info?.condition,
       info?.timeH,
-      r.isDropPlate ? 'drop' : 'spread',
+      r.isDropPlate
+          ? 'drop'
+          : r.format.membrane
+          ? 'membrane'
+          : 'spread',
       r.isDropPlate ? '' : '1e-${r.dilutionExp}',
       r.isDropPlate ? '' : r.replicate,
       r.volumeMl,
@@ -76,6 +88,11 @@ String platesCsv(PlateStore store) {
       classes.isNotEmpty ? classes[0] : null,
       classes.length > 1 ? classes[1] : null,
       medianDiameterMm(r),
+      r.format.name,
+      r.verified,
+      r.rejected.fold<int>(0, (s, c) => s + c.n),
+      r.incubationH,
+      r.seriesId,
       // e.g. "1e-5/r1:12; 1e-5/r2:9"
       [
         for (final s in r.spots)
@@ -104,6 +121,7 @@ String samplesCsv(PlateStore store) {
       'operator',
       'tags',
       'method',
+      'plate_type',
       'rule',
       'plates',
       'replicates_used',
@@ -112,6 +130,7 @@ String samplesCsv(PlateStore store) {
       'cv_percent',
       'log10_mean',
       'log10_sd',
+      'mean_cfu_per_100ml',
       'estimated',
       'replicate_values',
       'notes',
@@ -134,6 +153,7 @@ String samplesCsv(PlateStore store) {
       info.operator,
       info.tags.join('; '),
       info.method.name,
+      info.format.name,
       info.ruleFor(store.rule).label,
       plates.length,
       st.n,
@@ -142,6 +162,7 @@ String samplesCsv(PlateStore store) {
       st.cvPercent,
       st.log10Mean,
       st.log10Sd,
+      info.isMembrane && st.n > 0 ? st.mean * 100 : null,
       res.qualified,
       [
         for (final e in res.perReplicate.entries)
@@ -239,6 +260,8 @@ Future<Uint8List> buildBackup(PlateStore store) async {
       'volume_ml': store.defaultVolumeMl,
       'operator': store.defaultOperator,
       'medium': store.defaultMedium,
+      'format': store.defaultFormat.name,
+      'accuracy_every': store.accuracyCheckEvery,
     },
     'samples': [for (final s in store.samplePlans) s.toJson()],
     'plates': [for (final r in store.records) r.toJson()],

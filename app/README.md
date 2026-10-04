@@ -9,7 +9,7 @@ tapping, and turn plate counts into CFU/mL. Everything runs on the phone, offlin
 
 _Screenshots from the web build in Chromium on synthetic plates and demo data._
 
-## Features (v0.3)
+## Features (v0.4)
 - **Guided capture** (`ui/capture_screen.dart`, phones): circle guide for the dish and
   live checks for level, focus and glare; tap to focus, focus and exposure lock.
 - **Automatic count** (`core/`): a pure-Dart port of the Python reference pipeline in
@@ -58,6 +58,41 @@ _Screenshots from the web build in Chromium on synthetic plates and demo data._
   photo* makes a JPEG with the counted area, every colony mark (same colours as the
   app), drops with their counts, and a banner with sample, dilution, count and
   CFU/mL, for lab notebooks and reports.
+- **Plate types** (`core/plate.dart`, `core/grid.dart`): 60, 90, 100 and 150 mm
+  dishes, 100 and 120 mm square plates (found at any turn up to ±20°, with rounded
+  corners left out), and 47 mm gridded **membrane filters**. The filter's printed
+  grid is removed before counting, results are in **CFU/100 mL**, and the countable
+  range is 20–80 or 20–200 per filter. Choose the type per sample, in the review
+  menu, or as the default in Settings. The capture guide turns square for square
+  plates.
+- **Several plates in one photo** (`ui/multi_plate_screen.dart`, grid button on the
+  Plates tab or *Photograph several plates at once* in a sample): every round plate
+  is found and numbered in reading order. Each one is cut out and reviewed and
+  saved like a single plate. From a sample, the plates fill its remaining dilutions
+  and replicates in order. Missed or extra circles can be added or removed.
+- **Time-lapse** (`core/timelapse.dart`, `ui/timelapse_screen.dart`): on a saved
+  plate, *Add a later photo* takes another photo of the same plate (sample,
+  dilution and plate type are copied; enter the hours since plating). The
+  time-lapse view shows the count over time, when each colony first appeared
+  (colonies are matched between photos, allowing for the plate being turned or
+  flipped), and diameter growth in mm/h, with a CSV per colony. Only the latest
+  photo counts towards CFU/mL.
+- **Check-this-count warnings** (`core/pipeline.dart`): the app flags plates where
+  its count is often wrong: crowded (over 3.5 colonies/cm²), many touching
+  colonies (over 15 % of the count in estimated clusters) or faint colonies (over
+  35 % barely above the threshold). A banner asks you to check before saving, and
+  the plate list marks flagged plates that were saved without a check.
+- **Counting accuracy** (`data/accuracy.dart`, `ui/accuracy_screen.dart`, menu →
+  *Counting accuracy*): every 10th plate (adjustable, or never) the app asks you to
+  check every colony and saves it as a reference count. The accuracy screen shows,
+  on your own plates, the share within ±10 %, mean error and bias, the share of
+  marks that were real and of colonies found, a chart of automatic vs checked
+  counts, and errors by count range and by warning. You can also tick *Checked
+  every colony* on any plate.
+- **Training data from your corrections** (`data/training_export.dart`, menu →
+  *Export training data*): a zip with the photos, COCO-style `annotations.json`
+  (kept and added marks, cluster sizes, and the automatic marks you removed as
+  negative examples) and YOLO labels. `ml/colonycounter/app_export.py` reads it.
 - **Export and backup**:
   - *Export CSV* shares three files: one row per plate (including drops, colour
     classes and median colony diameter), one row per sample with mean, SD, CV, log₁₀
@@ -71,15 +106,18 @@ _Screenshots from the web build in Chromium on synthetic plates and demo data._
 ## Layout
 ```
 lib/
-  core/   gray_image, plate, normalize, classical, pipeline   ← counting (pure Dart)
-          colour (Lab, blue/white), spots (drop plates)
+  core/   gray_image, plate (round/square finders, several plates), normalize,
+          grid (membrane grid removal), classical, pipeline   ← counting (pure Dart)
+          colour (Lab, blue/white), spots (drop plates), timelapse (tracking)
           annotate (marked-up photo), labels (QR payload, read from photo)
           calculator, stats (replicates, log reduction), capture_quality
   data/   plate_record, sample_info (plans, slots, details), plate_store,
-          export (CSV, backup), label_sheet (PDF labels)
+          export (CSV, backup), label_sheet (PDF labels), accuracy,
+          training_export, timelapse_data
           storage/ (files on phones, IndexedDB on web)
   ui/     home (tabs), capture, photo_flow, review, save sheet,
-          samples, sample_setup, compare (table + chart)
+          samples, sample_setup, compare (table + chart), accuracy,
+          multi_plate, timelapse
 test/
   core_test.dart     golden plates: accuracy vs truth and vs the Python pipeline
   widget_test.dart   count → tap-edit → undo → save, end to end
@@ -89,6 +127,11 @@ test/
   data_test.dart        CSVs, plan slots, backup → restore round trip
   records_test.dart     QR labels (encode, read from a photo, PDF sheet), details
                         and search, per-colony CSV, annotated photo
+  formats_test.dart     60 mm, square and membrane plates; several plates per photo
+  timelapse_test.dart   colony tracking across turned and mirrored photos
+  trust_test.dart       accuracy stats, warnings, membrane units, training export,
+                        time-lapse pooling; accuracy, time-lapse, multi-plate screens
+  synth.dart            synthetic plate photos for the tests above
   capture_quality_test.dart
   fixtures/          synthetic plates + labels (ml/scripts/make_app_fixtures.py)
 tool/compare.dart    prints Dart vs Python vs true counts
@@ -97,7 +140,7 @@ tool/compare.dart    prints Dart vs Python vs true counts
 ## Run it
 ```
 flutter pub get
-flutter test             # 51 tests
+flutter test             # 68 tests
 python tool/check_font_coverage.py   # every character in lib/ is in the bundled fonts
 flutter run              # on a connected phone
 dart run tool/compare.dart
@@ -139,6 +182,10 @@ opens full screen like an app.
 
 - **Not yet tried on a physical phone.** The build environment had no Android SDK or
   Xcode. Check the camera flow, the live checks and timing on real devices first.
+- Square plates, membrane filters, several plates per photo and time-lapse
+  tracking have only been tested on synthetic photos. Real gridded filters (lines
+  of other colours or widths) and colonies touching the grid need checking. The
+  lightbox in `hardware/` fits 90 mm dishes only.
 - Photos are analysed with their short side scaled to 1800 px (about 65 µm/px for a
   dish filling 80 % of the frame). Colonies under about 0.2 mm may be missed until
   tiled full-resolution detection is added together with the trained model.

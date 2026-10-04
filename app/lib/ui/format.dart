@@ -34,6 +34,9 @@ String flagLabel(String flag) => switch (flag) {
   'spreader' => 'Spreader',
   'tntc' => 'Too many to count',
   'clusters_estimated' => 'Clusters estimated',
+  'crowded' => 'Crowded plate',
+  'many_clusters' => 'Many touching colonies',
+  'low_contrast' => 'Faint colonies',
   _ => flag,
 };
 

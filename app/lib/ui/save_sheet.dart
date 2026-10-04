@@ -42,6 +42,13 @@ class _SaveSheetState extends State<SaveSheet> {
   late int _dilutionExp = widget.draft.dilutionExp;
   late bool _spreader = widget.draft.spreader;
   late bool _tntc = widget.draft.tntc;
+  late bool _verified = widget.draft.verified;
+  late final bool _membrane = widget.draft.format.membrane;
+  late final _hours = TextEditingController(
+    text: widget.draft.incubationH == null
+        ? ''
+        : _fmtVolume(widget.draft.incubationH!),
+  );
 
   /// Bumped when a scanned label fills the fields, so they rebuild with it.
   int _scanned = 0;
@@ -79,6 +86,9 @@ class _SaveSheetState extends State<SaveSheet> {
       spreader: _spreader,
       tntc: _tntc,
       replicate: _replicate,
+      verified: _verified,
+      incubationH: double.tryParse(_hours.text.trim().replaceAll(',', '.')),
+      clearIncubation: _hours.text.trim().isEmpty,
     );
   }
 
@@ -87,6 +97,7 @@ class _SaveSheetState extends State<SaveSheet> {
     _sample.dispose();
     _volume.dispose();
     _notes.dispose();
+    _hours.dispose();
     super.dispose();
   }
 
@@ -95,11 +106,19 @@ class _SaveSheetState extends State<SaveSheet> {
     final t = Theme.of(context).textTheme;
     final record = _build();
     final rule = widget.store.rule;
-    final est = record?.estimateAlone(rule);
+    final sample = _sample.text.trim();
+    final membraneRule = widget.store.hasPlan(sample)
+        ? widget.store.sampleInfo(sample).membraneRule
+        : CountingRule.membrane80;
+    final est = record?.estimateAlone(rule, membraneRule: membraneRule);
     final knownSamples = [
       for (final s in widget.store.allSamples()) s.sampleId,
     ];
-    final ruleLabel = _drop ? CountingRule.dropPlate.label : rule.label;
+    final ruleLabel = _drop
+        ? CountingRule.dropPlate.label
+        : _membrane
+        ? membraneRule.label
+        : rule.label;
 
     return Padding(
       padding: EdgeInsets.only(
@@ -200,7 +219,11 @@ class _SaveSheetState extends State<SaveSheet> {
                 FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
               ],
               decoration: InputDecoration(
-                labelText: _drop ? 'Drop volume' : 'Volume',
+                labelText: _drop
+                    ? 'Drop volume'
+                    : _membrane
+                    ? 'Volume filtered'
+                    : 'Volume',
                 suffixText: _drop ? 'µL' : 'mL',
                 border: const OutlineInputBorder(),
                 errorText: _volumeMl == null ? 'Enter a volume' : null,
@@ -233,6 +256,31 @@ class _SaveSheetState extends State<SaveSheet> {
               ),
             ],
             TextField(
+              controller: _hours,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+              ],
+              decoration: const InputDecoration(
+                labelText: 'Incubation time (optional)',
+                suffixText: 'h',
+                helperText: 'Hours since plating, for time-lapse photos',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Checked every colony'),
+              subtitle: const Text(
+                'Use this plate as a reference count for accuracy tracking',
+              ),
+              value: _verified,
+              onChanged: (v) => setState(() => _verified = v),
+            ),
+            const SizedBox(height: 8),
+            TextField(
               controller: _notes,
               decoration: const InputDecoration(
                 labelText: 'Notes',
@@ -250,7 +298,16 @@ class _SaveSheetState extends State<SaveSheet> {
                     Text('This plate alone ($ruleLabel)', style: t.labelMedium),
                     const SizedBox(height: 4),
                     Text(
-                      est == null ? '—' : prettySci(est.toString()),
+                      est == null
+                          ? '—'
+                          : prettySci(
+                              _membrane
+                                  ? est.describe(
+                                      factor: 100,
+                                      unit: 'CFU/100 mL',
+                                    )
+                                  : est.toString(),
+                            ),
                       style: t.titleLarge,
                     ),
                     if (est != null && est.note.isNotEmpty)

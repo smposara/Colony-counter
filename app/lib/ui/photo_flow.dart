@@ -4,6 +4,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../core/labels.dart';
+import '../core/plate.dart';
+import '../data/plate_record.dart';
 import '../data/plate_store.dart';
 import '../data/sample_info.dart';
 import 'capture_screen.dart';
@@ -31,6 +33,7 @@ Future<void> countNewPlate(
   PlateStore store, {
   bool fromGallery = false,
   PlatePreset? preset,
+  PlateRecord? laterPhotoOf,
 }) async {
   Uint8List? bytes;
   var guided = false;
@@ -44,8 +47,18 @@ Future<void> countNewPlate(
     if (picked == null) return;
     bytes = await picked.readAsBytes();
   } else {
-    final path = await Navigator.of(context)
-        .push<String>(MaterialPageRoute(builder: (_) => const CaptureScreen()));
+    final path = await Navigator.of(context).push<String>(
+      MaterialPageRoute(
+        builder: (_) => CaptureScreen(
+          square:
+              (laterPhotoOf?.format ??
+                      preset?.info.format ??
+                      store.defaultFormat)
+                  .shape ==
+              PlateShape.square,
+        ),
+      ),
+    );
     if (path == null) return;
     bytes = await XFile(path).readAsBytes();
     guided = true;
@@ -58,6 +71,7 @@ Future<void> countNewPlate(
         photo: bytes,
         guided: guided,
         preset: preset,
+        laterPhotoOf: laterPhotoOf,
       ),
     ),
   );

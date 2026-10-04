@@ -16,6 +16,7 @@ import '../data/sample_info.dart';
 import 'format.dart';
 import 'photo_flow.dart';
 import 'save_sheet.dart';
+import 'timelapse_screen.dart';
 
 const double kRimFraction = 0.95;
 
@@ -36,6 +37,8 @@ class ReviewScreen extends StatefulWidget {
     this.record,
     this.guided = false,
     this.preset,
+    this.laterPhotoOf,
+    this.initialPlate,
   }) : assert(photo != null || record != null);
 
   final PlateStore store;
@@ -45,6 +48,14 @@ class ReviewScreen extends StatefulWidget {
 
   /// Sample plan and plate slot this new photo belongs to, if any.
   final PlatePreset? preset;
+
+  /// Time-lapse: [photo] is a later photo of this saved plate. Sample,
+  /// dilution, plate type and so on are taken from it.
+  final PlateRecord? laterPhotoOf;
+
+  /// Where the plate is in [photo], when already known (several plates in
+  /// one photo); otherwise it is searched for.
+  final Plate? initialPlate;
 
   @override
   State<ReviewScreen> createState() => _ReviewScreenState();
@@ -64,7 +75,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
   int _autoCount = 0;
   List<String> _flags = [];
   double _kSigma = 4.0;
-  final List<(List<Colony>, List<Spot>)> _undo = [];
+  final List<(List<Colony>, List<Spot>, List<Colony>)> _undo = [];
   bool _dirty = false;
 
   /// Drops of a drop plate (empty for whole plates).
@@ -72,6 +83,11 @@ class _ReviewScreenState extends State<ReviewScreen> {
   bool _drop = false;
   ColourMode _colourMode = ColourMode.none;
   int? _dragSpot;
+  PlateFormat _format = PlateFormat.dish90;
+  bool _spotsMoved = false;
+
+  /// Automatic detections removed by the user (kept for training data).
+  List<Colony> _rejected = [];
 
   @override
   void initState() {
@@ -89,12 +105,20 @@ class _ReviewScreenState extends State<ReviewScreen> {
       _spots = List.of(r.spots);
       _drop = r.isDropPlate;
       _colourMode = r.colourMode;
+      _format = r.format;
+      _rejected = List.of(r.rejected);
     } else {
       final info = widget.preset?.info;
-      _drop = info?.isDrop ?? false;
-      _colourMode = info?.colourMode ?? ColourMode.none;
+      final base = widget.laterPhotoOf;
+      _drop = base?.isDropPlate ?? info?.isDrop ?? false;
+      _colourMode = base?.colourMode ?? info?.colourMode ?? ColourMode.none;
+      _format = base?.format ?? info?.format ?? widget.store.defaultFormat;
+      if (base != null && base.isDropPlate) {
+        // Same drops as before; their positions are adjusted after counting.
+        _spots = List.of(base.spots);
+      }
       _photo = widget.photo!;
-      _recount();
+      _recount(plate: widget.initialPlate);
     }
   }
 
@@ -123,6 +147,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
         _photo!,
         CountOptions(
           plate: plate,
+          format: _format,
           rimFraction: kRimFraction,
           params: DetectParams(kSigma: _kSigma),
         ),
@@ -135,6 +160,21 @@ class _ReviewScreenState extends State<ReviewScreen> {
         _colonies = _classified(res.colonies, _colourMode);
         _autoCount = res.count;
         _flags = res.flags;
+        _rejected = [];
+        final base = widget.laterPhotoOf;
+        if (base != null && widget.record == null && !_spotsMoved) {
+          // Carry the earlier photo's drops over to where the plate is now.
+          _spotsMoved = true;
+          final k = res.plate.radius / base.plate.radius;
+          _spots = [
+            for (final sp in _spots)
+              sp.copyWith(
+                cx: res.plate.cx + (sp.cx - base.plate.cx) * k,
+                cy: res.plate.cy + (sp.cy - base.plate.cy) * k,
+                radius: sp.radius * k,
+              ),
+          ];
+        }
         _undo.clear();
         _dirty = true;
         if (_drop && _spots.isEmpty) _spots = _suggestSpots();
@@ -309,11 +349,11 @@ class _ReviewScreenState extends State<ReviewScreen> {
   bool _insidePlate(Offset p) {
     final pl = _plate;
     if (pl == null) return false;
-    return (p - Offset(pl.cx, pl.cy)).distance <= pl.radius * kRimFraction;
+    return pl.contains(p.dx, p.dy, rimFraction: kRimFraction);
   }
 
   void _push() {
-    _undo.add((_colonies, _spots));
+    _undo.add((_colonies, _spots, _rejected));
     _dirty = true;
   }
 
@@ -348,6 +388,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
     setState(() {
       if (i != null) {
         _push();
+        if (!_colonies[i].manual) _rejected = [..._rejected, _colonies[i]];
         _colonies = [..._colonies]..removeAt(i);
       } else if (_insidePlate(p)) {
         _push();
@@ -377,9 +418,10 @@ class _ReviewScreenState extends State<ReviewScreen> {
   void _undoLast() {
     if (_undo.isEmpty) return;
     setState(() {
-      final (colonies, spots) = _undo.removeLast();
+      final (colonies, spots, rejected) = _undo.removeLast();
       _colonies = colonies;
       _spots = spots;
+      _rejected = rejected;
     });
   }
 
@@ -430,6 +472,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
     final plate = _plate;
     if (plate == null) return;
     final existing = widget.record;
+    final base = widget.laterPhotoOf;
     final draft = PlateRecord(
       id: existing?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
       createdAt: existing?.createdAt ?? DateTime.now(),
@@ -440,21 +483,46 @@ class _ReviewScreenState extends State<ReviewScreen> {
       colonies: _colonies,
       autoCount: _autoCount,
       flags: _flags,
-      sampleId: existing?.sampleId ?? widget.preset?.info.sampleId ?? '',
+      sampleId:
+          existing?.sampleId ??
+          base?.sampleId ??
+          widget.preset?.info.sampleId ??
+          '',
       dilutionExp:
-          existing?.dilutionExp ?? widget.preset?.slot.dilutionExp ?? 0,
+          existing?.dilutionExp ??
+          base?.dilutionExp ??
+          widget.preset?.slot.dilutionExp ??
+          0,
       volumeMl:
           existing?.volumeMl ??
+          base?.volumeMl ??
           widget.preset?.info.unitVolumeMl ??
-          (_drop ? 0.01 : widget.store.defaultVolumeMl),
+          (_drop
+              ? 0.01
+              : _format.membrane
+              ? 100
+              : widget.store.defaultVolumeMl),
       notes: existing?.notes ?? '',
       spreader: existing?.spreader ?? _flags.contains('spreader'),
       tntc: existing?.tntc ?? _flags.contains('tntc'),
       guided: existing?.guided ?? widget.guided,
       kSigma: _kSigma,
-      replicate: existing?.replicate ?? widget.preset?.slot.replicate ?? 1,
+      replicate:
+          existing?.replicate ??
+          base?.replicate ??
+          widget.preset?.slot.replicate ??
+          1,
       spots: _drop ? _spots : const [],
       colourMode: _colourMode,
+      format: _format,
+      rejected: _rejected,
+      verified: existing?.verified ?? _accuracyCheckDue,
+      seriesId:
+          existing?.seriesId ??
+          (base == null
+              ? ''
+              : (base.seriesId.isEmpty ? base.id : base.seriesId)),
+      incubationH: existing?.incubationH ?? _suggestedHours(base),
     );
     final result = await showModalBottomSheet<PlateRecord>(
       context: context,
@@ -463,7 +531,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
       builder: (context) => SaveSheet(
         store: widget.store,
         draft: draft,
-        fixedSample: widget.preset != null,
+        fixedSample: widget.preset != null || base != null,
       ),
     );
     if (result == null) return;
@@ -472,9 +540,74 @@ class _ReviewScreenState extends State<ReviewScreen> {
       final name = await widget.store.savePhoto(_photo!, record.id);
       record = PlateRecord.fromJson({...record.toJson(), 'image': name});
     }
+    if (base != null && base.seriesId.isEmpty) {
+      // The first photo starts the time-lapse series.
+      await widget.store.upsert(base.copyWith(seriesId: base.id));
+    }
     await widget.store.upsert(record);
     _dirty = false;
-    if (mounted) Navigator.of(context).pop();
+    if (mounted) Navigator.of(context).pop(record);
+  }
+
+  /// Hours since plating for a later photo: the earlier photo's hours plus
+  /// the time between the two photos.
+  double? _suggestedHours(PlateRecord? base) {
+    final h = base?.incubationH;
+    if (base == null || h == null) return null;
+    final dt = DateTime.now().difference(base.createdAt).inMinutes / 60;
+    return ((h + dt) * 2).round() / 2;
+  }
+
+  /// A new photo is due a colony-by-colony check for accuracy tracking.
+  bool get _accuracyCheckDue {
+    final every = widget.store.accuracyCheckEvery;
+    if (widget.record != null || every <= 0) return false;
+    var since = 0;
+    for (final r in widget.store.records) {
+      if (r.verified) break;
+      since++;
+    }
+    return since >= every - 1;
+  }
+
+  void _openTimelapse() {
+    // The series id is set on the first photo once a later one is saved.
+    final id = widget.store.records
+        .firstWhere(
+          (r) => r.id == widget.record!.id,
+          orElse: () => widget.record!,
+        )
+        .seriesId;
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => TimelapseScreen(store: widget.store, seriesId: id),
+      ),
+    );
+  }
+
+  Future<void> _chooseFormat() async {
+    final f = await showDialog<PlateFormat>(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: const Text('Plate type'),
+        children: [
+          for (final f in PlateFormat.values)
+            ListTile(
+              leading: Icon(
+                f == _format
+                    ? Icons.radio_button_checked
+                    : Icons.radio_button_unchecked,
+              ),
+              title: Text(f.label),
+              onTap: () => Navigator.pop(context, f),
+            ),
+        ],
+      ),
+    );
+    if (f == null || f == _format || !mounted) return;
+    if (!await _confirmDiscardEdits()) return;
+    _format = f;
+    await _recount();
   }
 
   /// Banner lines for the annotated photo: what the plate is and its count.
@@ -595,6 +728,16 @@ class _ReviewScreenState extends State<ReviewScreen> {
                   ? _setColourMode(v)
                   : v == 'share'
                   ? _shareAnnotated()
+                  : v == 'format'
+                  ? _chooseFormat()
+                  : v == 'later'
+                  ? countNewPlate(
+                      context,
+                      widget.store,
+                      laterPhotoOf: widget.record,
+                    )
+                  : v == 'timelapse'
+                  ? _openTimelapse()
                   : _setDrop(!_drop),
               itemBuilder: (_) => [
                 PopupMenuItem(
@@ -606,7 +749,31 @@ class _ReviewScreenState extends State<ReviewScreen> {
                     contentPadding: EdgeInsets.zero,
                   ),
                 ),
+                if (widget.record != null) ...[
+                  const PopupMenuItem(
+                    value: 'later',
+                    child: ListTile(
+                      leading: Icon(Icons.add_a_photo_outlined),
+                      title: Text('Add a later photo (time-lapse)'),
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                  ),
+                  if (widget.record!.seriesId.isNotEmpty)
+                    const PopupMenuItem(
+                      value: 'timelapse',
+                      child: ListTile(
+                        leading: Icon(Icons.timeline),
+                        title: Text('Time-lapse'),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
+                ],
                 const PopupMenuDivider(),
+                PopupMenuItem(
+                  value: 'format',
+                  enabled: !_busy && _photo != null,
+                  child: Text('Plate type: ${_format.label}…'),
+                ),
                 CheckedPopupMenuItem(
                   value: 'drop',
                   checked: _drop,
@@ -794,6 +961,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                         ),
                       ],
                     ),
+                    ..._banners(t, cs),
                     if (_colourMode != ColourMode.none) _classSummary(t),
                     if (_drop) _dropSummary(t),
                     if (_flags.isNotEmpty)
@@ -831,7 +999,10 @@ class _ReviewScreenState extends State<ReviewScreen> {
                       _Mode.edit =>
                         'Tap a mark to remove it, tap empty agar to add one. '
                             'Long-press a mark to set how many colonies it contains.',
-                      _Mode.plate => 'Drag to move the circle, use the slider to resize it, then recount.',
+                      _Mode.plate =>
+                        _plate?.isSquare ?? false
+                            ? 'Drag to move the square, use the sliders to resize and turn it, then recount.'
+                            : 'Drag to move the circle, use the slider to resize it, then recount.',
                       _Mode.spots =>
                         'Tap a drop to set its dilution and replicate, tap empty agar to add a drop, '
                             'drag a drop to move it.',
@@ -850,6 +1021,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                 children: [
                   if (_mode == _Mode.plate && _plate != null) ...[
                     Slider(
+                      label: 'Size',
                       value: _plate!.radius.clamp(
                         _imageW * 0.15,
                         _imageW * 0.7,
@@ -859,10 +1031,30 @@ class _ReviewScreenState extends State<ReviewScreen> {
                       onChanged: (v) =>
                           setState(() => _plate = _plate!.copyWith(radius: v)),
                     ),
+                    if (_plate!.isSquare)
+                      Row(
+                        children: [
+                          const Icon(Icons.rotate_right, size: 20),
+                          Expanded(
+                            child: Slider(
+                              value: _plate!.angle.clamp(-0.8, 0.8),
+                              min: -0.8,
+                              max: 0.8,
+                              onChanged: (v) => setState(
+                                () => _plate = _plate!.copyWith(angle: v),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     FilledButton.tonalIcon(
                       onPressed: _busy || _photo == null ? null : _applyPlate,
                       icon: const Icon(Icons.refresh),
-                      label: const Text('Recount with this circle'),
+                      label: Text(
+                        _plate!.isSquare
+                            ? 'Recount with this square'
+                            : 'Recount with this circle',
+                      ),
                     ),
                   ] else
                     Padding(
@@ -884,6 +1076,51 @@ class _ReviewScreenState extends State<ReviewScreen> {
         ),
       ),
     );
+  }
+
+  /// "Check this count" when the automatic count is likely to be wrong, and
+  /// the periodic accuracy check.
+  List<Widget> _banners(TextTheme t, ColorScheme cs) {
+    final warnings = [
+      for (final f in _flags)
+        if (kCheckFlags.contains(f) && f != 'tntc') flagLabel(f).toLowerCase(),
+    ];
+    Widget banner(IconData icon, Color bg, Color fg, String text) => Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: fg),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(text, style: t.bodySmall?.copyWith(color: fg)),
+          ),
+        ],
+      ),
+    );
+    return [
+      if (warnings.isNotEmpty && !_hasEdits)
+        banner(
+          Icons.warning_amber_rounded,
+          cs.tertiaryContainer,
+          cs.onTertiaryContainer,
+          'Check this count (${warnings.join(', ')}). Zoom in and correct '
+          'any missed or extra marks before saving.',
+        ),
+      if (_accuracyCheckDue)
+        banner(
+          Icons.fact_check_outlined,
+          cs.secondaryContainer,
+          cs.onSecondaryContainer,
+          'Accuracy check: please check every colony on this plate. It is '
+          'saved as a reference count to track how well the automatic count '
+          'works on your plates.',
+        ),
+    ];
   }
 
   Widget _classSummary(TextTheme t) {
@@ -996,9 +1233,20 @@ class _OverlayPainter extends CustomPainter {
     final px = 1 / scale;
     final pl = plate;
     if (pl != null) {
-      canvas.drawCircle(
-        Offset(pl.cx, pl.cy),
-        pl.radius * kRimFraction,
+      void outline(double rim, Paint paint) {
+        if (!pl.isSquare) {
+          canvas.drawCircle(Offset(pl.cx, pl.cy), pl.radius * rim, paint);
+          return;
+        }
+        final pts = pl.outline(rimFraction: rim);
+        canvas.drawPath(
+          Path()..addPolygon([for (final (x, y) in pts) Offset(x, y)], true),
+          paint,
+        );
+      }
+
+      outline(
+        kRimFraction,
         Paint()
           ..style = PaintingStyle.stroke
           ..strokeWidth = (plateMode ? 3 : 1.5) * px
@@ -1007,9 +1255,8 @@ class _OverlayPainter extends CustomPainter {
               : Colors.cyanAccent.withValues(alpha: 0.8),
       );
       if (plateMode) {
-        canvas.drawCircle(
-          Offset(pl.cx, pl.cy),
-          pl.radius,
+        outline(
+          1,
           Paint()
             ..style = PaintingStyle.stroke
             ..strokeWidth = 1 * px

@@ -15,7 +15,10 @@ const double kMaxGlare = 0.005;
 /// Camera with a plate guide and live checks (level, focus, glare).
 /// Pops with the path of the captured photo.
 class CaptureScreen extends StatefulWidget {
-  const CaptureScreen({super.key});
+  const CaptureScreen({super.key, this.square = false});
+
+  /// Show a square guide (square plates) instead of a circle.
+  final bool square;
 
   @override
   State<CaptureScreen> createState() => _CaptureScreenState();
@@ -213,7 +216,12 @@ class _CaptureScreenState extends State<CaptureScreen>
                             fit: StackFit.expand,
                             children: [
                               CameraPreview(c),
-                              CustomPaint(painter: _GuidePainter(ok: _allOk)),
+                              CustomPaint(
+                                painter: _GuidePainter(
+                                  ok: _allOk,
+                                  square: widget.square,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -242,31 +250,38 @@ class _CaptureScreenState extends State<CaptureScreen>
 }
 
 class _GuidePainter extends CustomPainter {
-  _GuidePainter({required this.ok});
+  _GuidePainter({required this.ok, this.square = false});
 
   final bool ok;
+  final bool square;
 
   @override
   void paint(Canvas canvas, Size size) {
     final center = size.center(Offset.zero);
     final r = size.shortestSide * kGuideFraction / 2;
-    // Dim everything outside the guide circle.
+    // Dim everything outside the guide.
+    final guide = Rect.fromCircle(center: center, radius: r);
     final outside = Path()
       ..fillType = PathFillType.evenOdd
-      ..addRect(Offset.zero & size)
-      ..addOval(Rect.fromCircle(center: center, radius: r));
+      ..addRect(Offset.zero & size);
+    if (square) {
+      outside.addRect(guide);
+    } else {
+      outside.addOval(guide);
+    }
     canvas.drawPath(
       outside,
       Paint()..color = Colors.black.withValues(alpha: 0.45),
     );
-    canvas.drawCircle(
-      center,
-      r,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 3
-        ..color = ok ? Colors.greenAccent : Colors.white70,
-    );
+    final edge = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3
+      ..color = ok ? Colors.greenAccent : Colors.white70;
+    if (square) {
+      canvas.drawRect(guide, edge);
+    } else {
+      canvas.drawCircle(center, r, edge);
+    }
     // Cross-hair to centre the dish.
     final p = Paint()
       ..color = Colors.white54

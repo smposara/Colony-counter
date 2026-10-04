@@ -1,11 +1,13 @@
 import '../core/calculator.dart';
 import '../core/colour.dart';
+import '../core/plate.dart';
 import '../core/stats.dart';
 import 'plate_record.dart';
 
 enum PlatingMethod {
   spread('Spread / pour plate'),
-  drop('Drop plate (Miles–Misra)');
+  drop('Drop plate (Miles–Misra)'),
+  membrane('Membrane filtration');
 
   const PlatingMethod(this.label);
   final String label;
@@ -60,6 +62,8 @@ class SampleInfo {
     this.incubationH,
     this.operator = '',
     this.tags = const [],
+    this.format = PlateFormat.dish90,
+    this.membraneRule = CountingRule.membrane80,
     DateTime? createdAt,
   }) : createdAt = createdAt ?? DateTime.now();
 
@@ -79,8 +83,14 @@ class SampleInfo {
   final List<int> dilutions;
   final int replicates;
 
-  /// Volume spread on a whole plate.
+  /// Volume spread on a whole plate, or filtered through a membrane.
   final double volumeMl;
+
+  /// Dish or filter type.
+  final PlateFormat format;
+
+  /// Countable range for membrane filters.
+  final CountingRule membraneRule;
 
   /// Volume of one drop on a drop plate.
   final double dropVolumeUl;
@@ -123,12 +133,20 @@ class SampleInfo {
   final DateTime createdAt;
 
   bool get isDrop => method == PlatingMethod.drop;
+  bool get isMembrane => method == PlatingMethod.membrane;
+
+  /// Membrane results are reported per 100 mL of water.
+  double get unitFactor => isMembrane ? 100 : 1;
+  String get unitLabel => isMembrane ? 'CFU/100 mL' : 'CFU/mL';
 
   /// Volume per counted unit (plate or drop), in mL.
   double get unitVolumeMl => isDrop ? dropVolumeUl / 1000 : volumeMl;
 
-  CountingRule ruleFor(CountingRule spreadRule) =>
-      isDrop ? CountingRule.dropPlate : spreadRule;
+  CountingRule ruleFor(CountingRule spreadRule) => isDrop
+      ? CountingRule.dropPlate
+      : isMembrane
+      ? membraneRule
+      : spreadRule;
 
   /// Every plate in the plan, in the order to photograph them.
   List<Slot> get slots {
@@ -153,7 +171,7 @@ class SampleInfo {
 
   SampleResult analyse(List<PlateRecord> plates, CountingRule spreadRule) =>
       analyseReplicates([
-        for (final p in plates) ...p.observations(),
+        for (final p in latestOfSeries(plates)) ...p.observations(),
       ], ruleFor(spreadRule));
 
   SampleInfo copyWith({String? sampleId}) => SampleInfo.fromJson({
@@ -181,6 +199,8 @@ class SampleInfo {
     'incubation_h': incubationH,
     'operator': operator,
     'tags': tags,
+    'format': format.name,
+    'membrane_rule': membraneRule.name,
     'created_at': createdAt.toIso8601String(),
   };
 
@@ -216,6 +236,11 @@ class SampleInfo {
     incubationH: (j['incubation_h'] as num?)?.toDouble(),
     operator: j['operator'] as String? ?? '',
     tags: [for (final t in j['tags'] as List? ?? const []) t as String],
+    format: PlateFormat.byName(j['format'] as String?),
+    membraneRule: CountingRule.membraneRules.firstWhere(
+      (r) => r.name == j['membrane_rule'],
+      orElse: () => CountingRule.membrane80,
+    ),
     createdAt: DateTime.tryParse(j['created_at'] as String? ?? ''),
   );
 
@@ -226,9 +251,15 @@ class SampleInfo {
         .map((p) => p.replicate)
         .fold(1, (a, b) => a > b ? a : b);
     final drop = plates.any((p) => p.isDropPlate);
+    final membrane = !drop && plates.any((p) => p.format.membrane);
     return SampleInfo(
       sampleId: id,
-      method: drop ? PlatingMethod.drop : PlatingMethod.spread,
+      method: drop
+          ? PlatingMethod.drop
+          : membrane
+          ? PlatingMethod.membrane
+          : PlatingMethod.spread,
+      format: plates.isEmpty ? PlateFormat.dish90 : plates.first.format,
       dilutions: ds.isEmpty ? const [0] : ds,
       replicates: reps,
       volumeMl: plates.isEmpty || drop ? 0.1 : plates.first.volumeMl,

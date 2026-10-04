@@ -1,6 +1,6 @@
 # Mobile Colony Counter — Research Summary & Build Plan
 
-_Status: v0.3 · 2026-10-04, decisions recorded; Phase 0/1 started_
+_Status: v0.4 · 2026-10-04, decisions recorded; Phase 0/1 started_
 
 ## Decisions (2026-10-03)
 
@@ -343,15 +343,13 @@ mobile version must match it on a fixed test set (the "golden images" test, see
 
 ## 6. Roadmap
 
-| Phase | Duration | Deliverables |
-|---|---|---|
 | Phase | Duration | Deliverables | Status |
 |---|---|---|---|
 | **0. Foundations** | 2 wks | Data protocol; lightbox; first 300 Nutrient Agar plates imaged and counted manually | Protocol and lightbox design done. **Next: print the box, start imaging** |
 | **1. Algorithm prototype** (Python) | 4–6 wks | Evaluation harness; plate finder; classical baseline; then a tiled detector (pre-trained on AGAR, fine-tuned on own photos) with a cluster-count head; error-analysis report | Harness and classical baseline done. Detector waits on data |
-| **2. Mobile MVP** | 6–8 wks | Flutter app (Android, iOS, web): capture, on-device counting, review/edit, CFU/mL, history, CSV | **v0.3 built**: plus sample plans with dilution series and replicates (mean ± SD, log₁₀), drop plates, blue/white colour classes, log reduction and time-kill charts, backup/restore, web build for iPhone; v0.3 adds annotated photo export, a per-colony CSV, searchable experiment details and QR plate labels. 51 app tests and browser end-to-end checks. Not yet tried on a physical phone |
-| **3. Accuracy hardening** | 4–6 wks | Corrections fed back into training; low-confidence flags; testing across the phone set; v1 acceptance test (§5.2); App Store / Play or open-source release | Not started |
-| **4. Extensions** | ongoing | More media and dish sizes; pour plates; colony size statistics; time-lapse; optional sync | — |
+| **2. Mobile MVP** | 6–8 wks | Flutter app (Android, iOS, web): capture, on-device counting, review/edit, CFU/mL, history, CSV | **v0.3 built**: plus sample plans with dilution series and replicates (mean ± SD, log₁₀), drop plates, blue/white colour classes, log reduction and time-kill charts, backup/restore, web build for iPhone; v0.3 adds annotated photo export, a per-colony CSV, searchable experiment details and QR plate labels. 68 app tests and browser end-to-end checks. Not yet tried on a physical phone |
+| **3. Accuracy hardening** | 4–6 wks | Corrections fed back into training; low-confidence flags; testing across the phone set; v1 acceptance test (§5.2); App Store / Play or open-source release | **Started in v0.4**: accuracy tracking against hand-checked plates, "check this count" warnings, training export of corrections (COCO/YOLO, read by `ml/colonycounter/app_export.py`). Phone testing and the acceptance test still to do |
+| **4. Extensions** | ongoing | More media and dish sizes; pour plates; colony size statistics; time-lapse; optional sync | **v0.4**: 60/90/100/150 mm and square dishes, 47 mm gridded membrane filters (CFU/100 mL), several plates per photo, time-lapse (appearance time, growth rate), colony diameters in the per-colony CSV. Sync not started |
 
 Rough total to v1: **about 4–6 months** with one developer, plus lab time for imaging
 and labelling.
@@ -388,7 +386,8 @@ and labelling.
 3. Run `colonycounter evaluate` on them to get the baseline's real-world accuracy,
    and tune its parameters.
 4. Label points on those plates and train the first tiled detector (AGAR pre-training
-   plus fine-tuning on your photos); compare it with the baseline.
+   plus fine-tuning on your photos); compare it with the baseline. Plates corrected
+   in the app can be exported for this with *Export training data*.
 5. Install the app on your lab phones (`flutter run`, or the APK from the CI
    artifact). Try it on real plates in the lightbox and report what's off: framing,
    the live checks, speed, counts.

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 
 import '../core/calculator.dart';
+import '../core/plate.dart';
 import 'plate_record.dart';
 import 'sample_info.dart';
 import 'storage/storage.dart';
@@ -22,6 +23,12 @@ class PlateStore extends ChangeNotifier {
   /// Pre-filled in new samples.
   String defaultOperator = '';
   String defaultMedium = 'Nutrient Agar';
+
+  /// Dish type for new samples and quick counts.
+  PlateFormat defaultFormat = PlateFormat.dish90;
+
+  /// Ask for a colony-by-colony check on every Nth plate (0 = never).
+  int accuracyCheckEvery = 10;
 
   static const _recordsKey = 'plates';
   static const _settingsKey = 'settings';
@@ -64,6 +71,8 @@ class PlateStore extends ChangeNotifier {
       defaultVolumeMl = (s['volume_ml'] as num?)?.toDouble() ?? 0.1;
       defaultOperator = s['operator'] as String? ?? '';
       defaultMedium = s['medium'] as String? ?? 'Nutrient Agar';
+      defaultFormat = PlateFormat.byName(s['format'] as String?);
+      accuracyCheckEvery = (s['accuracy_every'] as num?)?.toInt() ?? 10;
     }
     notifyListeners();
   }
@@ -116,9 +125,16 @@ class PlateStore extends ChangeNotifier {
     await _saveSettings();
   }
 
-  Future<void> setDefaults({String? operator, String? medium}) async {
+  Future<void> setDefaults({
+    String? operator,
+    String? medium,
+    PlateFormat? format,
+    int? accuracyCheckEvery,
+  }) async {
     defaultOperator = operator ?? defaultOperator;
     defaultMedium = medium ?? defaultMedium;
+    defaultFormat = format ?? defaultFormat;
+    this.accuracyCheckEvery = accuracyCheckEvery ?? this.accuracyCheckEvery;
     await _saveSettings();
   }
 
@@ -247,6 +263,8 @@ class PlateStore extends ChangeNotifier {
         'volume_ml': defaultVolumeMl,
         'operator': defaultOperator,
         'medium': defaultMedium,
+        'format': defaultFormat.name,
+        'accuracy_every': accuracyCheckEvery,
       }),
     );
     notifyListeners();
