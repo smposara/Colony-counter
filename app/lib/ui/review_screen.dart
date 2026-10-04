@@ -16,6 +16,7 @@ import '../data/sample_info.dart';
 import '../l10n/l10n.dart';
 import '../l10n/labels.dart';
 import 'format.dart';
+import 'insets.dart';
 import 'photo_flow.dart';
 import 'save_sheet.dart';
 import 'timelapse_screen.dart';
@@ -1423,7 +1424,7 @@ class _SensitivitySheetState extends State<_SensitivitySheet> {
   Widget build(BuildContext context) {
     final t = Theme.of(context).textTheme;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+      padding: scrollPadding(context, const EdgeInsets.fromLTRB(16, 0, 16, 24)),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,

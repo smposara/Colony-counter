@@ -15,6 +15,7 @@ import '../l10n/l10n.dart';
 import '../l10n/labels.dart';
 import 'format.dart';
 import 'home_screen.dart';
+import 'insets.dart';
 import 'multi_plate_screen.dart';
 import 'photo_flow.dart';
 import 'review_screen.dart';
@@ -402,7 +403,10 @@ class SampleDetailScreen extends StatelessWidget {
             ],
           ),
           body: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+            padding: scrollPadding(
+              context,
+              const EdgeInsets.fromLTRB(16, 8, 16, 32),
+            ),
             children: [
               _ResultCard(store: store, info: info, plates: plates),
               const SizedBox(height: 16),

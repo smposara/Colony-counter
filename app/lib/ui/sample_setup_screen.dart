@@ -9,6 +9,7 @@ import '../data/sample_info.dart';
 import '../l10n/l10n.dart';
 import '../l10n/labels.dart';
 import 'format.dart';
+import 'insets.dart';
 
 /// Create or edit a sample's plating plan. Pops with the saved [SampleInfo].
 class SampleSetupScreen extends StatefulWidget {
@@ -280,7 +281,10 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
         ),
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+        padding: scrollPadding(
+          context,
+          const EdgeInsets.fromLTRB(16, 8, 16, 32),
+        ),
         children: [
           TextField(
             controller: _id,

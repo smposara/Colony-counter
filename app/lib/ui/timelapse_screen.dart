@@ -11,6 +11,7 @@ import '../data/timelapse_data.dart';
 import '../l10n/l10n.dart';
 import 'chart_colours.dart';
 import 'format.dart';
+import 'insets.dart';
 import 'photo_flow.dart';
 import 'review_screen.dart';
 
@@ -74,7 +75,10 @@ class TimelapseScreen extends StatelessWidget {
             label: Text(tr.timelapseAddLater),
           ),
           body: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+            padding: scrollPadding(
+              context,
+              const EdgeInsets.fromLTRB(16, 8, 16, 96),
+            ),
             children: [
               Text(plateLabel(latest), style: t.titleMedium),
               Text(

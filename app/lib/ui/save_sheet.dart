@@ -7,6 +7,7 @@ import '../data/plate_store.dart';
 import '../l10n/l10n.dart';
 import '../l10n/labels.dart';
 import 'format.dart';
+import 'insets.dart';
 import 'photo_flow.dart';
 
 /// Sample details for a plate, with a live CFU/mL preview. Pops with the
@@ -132,7 +133,10 @@ class _SaveSheetState extends State<SaveSheet> {
         bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
       child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+        padding: scrollPadding(
+          context,
+          const EdgeInsets.fromLTRB(16, 0, 16, 24),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [

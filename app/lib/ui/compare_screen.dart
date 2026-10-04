@@ -8,6 +8,7 @@ import '../data/sample_info.dart';
 import '../l10n/l10n.dart';
 import 'chart_colours.dart';
 import 'format.dart';
+import 'insets.dart';
 import 'samples_screen.dart';
 
 /// One cell of the comparison: a condition at a time point.
@@ -103,7 +104,10 @@ class _CompareTabState extends State<CompareTab> {
         final numericTimes = timeList.whereType<double>().toList();
 
         return ListView(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+          padding: scrollPadding(
+            context,
+            const EdgeInsets.fromLTRB(16, 12, 16, 32),
+          ),
           children: [
             DropdownButtonFormField<String>(
               key: ValueKey(exp),

@@ -17,6 +17,7 @@ import '../l10n/labels.dart';
 import 'accuracy_screen.dart';
 import 'compare_screen.dart';
 import 'format.dart';
+import 'insets.dart';
 import 'multi_plate_screen.dart';
 import 'photo_flow.dart';
 import 'review_screen.dart';
@@ -307,7 +308,10 @@ class _SettingsLauncher {
       builder: (context) => ListenableBuilder(
         listenable: store,
         builder: (context, _) => SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+          padding: scrollPadding(
+            context,
+            const EdgeInsets.fromLTRB(16, 0, 16, 24),
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,

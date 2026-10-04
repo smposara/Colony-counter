@@ -7,6 +7,7 @@ import '../data/plate_store.dart';
 import '../l10n/l10n.dart';
 import 'chart_colours.dart';
 import 'format.dart';
+import 'insets.dart';
 import 'review_screen.dart';
 
 /// How well the automatic count does on the user's own plates, from plates
@@ -25,7 +26,10 @@ class AccuracyScreen extends StatelessWidget {
         builder: (context, _) {
           final report = AccuracyReport(store.records);
           return ListView(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+            padding: scrollPadding(
+              context,
+              const EdgeInsets.fromLTRB(16, 8, 16, 32),
+            ),
             children: [
               if (report.points.isEmpty)
                 const _HowTo()
