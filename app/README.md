@@ -19,7 +19,8 @@ _Screenshots from the web build in Chromium on synthetic plates and demo data._
   libraries and bundled fonts. The details live in `lib/app_info.dart`; keep
   `kAppVersion` / `kAppBuild` in step with `version:` in pubspec.yaml (a test checks).
 - **Light and dark themes**: automatic (follows the phone), or fixed light or dark in
-  Settings → *Appearance*.
+  Settings → *Appearance*. Brand colours blue #1565C0 and orange #FF9800 (as in Cells
+  Calculator and the app icon) are set in `lib/main.dart`.
 - **CFU/g for solid samples** (food, soil): in sample setup choose *Solid (CFU/g)*
   and enter the sample weight and diluent volume (default 25 g in 225 mL). As usual,
   the initial suspension counts as the 10⁻¹ dilution, so plates are labelled with

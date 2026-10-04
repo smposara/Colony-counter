@@ -38,13 +38,12 @@ class ColonyCounterApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const seed = Color(0xFF2E7D6B);
     return ListenableBuilder(
       listenable: store,
       builder: (context, _) => MaterialApp(
         onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
-        theme: _theme(seed, Brightness.light),
-        darkTheme: _theme(seed, Brightness.dark),
+        theme: _theme(Brightness.light),
+        darkTheme: _theme(Brightness.dark),
         themeMode: switch (store.theme) {
           'light' => ThemeMode.light,
           'dark' => ThemeMode.dark,
@@ -75,15 +74,52 @@ class ColonyCounterApp extends StatelessWidget {
   }
 }
 
-/// Bundled Roboto, with IBM Plex Sans Thai for Thai and a small symbol font
-/// for superscripts (10⁻⁵) that Roboto lacks, so text never depends on
-/// downloaded or system fonts.
-ThemeData _theme(Color seed, Brightness brightness) {
-  final base = ThemeData(
-    colorSchemeSeed: seed,
+/// Brand colours, shared with the Cells Calculator app and the app icon.
+const kBrandBlue = Color(0xFF1565C0);
+const kBrandOrange = Color(0xFFFF9800);
+
+/// Blue as the main colour and orange as the accent. Light mode uses the
+/// brand blue itself (white text on it: 5.7:1); dark mode uses the lighter
+/// tones Material derives from it. Orange is a fill with dark text on it
+/// (white on #FF9800 would be too faint).
+///
+/// Text uses the bundled Roboto, with IBM Plex Sans Thai for Thai and a
+/// small symbol font for superscripts (10⁻⁵) that Roboto lacks, so text never
+/// depends on downloaded or system fonts.
+ThemeData _theme(Brightness brightness) {
+  final dark = brightness == Brightness.dark;
+  final orange = ColorScheme.fromSeed(
+    seedColor: kBrandOrange,
     brightness: brightness,
+  );
+  var scheme = ColorScheme.fromSeed(
+    seedColor: kBrandBlue,
+    brightness: brightness,
+  );
+  scheme = scheme.copyWith(
+    primary: dark ? scheme.primary : kBrandBlue,
+    onPrimary: dark ? scheme.onPrimary : Colors.white,
+    tertiary: orange.primary,
+    onTertiary: orange.onPrimary,
+    tertiaryContainer: orange.primaryContainer,
+    onTertiaryContainer: orange.onPrimaryContainer,
+  );
+  const onOrange = Color(0xFF2B1700);
+  final base = ThemeData(
+    colorScheme: scheme,
     useMaterial3: true,
     fontFamily: 'Roboto',
+    appBarTheme: AppBarTheme(
+      // A blue bar in light mode, like Cells Calculator; the usual dark
+      // surface in dark mode.
+      backgroundColor: dark ? null : kBrandBlue,
+      foregroundColor: dark ? null : Colors.white,
+      systemOverlayStyle: SystemUiOverlayStyle.light,
+    ),
+    floatingActionButtonTheme: const FloatingActionButtonThemeData(
+      backgroundColor: kBrandOrange,
+      foregroundColor: onOrange,
+    ),
   );
   const fallback = ['IBMPlexSansThai', 'ColonySymbols'];
   return base.copyWith(

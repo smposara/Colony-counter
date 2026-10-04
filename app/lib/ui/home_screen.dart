@@ -352,21 +352,9 @@ class _SettingsLauncher {
               SegmentedButton<String>(
                 showSelectedIcon: false,
                 segments: [
-                  ButtonSegment(
-                    value: 'system',
-                    icon: const Icon(Icons.brightness_auto_outlined),
-                    label: Text(tr.themeSystem),
-                  ),
-                  ButtonSegment(
-                    value: 'light',
-                    icon: const Icon(Icons.light_mode_outlined),
-                    label: Text(tr.themeLight),
-                  ),
-                  ButtonSegment(
-                    value: 'dark',
-                    icon: const Icon(Icons.dark_mode_outlined),
-                    label: Text(tr.themeDark),
-                  ),
+                  ButtonSegment(value: 'system', label: Text(tr.themeSystem)),
+                  ButtonSegment(value: 'light', label: Text(tr.themeLight)),
+                  ButtonSegment(value: 'dark', label: Text(tr.themeDark)),
                 ],
                 selected: {store.theme},
                 onSelectionChanged: (s) => store.setDefaults(theme: s.first),
