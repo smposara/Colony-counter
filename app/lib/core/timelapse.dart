@@ -62,7 +62,7 @@ class Alignment {
 
 /// A colony followed through the series, in the last photo's coordinates.
 class ColonyTrack {
-  ColonyTrack(this.x, this.y, this.sizes);
+  ColonyTrack(this.x, this.y, this.sizes, this.firstFrame);
 
   final double x, y;
 
@@ -71,6 +71,9 @@ class ColonyTrack {
 
   /// First photo the colony is seen in.
   double get appearedH => sizes.first.$1;
+
+  /// Index (in time order) of the first photo the colony is seen in.
+  final int firstFrame;
 
   /// Diameter growth in mm per hour (least squares), when seen in ≥ 2 photos.
   double? get growthMmPerH {
@@ -99,7 +102,8 @@ class TimelapseResult {
 
   /// Colonies first seen in each photo.
   List<int> get newPerFrame => [
-    for (final f in frames) tracks.where((t) => t.appearedH == f.hours).length,
+    for (var i = 0; i < frames.length; i++)
+      tracks.where((t) => t.firstFrame == i).length,
   ];
 
   double? get medianAppearanceH =>
@@ -233,6 +237,7 @@ TimelapseResult analyseTimelapse(
   final tracks = <ColonyTrack>[];
   for (final c in inLast.last) {
     final sizes = <(double, double)>[];
+    int? first;
     for (var i = 0; i < f.length; i++) {
       (double, double, double)? best;
       var bd = tolMm * tolMm;
@@ -243,9 +248,12 @@ TimelapseResult analyseTimelapse(
           best = q;
         }
       }
-      if (best != null) sizes.add((f[i].hours, best.$3));
+      if (best != null) {
+        sizes.add((f[i].hours, best.$3));
+        first ??= i;
+      }
     }
-    tracks.add(ColonyTrack(c.$1, c.$2, sizes));
+    tracks.add(ColonyTrack(c.$1, c.$2, sizes, first!));
   }
   return TimelapseResult(f, align, tracks);
 }

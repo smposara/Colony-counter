@@ -233,8 +233,15 @@ class PlateStore extends ChangeNotifier {
         continue;
       }
       final bytes = await photo(r.imagePath);
-      if (bytes != null) await backend.writePhoto(r.imagePath, bytes);
-      _records.add(r);
+      // The name comes from the backup file: never let it leave the photo
+      // folder (e.g. "../settings.json").
+      final safe = safePhotoName(r.imagePath, r.id);
+      if (bytes != null) await backend.writePhoto(safe, bytes);
+      _records.add(
+        safe == r.imagePath
+            ? r
+            : PlateRecord.fromJson({...r.toJson(), 'image': safe}),
+      );
       added++;
     }
     for (final info in sampleInfos) {
@@ -283,4 +290,12 @@ class PlateStore extends ChangeNotifier {
     );
     notifyListeners();
   }
+}
+
+/// [name] if it is a plain file name, otherwise a safe name made from [id].
+String safePhotoName(String name, String id) {
+  final plain = RegExp(r'^[A-Za-z0-9_-][A-Za-z0-9._-]*$');
+  if (plain.hasMatch(name) && !name.contains('..')) return name;
+  final cleaned = id.replaceAll(RegExp(r'[^A-Za-z0-9_-]'), '_');
+  return 'restored_${cleaned.isEmpty ? 'photo' : cleaned}.jpg';
 }

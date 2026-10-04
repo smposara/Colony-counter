@@ -33,8 +33,16 @@ class PlateLabel {
     };
     final s = fields['s'];
     if (s == null || s.isEmpty) return null;
+    final String id;
+    try {
+      id = Uri.decodeComponent(s);
+    } on ArgumentError {
+      return null; // malformed %-encoding: not one of our labels
+    } on FormatException {
+      return null; // %-encoded bytes that are not UTF-8
+    }
     return PlateLabel(
-      Uri.decodeComponent(s),
+      id,
       dilutionExp: int.tryParse(fields['d'] ?? ''),
       replicate: int.tryParse(fields['r'] ?? ''),
     );

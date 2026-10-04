@@ -51,7 +51,7 @@ class TimelapseScreen extends StatelessWidget {
         ];
         final latest = ordered.last;
         final appearedLater = res.tracks
-            .where((track) => track.appearedH > res.frames.first.hours)
+            .where((track) => track.firstFrame > 0)
             .length;
         return Scaffold(
           appBar: AppBar(
@@ -443,7 +443,7 @@ class _AppearancePainter extends CustomPainter {
     for (final track in tracks) {
       final (x, y) = frame.toImage(track.x, track.y);
       final d = track.sizes.last.$2 / frame.plate.mmPerPx;
-      final i = hours.indexOf(track.appearedH);
+      final i = track.firstFrame;
       canvas.drawCircle(
         Offset(x, y),
         math.max(d * 0.65, w * 3),
