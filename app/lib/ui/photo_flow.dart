@@ -8,6 +8,7 @@ import '../core/plate.dart';
 import '../data/plate_record.dart';
 import '../data/plate_store.dart';
 import '../data/sample_info.dart';
+import '../l10n/l10n.dart';
 import 'capture_screen.dart';
 import 'review_screen.dart';
 
@@ -92,20 +93,14 @@ Future<PlateLabel?> scanPlateLabel(
   if (picked == null) return null;
   final bytes = await picked.readAsBytes();
   messenger.showSnackBar(
-    const SnackBar(
-      content: Text('Reading label…'),
-      duration: Duration(seconds: 1),
+    SnackBar(
+      content: Text(tr.photoReadingLabel),
+      duration: const Duration(seconds: 1),
     ),
   );
   final label = await compute(readLabelFromPhoto, bytes);
   if (label == null) {
-    messenger.showSnackBar(
-      const SnackBar(
-        content: Text(
-          'No plate label found. Fill the frame with the QR code and try again.',
-        ),
-      ),
-    );
+    messenger.showSnackBar(SnackBar(content: Text(tr.photoNoLabelFound)));
   }
   return label;
 }

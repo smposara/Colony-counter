@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../data/accuracy.dart';
 import '../data/plate_store.dart';
+import '../l10n/l10n.dart';
 import 'chart_colours.dart';
 import 'format.dart';
 import 'review_screen.dart';
@@ -18,7 +19,7 @@ class AccuracyScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Counting accuracy')),
+      appBar: AppBar(title: Text(tr.accuracyTitle)),
       body: ListenableBuilder(
         listenable: store,
         builder: (context, _) {
@@ -62,16 +63,9 @@ class _HowTo extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('No checked plates yet', style: t.titleMedium),
+            Text(tr.accuracyNoChecked, style: t.titleMedium),
             const SizedBox(height: 8),
-            Text(
-              'Now and then, check every colony on a plate: zoom in, remove '
-              'wrong marks, add missed colonies, and set clusters. Then turn on '
-              '"Checked every colony" when saving. The app compares its own '
-              'count with yours and shows here how accurate it is on your '
-              'plates.',
-              style: t.bodyMedium,
-            ),
+            Text(tr.accuracyHowTo, style: t.bodyMedium),
           ],
         ),
       ),
@@ -104,36 +98,32 @@ class _Summary extends StatelessWidget {
           children: [
             Text(
               s.within10Percent.isNaN
-                  ? '${s.n} checked plate${s.n == 1 ? '' : 's'}'
-                  : '${s.within10Percent.toStringAsFixed(0)} % of plates within ±10 %',
+                  ? tr.accuracyCheckedPlates(s.n)
+                  : tr.accuracyWithin10(s.within10Percent.toStringAsFixed(0)),
               style: t.headlineSmall,
             ),
             Text(
-              'of the checked count · ${s.n} checked plate${s.n == 1 ? '' : 's'}',
+              tr.accuracyOfChecked(tr.accuracyCheckedPlates(s.n)),
               style: t.bodyMedium,
             ),
             const SizedBox(height: 12),
             Row(
               children: [
-                stat('mean error', _pct(s.meanAbsPercent)),
-                stat('bias', _pct(s.biasPercent, signed: true)),
-                stat('colonies off, on average', fixed(s.meanAbsError, 1)),
+                stat(tr.accuracyMeanError, _pct(s.meanAbsPercent)),
+                stat(tr.accuracyBias, _pct(s.biasPercent, signed: true)),
+                stat(tr.accuracyColoniesOff, fixed(s.meanAbsError, 1)),
               ],
             ),
             const SizedBox(height: 8),
             Row(
               children: [
-                stat('of marks were colonies', _pct(s.precision)),
-                stat('of colonies found', _pct(s.recall)),
+                stat(tr.accuracyPrecision, _pct(s.precision)),
+                stat(tr.accuracyRecall, _pct(s.recall)),
                 const Spacer(),
               ],
             ),
             const SizedBox(height: 8),
-            Text(
-              'Percentages use plates with 10 or more colonies. Negative bias '
-              'means the app counts too few.',
-              style: t.bodySmall,
-            ),
+            Text(tr.accuracyFootnote, style: t.bodySmall),
           ],
         ),
       ),
@@ -178,14 +168,14 @@ class _ScatterCardState extends State<_ScatterCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Automatic vs checked count', style: t.titleMedium),
+            Text(tr.accuracyScatterTitle, style: t.titleMedium),
             const SizedBox(height: 4),
             Wrap(
               spacing: 16,
               children: [
-                for (final (i, label) in const [
-                  (0, 'Not flagged'),
-                  (1, 'Flagged for checking'),
+                for (final (i, label) in [
+                  (0, tr.accuracyNotFlagged),
+                  (1, tr.homeFlagged),
                 ])
                   Row(
                     mainAxisSize: MainAxisSize.min,
@@ -220,10 +210,8 @@ class _ScatterCardState extends State<_ScatterCard> {
             const SizedBox(height: 4),
             Text(
               sel == null
-                  ? 'Tap a dot for details. Dots below the line: the app '
-                        'counted too few. Shaded: within ±10 %.'
-                  : '${plateLabel(sel.record)} · ${shortDate(sel.record.createdAt)}: '
-                        'app ${sel.auto}, checked ${sel.checked}'
+                  ? tr.accuracyScatterHint
+                  : '${tr.accuracyPointDetail(plateLabel(sel.record), shortDate(sel.record.createdAt), sel.auto, sel.checked)}'
                         '${sel.errorPercent == null ? '' : ' (${_pct(sel.errorPercent!, signed: true)})'}',
               style: t.bodySmall,
             ),
@@ -331,7 +319,11 @@ class _ScatterPainter extends CustomPainter {
         _pos(size, v, 0) + const Offset(0, 10),
       );
     }
-    _text(canvas, 'checked count →', Offset(size.width - 50, size.height - 6));
+    _text(
+      canvas,
+      tr.accuracyAxisChecked,
+      Offset(size.width - 50, size.height - 6),
+    );
     canvas.drawLine(
       _pos(size, 0, 0),
       _pos(size, m, m),
@@ -366,9 +358,10 @@ class _BreakdownCard extends StatelessWidget {
     final t = Theme.of(context).textTheme;
     final (warned, rest) = report.byWarning;
     final rows = [
-      for (final e in report.byRange.entries) ('${e.key} colonies', e.value),
-      ('Flagged for checking', warned),
-      ('Not flagged', rest),
+      for (final e in report.byRange.entries)
+        (tr.accuracyRangeColonies(e.key), e.value),
+      (tr.homeFlagged, warned),
+      (tr.accuracyNotFlagged, rest),
     ];
     TableRow row(List<String> cells, {bool head = false}) => TableRow(
       children: [
@@ -389,12 +382,17 @@ class _BreakdownCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Where the errors are', style: t.titleMedium),
+            Text(tr.accuracyErrorsTitle, style: t.titleMedium),
             const SizedBox(height: 4),
             Table(
               columnWidths: const {0: FlexColumnWidth(2.2)},
               children: [
-                row(['', 'plates', 'mean error', 'bias'], head: true),
+                row([
+                  '',
+                  tr.accuracyColPlates,
+                  tr.accuracyMeanError,
+                  tr.accuracyBias,
+                ], head: true),
                 for (final (label, s) in rows)
                   row([
                     label,
@@ -405,10 +403,7 @@ class _BreakdownCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 4),
-            Text(
-              'If the warnings are useful, flagged plates have the larger errors.',
-              style: t.bodySmall,
-            ),
+            Text(tr.accuracyWarningsUseful, style: t.bodySmall),
           ],
         ),
       ),
@@ -428,7 +423,7 @@ class _PlateList extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Checked plates', style: t.titleMedium),
+        Text(tr.accuracyCheckedPlatesTitle, style: t.titleMedium),
         for (final p in report.points)
           ListTile(
             contentPadding: EdgeInsets.zero,
@@ -436,7 +431,7 @@ class _PlateList extends StatelessWidget {
             title: Text(plateLabel(p.record)),
             subtitle: Text(shortDate(p.record.createdAt)),
             trailing: Text(
-              'app ${p.auto} · checked ${p.checked}'
+              '${tr.accuracyAppVsChecked(p.auto, p.checked)}'
               '${p.errorPercent == null ? '' : '\n${_pct(p.errorPercent!, signed: true)}'}',
               textAlign: TextAlign.end,
               style: t.bodySmall,
@@ -463,26 +458,21 @@ class _Frequency extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Ask me to check a plate', style: t.titleSmall),
+        Text(tr.accuracyAskCheck, style: t.titleSmall),
         const SizedBox(height: 8),
         SegmentedButton<int>(
           showSelectedIcon: false,
-          segments: const [
-            ButtonSegment(value: 0, label: Text('Never')),
-            ButtonSegment(value: 10, label: Text('Every 10th')),
-            ButtonSegment(value: 20, label: Text('Every 20th')),
-            ButtonSegment(value: 50, label: Text('Every 50th')),
+          segments: [
+            ButtonSegment(value: 0, label: Text(tr.accuracyNever)),
+            for (final n in const [10, 20, 50])
+              ButtonSegment(value: n, label: Text(tr.accuracyEvery(n))),
           ],
           selected: {store.accuracyCheckEvery},
           onSelectionChanged: (s) =>
               store.setDefaults(accuracyCheckEvery: s.first),
         ),
         const SizedBox(height: 4),
-        Text(
-          'The review screen then asks you to check every colony on that '
-          'plate before saving.',
-          style: t.bodySmall,
-        ),
+        Text(tr.accuracyAskCheckHelp, style: t.bodySmall),
       ],
     );
   }

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
@@ -130,7 +131,12 @@ String samplesCsv(PlateStore store) {
       'cv_percent',
       'log10_mean',
       'log10_sd',
-      'mean_cfu_per_100ml',
+      'unit',
+      'mean_in_unit',
+      'sd_in_unit',
+      'log10_mean_in_unit',
+      'sample_g',
+      'diluent_ml',
       'estimated',
       'replicate_values',
       'notes',
@@ -162,7 +168,12 @@ String samplesCsv(PlateStore store) {
       st.cvPercent,
       st.log10Mean,
       st.log10Sd,
-      info.isMembrane && st.n > 0 ? st.mean * 100 : null,
+      info.unitLabel,
+      st.n > 0 ? st.mean * info.unitFactor : null,
+      st.n > 1 ? st.sd * info.unitFactor : null,
+      st.n > 0 ? st.log10Mean + math.log(info.unitFactor) / math.ln10 : null,
+      info.isSolid ? info.sampleWeightG : null,
+      info.isSolid ? info.diluentMl : null,
       res.qualified,
       [
         for (final e in res.perReplicate.entries)

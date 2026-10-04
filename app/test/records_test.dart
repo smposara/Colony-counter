@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -58,6 +59,22 @@ void main() {
         readLabelFromPhoto(Uint8List.fromList(img.encodePng(blank))),
         isNull,
       );
+    });
+
+    test('label sheet draws Thai sample IDs with the Thai font', () async {
+      ByteData font(String f) =>
+          ByteData.sublistView(File('assets/fonts/$f').readAsBytesSync());
+      final pdf = await buildLabelSheet(
+        labelsForSample(
+          SampleInfo(sampleId: 'น้ำบ่อ-1', dilutions: [4], replicates: 1),
+        ),
+        fontData: font('Roboto-Regular.ttf'),
+        boldFontData: font('Roboto-Bold.ttf'),
+        thaiFontData: font('IBMPlexSansThai-Regular.ttf'),
+        thaiBoldFontData: font('IBMPlexSansThai-Bold.ttf'),
+      );
+      // The Thai font is embedded (by name) in the PDF.
+      expect(latin1.decode(pdf), contains('IBMPlexSansThai'));
     });
 
     test('label sheet PDF has one label per planned plate', () async {

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../core/stats.dart';
 import '../data/plate_store.dart';
 import '../data/sample_info.dart';
+import '../l10n/l10n.dart';
 import 'chart_colours.dart';
 import 'format.dart';
 import 'samples_screen.dart';
@@ -41,15 +42,10 @@ class _CompareTabState extends State<CompareTab> {
       builder: (context, _) {
         final experiments = store.experiments();
         if (experiments.isEmpty) {
-          return const Center(
+          return Center(
             child: Padding(
-              padding: EdgeInsets.all(32),
-              child: Text(
-                'Give samples the same Experiment name and a Condition '
-                '(e.g. Control / Treated), and optionally a time point, to compare '
-                'them here: log reduction, % kill, and time-kill or growth curves.',
-                textAlign: TextAlign.center,
-              ),
+              padding: const EdgeInsets.all(32),
+              child: Text(tr.compareEmpty, textAlign: TextAlign.center),
             ),
           );
         }
@@ -81,10 +77,18 @@ class _CompareTabState extends State<CompareTab> {
           // All replicate values of all samples in this cell.
           final values = <double>[
             for (final s in e.value)
-              ...s.analyse(store.platesOf(s.sampleId), store.rule).stats.values,
+              // In the sample's own unit (CFU/mL, CFU/g or CFU/100 mL).
+              for (final v
+                  in s
+                      .analyse(store.platesOf(s.sampleId), store.rule)
+                      .stats
+                      .values)
+                v * s.unitFactor,
           ];
           cells[e.key] = _Cell(e.value, ReplicateStats(values));
         }
+        final units = {for (final s in samples) s.unitLabel};
+        final unit = units.length == 1 ? units.single : 'CFU/mL';
         final timeList = times.toList()
           ..sort((a, b) => (a ?? -1).compareTo(b ?? -1));
         final control = conditions.contains(_control)
@@ -104,9 +108,9 @@ class _CompareTabState extends State<CompareTab> {
             DropdownButtonFormField<String>(
               key: ValueKey(exp),
               initialValue: exp,
-              decoration: const InputDecoration(
-                labelText: 'Experiment',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: tr.compareExperiment,
+                border: const OutlineInputBorder(),
               ),
               items: [
                 for (final e in experiments)
@@ -122,9 +126,9 @@ class _CompareTabState extends State<CompareTab> {
               DropdownButtonFormField<String>(
                 key: ValueKey('$exp/$control'),
                 initialValue: control,
-                decoration: const InputDecoration(
-                  labelText: 'Control',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: tr.compareControl,
+                  border: const OutlineInputBorder(),
                 ),
                 items: [
                   for (final c in conditions)
@@ -134,11 +138,8 @@ class _CompareTabState extends State<CompareTab> {
               ),
             if (numericTimes.length > 1) ...[
               const SizedBox(height: 20),
-              Text('log₁₀ CFU/mL over time', style: t.titleMedium),
-              Text(
-                'Mean ± SD of replicates; tap a point for its value.',
-                style: t.bodySmall,
-              ),
+              Text(tr.compareOverTime(unit), style: t.titleMedium),
+              Text(tr.compareChartHint, style: t.bodySmall),
               const SizedBox(height: 8),
               _TimeChart(
                 series: [
@@ -158,7 +159,7 @@ class _CompareTabState extends State<CompareTab> {
               ),
             ],
             const SizedBox(height: 20),
-            Text('Results', style: t.titleMedium),
+            Text(tr.compareResults, style: t.titleMedium),
             const SizedBox(height: 4),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -166,11 +167,11 @@ class _CompareTabState extends State<CompareTab> {
                 columnSpacing: 20,
                 headingRowHeight: 40,
                 columns: [
-                  const DataColumn(label: Text('Condition')),
+                  DataColumn(label: Text(tr.compareCondition)),
                   for (final time in timeList)
                     DataColumn(
                       label: Text(
-                        time == null ? 'log₁₀ CFU/mL' : hoursLabel(time),
+                        time == null ? 'log₁₀ $unit' : hoursLabel(time),
                       ),
                     ),
                 ],
@@ -206,23 +207,19 @@ class _CompareTabState extends State<CompareTab> {
             ),
             if (conditions.length > 1) ...[
               const SizedBox(height: 20),
-              Text('Reduction vs $control', style: t.titleMedium),
-              Text(
-                'log reduction = mean log₁₀(control) − mean log₁₀(treated); '
-                'SD combines both groups. % kill from the geometric means.',
-                style: t.bodySmall,
-              ),
+              Text(tr.compareReductionVs(control), style: t.titleMedium),
+              Text(tr.compareReductionHelp, style: t.bodySmall),
               const SizedBox(height: 4),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: DataTable(
                   columnSpacing: 20,
                   headingRowHeight: 40,
-                  columns: const [
-                    DataColumn(label: Text('Condition')),
-                    DataColumn(label: Text('Time')),
-                    DataColumn(label: Text('log reduction')),
-                    DataColumn(label: Text('% kill')),
+                  columns: [
+                    DataColumn(label: Text(tr.compareCondition)),
+                    DataColumn(label: Text(tr.compareTime)),
+                    DataColumn(label: Text(tr.compareLogReduction)),
+                    DataColumn(label: Text(tr.compareKill)),
                   ],
                   rows: [
                     for (final c in conditions.where((c) => c != control))
@@ -248,7 +245,7 @@ class _CompareTabState extends State<CompareTab> {
               ),
             ],
             const SizedBox(height: 20),
-            Text('Samples', style: t.titleMedium),
+            Text(tr.compareSamples, style: t.titleMedium),
             for (final s in samples)
               ListTile(
                 contentPadding: EdgeInsets.zero,
@@ -260,6 +257,7 @@ class _CompareTabState extends State<CompareTab> {
                     if (s.timeH != null) hoursLabel(s.timeH!),
                     resultSummary(
                       s.analyse(store.platesOf(s.sampleId), store.rule),
+                      s,
                     ),
                   ].join(' · '),
                 ),
@@ -280,7 +278,8 @@ class _CompareTabState extends State<CompareTab> {
     final l = c.toLowerCase();
     return l.contains('control') ||
         l.contains('ctrl') ||
-        l.contains('untreated');
+        l.contains('untreated') ||
+        l.contains('ควบคุม'); // Thai "control"
   }
 
   /// Treated vs control at the same time point (or the control's only time
@@ -509,7 +508,7 @@ class _ChartPainter extends CustomPainter {
       final p = _pos(size, x, _y0);
       _label(
         canvas,
-        '${fixed(x, x % 1 == 0 ? 0 : 1)} h',
+        tr.timelapseHours(fixed(x, x % 1 == 0 ? 0 : 1)),
         p + const Offset(0, 12),
         centre: true,
       );

@@ -30,6 +30,12 @@ class PlateStore extends ChangeNotifier {
   /// Ask for a colony-by-colony check on every Nth plate (0 = never).
   int accuracyCheckEvery = 10;
 
+  /// Interface language: 'system', 'en' or 'th'.
+  String language = 'system';
+
+  /// Colour theme: 'system', 'light' or 'dark'.
+  String theme = 'system';
+
   static const _recordsKey = 'plates';
   static const _settingsKey = 'settings';
   static const _samplesKey = 'samples';
@@ -73,6 +79,8 @@ class PlateStore extends ChangeNotifier {
       defaultMedium = s['medium'] as String? ?? 'Nutrient Agar';
       defaultFormat = PlateFormat.byName(s['format'] as String?);
       accuracyCheckEvery = (s['accuracy_every'] as num?)?.toInt() ?? 10;
+      language = s['language'] as String? ?? 'system';
+      theme = s['theme'] as String? ?? 'system';
     }
     notifyListeners();
   }
@@ -130,7 +138,11 @@ class PlateStore extends ChangeNotifier {
     String? medium,
     PlateFormat? format,
     int? accuracyCheckEvery,
+    String? language,
+    String? theme,
   }) async {
+    this.language = language ?? this.language;
+    this.theme = theme ?? this.theme;
     defaultOperator = operator ?? defaultOperator;
     defaultMedium = medium ?? defaultMedium;
     defaultFormat = format ?? defaultFormat;
@@ -265,6 +277,8 @@ class PlateStore extends ChangeNotifier {
         'medium': defaultMedium,
         'format': defaultFormat.name,
         'accuracy_every': accuracyCheckEvery,
+        'language': language,
+        'theme': theme,
       }),
     );
     notifyListeners();

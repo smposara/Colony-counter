@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -9,6 +11,8 @@ import '../data/plate_record.dart';
 import '../data/label_sheet.dart';
 import '../data/plate_store.dart';
 import '../data/sample_info.dart';
+import '../l10n/l10n.dart';
+import '../l10n/labels.dart';
 import 'format.dart';
 import 'home_screen.dart';
 import 'multi_plate_screen.dart';
@@ -54,16 +58,16 @@ Future<void> openFromLabel(
     final create = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Sample “${label.sampleId}” not found'),
-        content: const Text('Set up this sample now?'),
+        title: Text(tr.samplesNotFoundTitle(label.sampleId)),
+        content: Text(tr.samplesSetUpNow),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(tr.samplesCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Set up'),
+            child: Text(tr.samplesSetUp),
           ),
         ],
       ),
@@ -89,15 +93,15 @@ Future<void> openFromLabel(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(label.caption.replaceAll('10^-', '10⁻')),
-        content: const Text('Photograph this plate now?'),
+        content: Text(tr.samplesPhotographNow),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Just open sample'),
+            child: Text(tr.samplesJustOpen),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Photograph'),
+            child: Text(tr.samplesPhotograph),
           ),
         ],
       ),
@@ -113,7 +117,7 @@ Future<void> openFromLabel(
     }
   } else if (done) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${label.caption} is already counted.')),
+      SnackBar(content: Text(tr.samplesAlreadyCounted(label.caption))),
     );
   }
   if (!context.mounted) return;
@@ -126,14 +130,17 @@ Future<void> openFromLabel(
 }
 
 /// "log₁₀ 6.21 ± 0.08 (n = 3)" for a sample result.
-String resultSummary(SampleResult r) {
+/// "log₁₀ 6.12 ± 0.05 (n = 3)", in [info]'s unit (CFU/mL, CFU/g or
+/// CFU/100 mL).
+String resultSummary(SampleResult r, SampleInfo info) {
   final s = r.stats;
-  if (s.n == 0) return 'No result yet';
+  if (s.n == 0) return tr.samplesNoResult;
   final sd = s.n > 1 ? ' ± ${fixed(s.log10Sd)}' : '';
-  return 'log₁₀ ${fixed(s.log10Mean)}$sd (n = ${s.n})${r.qualified ? ' · est.' : ''}';
+  final log = s.log10Mean + math.log(info.unitFactor) / math.ln10;
+  return 'log₁₀ ${fixed(log)}$sd (n = ${s.n})${r.qualified ? ' · ${tr.samplesEstimated}' : ''}';
 }
 
-String hoursLabel(double h) => '${fixed(h, h % 1 == 0 ? 0 : 1)} h';
+String hoursLabel(double h) => tr.samplesHours(fixed(h, h % 1 == 0 ? 0 : 1));
 
 /// Samples grouped by experiment, newest first.
 class SamplesTab extends StatefulWidget {
@@ -161,15 +168,10 @@ class _SamplesTabState extends State<SamplesTab> {
             if (s.matches(_query)) s,
         ];
         if (all.isEmpty) {
-          return const Center(
+          return Center(
             child: Padding(
-              padding: EdgeInsets.all(32),
-              child: Text(
-                'Set up a sample to plan its dilution series and replicates. '
-                'The app then tells you which plate to photograph next and '
-                'reports mean ± SD and log₁₀ CFU/mL across replicates.',
-                textAlign: TextAlign.center,
-              ),
+              padding: const EdgeInsets.all(32),
+              child: Text(tr.samplesEmpty, textAlign: TextAlign.center),
             ),
           );
         }
@@ -194,25 +196,25 @@ class _SamplesTabState extends State<SamplesTab> {
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
               child: TextField(
-                decoration: const InputDecoration(
-                  prefixIcon: Icon(Icons.search),
-                  hintText: 'Search sample, strain, operator, tag…',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  prefixIcon: const Icon(Icons.search),
+                  hintText: tr.samplesSearchHint,
+                  border: const OutlineInputBorder(),
                   isDense: true,
                 ),
                 onChanged: (v) => setState(() => _query = v),
               ),
             ),
             if (samples.isEmpty)
-              const Padding(
-                padding: EdgeInsets.all(24),
-                child: Text('No samples match.', textAlign: TextAlign.center),
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: Text(tr.samplesNoMatch, textAlign: TextAlign.center),
               ),
             for (final name in names) ...[
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
                 child: Text(
-                  name.isEmpty ? 'No experiment' : name,
+                  name.isEmpty ? tr.samplesNoExperiment : name,
                   style: Theme.of(context).textTheme.titleSmall
                       ?.copyWith(color: Theme.of(context).colorScheme.primary),
                 ),
@@ -241,15 +243,15 @@ class _SampleTile extends StatelessWidget {
       if (info.condition.isNotEmpty) info.condition,
       if (info.timeH != null) hoursLabel(info.timeH!),
       store.hasPlan(info.sampleId)
-          ? '$done/${info.slots.length} plates'
-          : '${plates.length} plate${plates.length == 1 ? '' : 's'}',
+          ? tr.samplesPlatesDone(done, info.slots.length)
+          : tr.samplesPlateCount(plates.length),
     ];
     return ListTile(
       title: Text(info.sampleId),
-      subtitle: Text('${details.join(' · ')}\n${resultSummary(res)}'),
+      subtitle: Text('${details.join(' · ')}\n${resultSummary(res, info)}'),
       isThreeLine: true,
       trailing: Text(
-        sciValue(res.stats.mean),
+        sciValue(res.stats.mean * info.unitFactor),
         style: Theme.of(context).textTheme.titleMedium,
       ),
       onTap: () => Navigator.of(context).push(
@@ -275,7 +277,7 @@ class SampleDetailScreen extends StatelessWidget {
   String _slotLabel(SampleInfo info, Slot s) => [
     if (s.dilutionExp != null) dilutionLabel(s.dilutionExp!),
     if (s.replicate != null) 'R${s.replicate}',
-    if (s.dilutionExp == null && s.replicate == null) 'plate',
+    if (s.dilutionExp == null && s.replicate == null) tr.samplesSlotPlate,
   ].join(' · ');
 
   Future<void> _shoot(
@@ -293,17 +295,25 @@ class SampleDetailScreen extends StatelessWidget {
   Future<void> _printLabels(BuildContext context, SampleInfo info) async {
     final regular = await rootBundle.load('assets/fonts/Roboto-Regular.ttf');
     final bold = await rootBundle.load('assets/fonts/Roboto-Bold.ttf');
+    final thai = await rootBundle.load(
+      'assets/fonts/IBMPlexSansThai-Regular.ttf',
+    );
+    final thaiBold = await rootBundle.load(
+      'assets/fonts/IBMPlexSansThai-Bold.ttf',
+    );
     final pdf = await buildLabelSheet(
       labelsForSample(info),
       fontData: regular,
       boldFontData: bold,
+      thaiFontData: thai,
+      thaiBoldFontData: thaiBold,
     );
     final safe = info.sampleId.replaceAll(RegExp(r'[^A-Za-z0-9_-]+'), '_');
     await shareBytes(
       pdf,
       'labels_$safe.pdf',
       'application/pdf',
-      subject: 'Plate labels for ${info.sampleId}',
+      subject: tr.samplesLabelsSubject(info.sampleId),
     );
   }
 
@@ -312,26 +322,23 @@ class SampleDetailScreen extends StatelessWidget {
     final choice = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Delete ${info.sampleId}?'),
+        title: Text(tr.samplesDeleteTitle(info.sampleId)),
         content: Text(
-          plates == 0
-              ? 'The sample plan will be removed.'
-              : 'Remove only the plan and keep its $plates plate${plates == 1 ? '' : 's'}, '
-                    'or delete the plates too?',
+          plates == 0 ? tr.samplesDeletePlanOnly : tr.samplesDeleteAsk(plates),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(tr.samplesCancel),
           ),
           if (plates > 0)
             TextButton(
               onPressed: () => Navigator.pop(context, 'plan'),
-              child: const Text('Keep plates'),
+              child: Text(tr.samplesKeepPlates),
             ),
           FilledButton(
             onPressed: () => Navigator.pop(context, 'all'),
-            child: Text(plates > 0 ? 'Delete all' : 'Delete'),
+            child: Text(plates > 0 ? tr.samplesDeleteAll : tr.samplesDelete),
           ),
         ],
       ),
@@ -371,25 +378,24 @@ class SampleDetailScreen extends StatelessWidget {
                 itemBuilder: (_) => [
                   PopupMenuItem(
                     value: 'edit',
-                    child: Text(planned ? 'Edit plan' : 'Create plan'),
+                    child: Text(
+                      planned ? tr.samplesEditPlan : tr.samplesCreatePlan,
+                    ),
                   ),
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'copy',
-                    child: Text('New sample like this'),
+                    child: Text(tr.samplesNewLikeThis),
                   ),
                   if (next != null)
-                    const PopupMenuItem(
-                      value: 'multi',
-                      child: Text('Photograph several plates at once'),
-                    ),
+                    PopupMenuItem(value: 'multi', child: Text(tr.samplesMulti)),
                   if (planned)
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 'labels',
-                      child: Text('Print plate labels (PDF)'),
+                      child: Text(tr.samplesPrintLabels),
                     ),
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'delete',
-                    child: Text('Delete sample'),
+                    child: Text(tr.samplesDeleteSample),
                   ),
                 ],
               ),
@@ -401,20 +407,22 @@ class SampleDetailScreen extends StatelessWidget {
               _ResultCard(store: store, info: info, plates: plates),
               const SizedBox(height: 16),
               if (planned) ...[
-                Text('Plates', style: t.titleMedium),
+                Text(tr.samplesPlates, style: t.titleMedium),
                 const SizedBox(height: 4),
                 Text(
                   [
-                    info.method.label,
+                    info.method.text,
                     if (info.isDrop)
-                      '${fixed(info.dropVolumeUl, 0)} µL drops'
+                      tr.samplesDropsUl(fixed(info.dropVolumeUl, 0))
                     else if (info.isMembrane)
-                      '${fixed(info.volumeMl, info.volumeMl % 1 == 0 ? 0 : 1)} mL filtered'
+                      tr.samplesMlFiltered(
+                        fixed(info.volumeMl, info.volumeMl % 1 == 0 ? 0 : 1),
+                      )
                     else
-                      '${info.volumeMl} mL per plate',
+                      tr.samplesMlPerPlate('${info.volumeMl}'),
                     if (!info.isMembrane && info.format != PlateFormat.dish90)
-                      info.format.label,
-                    if (info.isDrop) info.dropLayout.label,
+                      info.format.text,
+                    if (info.isDrop) info.dropLayout.text,
                   ].join(' · '),
                   style: t.bodySmall,
                 ),
@@ -446,12 +454,14 @@ class SampleDetailScreen extends StatelessWidget {
                         child: FilledButton.icon(
                           onPressed: () => _shoot(context, info, next),
                           icon: const Icon(Icons.camera_alt_outlined),
-                          label: Text('Photograph ${_slotLabel(info, next)}'),
+                          label: Text(
+                            tr.samplesPhotographSlot(_slotLabel(info, next)),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),
                       IconButton.outlined(
-                        tooltip: 'Import photo for ${_slotLabel(info, next)}',
+                        tooltip: tr.samplesImportFor(_slotLabel(info, next)),
                         onPressed: () =>
                             _shoot(context, info, next, gallery: true),
                         icon: const Icon(Icons.photo_library_outlined),
@@ -459,13 +469,9 @@ class SampleDetailScreen extends StatelessWidget {
                     ],
                   )
                 else
-                  Text('All planned plates are done.', style: t.bodyMedium),
+                  Text(tr.samplesAllDone, style: t.bodyMedium),
               ] else ...[
-                Text(
-                  'This sample has no plan (its plates were saved one by one). '
-                  'Use “Create plan” in the menu for a guided plate list.',
-                  style: t.bodySmall,
-                ),
+                Text(tr.samplesNoPlan, style: t.bodySmall),
                 const SizedBox(height: 8),
                 for (final p in plates) RecordTile(store: store, record: p),
               ],
@@ -541,7 +547,7 @@ class _ResultCard extends StatelessWidget {
     final res = info.analyse(plates, store.rule);
     final s = res.stats;
     final f = info.unitFactor, unit = info.unitLabel;
-    final logShift = info.isMembrane ? 2 : 0;
+    final logShift = math.log(f) / math.ln10;
     final details = [
       if (info.experiment.isNotEmpty) info.experiment,
       if (info.condition.isNotEmpty) info.condition,
@@ -558,7 +564,7 @@ class _ResultCard extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               s.n == 0
-                  ? 'No countable plates yet'
+                  ? tr.samplesNoCountable
                   : '${sciValue(s.mean * f)} $unit',
               style: t.headlineSmall,
             ),
@@ -568,7 +574,7 @@ class _ResultCard extends StatelessWidget {
                 [
                   if (s.n > 1) 'SD ${sciValue(s.sd * f)}',
                   if (s.n > 1) 'CV ${fixed(s.cvPercent, 1)} %',
-                  'n = ${s.n} replicate${s.n == 1 ? '' : 's'}',
+                  tr.samplesReplicateCount(s.n),
                 ].join(' · '),
                 style: t.bodyMedium,
               ),
@@ -582,19 +588,17 @@ class _ResultCard extends StatelessWidget {
             const SizedBox(height: 8),
             for (final e in res.perReplicate.entries)
               Text(
-                'R${e.key}: ${prettySci(e.value.describe(factor: f, unit: unit))}'
-                '${e.value.note.isNotEmpty ? ' — ${e.value.note}' : ''}',
+                'R${e.key}: ${prettySci(estimateText(e.value, factor: f, unit: unit))}'
+                '${e.value.note.isNotEmpty ? ' — ${estimateNote(e.value)}' : ''}',
                 style: t.bodySmall,
               ),
             const SizedBox(height: 8),
             Text(
-              'Each replicate pools its countable ${info.isDrop
-                  ? 'drops'
+              (info.isDrop
+                  ? tr.samplesPoolDrops
                   : info.isMembrane
-                  ? 'filters'
-                  : 'plates'} '
-              '(${rule.min}–${rule.max} colonies, ${rule.label}) as ΣC / Σ(V × d); '
-              'log₁₀ is the mean ± SD of the replicates\' log values.',
+                  ? tr.samplesPoolFilters
+                  : tr.samplesPoolPlates)('${rule.min}–${rule.max}', rule.text),
               style: t.bodySmall,
             ),
             if (!info.isDrop && !info.isMembrane) ...[
@@ -603,7 +607,7 @@ class _ResultCard extends StatelessWidget {
                 showSelectedIcon: false,
                 segments: [
                   for (final r in CountingRule.spreadRules)
-                    ButtonSegment(value: r, label: Text(r.label)),
+                    ButtonSegment(value: r, label: Text(r.text)),
                 ],
                 selected: {store.rule},
                 onSelectionChanged: (sel) => store.setRule(sel.first),
@@ -626,25 +630,31 @@ class _DetailsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = Theme.of(context).textTheme;
     final rows = [
-      ('Strain', info.strain),
+      (tr.samplesStrain, info.strain),
       (
-        'Medium',
+        tr.samplesMedium,
         [
           info.medium,
-          if (info.mediumBatch.isNotEmpty) 'batch ${info.mediumBatch}',
+          if (info.mediumBatch.isNotEmpty) tr.samplesBatch(info.mediumBatch),
         ].where((e) => e.isNotEmpty).join(', '),
       ),
       (
-        'Incubation',
-        [
-          if (info.incubationH != null) hoursLabel(info.incubationH!),
-          if (info.incubationTempC != null)
-            '${fixed(info.incubationTempC!, info.incubationTempC! % 1 == 0 ? 0 : 1)} °C',
-        ].join(' at '),
+        tr.samplesIncubation,
+        switch ((
+          info.incubationH == null ? null : hoursLabel(info.incubationH!),
+          info.incubationTempC == null
+              ? null
+              : '${fixed(info.incubationTempC!, info.incubationTempC! % 1 == 0 ? 0 : 1)} °C',
+        )) {
+          (final h?, final c?) => tr.samplesIncubationAt(h, c),
+          (final h?, null) => h,
+          (null, final c?) => c,
+          (null, null) => '',
+        },
       ),
-      ('Operator', info.operator),
-      ('Tags', info.tags.join(', ')),
-      ('Notes', info.notes),
+      (tr.samplesOperator, info.operator),
+      (tr.samplesTags, info.tags.join(', ')),
+      (tr.samplesNotes, info.notes),
     ].where((r) => r.$2.isNotEmpty).toList();
     if (rows.isEmpty) return const SizedBox.shrink();
     return Padding(
@@ -652,7 +662,7 @@ class _DetailsSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Details', style: t.titleMedium),
+          Text(tr.samplesDetails, style: t.titleMedium),
           const SizedBox(height: 6),
           for (final (k, v) in rows)
             Padding(

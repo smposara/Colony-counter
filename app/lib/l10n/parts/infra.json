@@ -1,0 +1,38 @@
+{
+  "appTitle": {
+    "en": "Colony Counter",
+    "th": "Colony Counter"
+  },
+  "settingsLanguage": {
+    "en": "Language",
+    "th": "ภาษา"
+  },
+  "languageSystem": {
+    "en": "Phone setting",
+    "th": "ตามเครื่อง"
+  },
+  "settingsTheme": {
+    "en": "Appearance",
+    "th": "รูปแบบการแสดงผล"
+  },
+  "themeSystem": {
+    "en": "Automatic",
+    "th": "อัตโนมัติ"
+  },
+  "themeLight": {
+    "en": "Light",
+    "th": "สว่าง"
+  },
+  "themeDark": {
+    "en": "Dark",
+    "th": "มืด"
+  },
+  "restoreNotZip": {
+    "en": "This file is not a Colony Counter backup (not a zip).",
+    "th": "ไฟล์นี้ไม่ใช่ไฟล์สำรองข้อมูลของ Colony Counter (ไม่ใช่ไฟล์ zip)"
+  },
+  "restoreNotBackup": {
+    "en": "This zip is not a Colony Counter backup.",
+    "th": "ไฟล์ zip นี้ไม่ใช่ไฟล์สำรองข้อมูลของ Colony Counter"
+  }
+}

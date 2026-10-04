@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 
 import '../core/capture_quality.dart';
+import '../l10n/l10n.dart';
 
 /// Guide circle diameter as a fraction of the preview's shorter side.
 const double kGuideFraction = 0.8;
@@ -119,7 +120,7 @@ class _CaptureScreenState extends State<CaptureScreen>
       await c.setExposureMode(lock ? ExposureMode.locked : ExposureMode.auto);
       setState(() => _locked = lock);
     } on CameraException catch (e) {
-      _snack('Lock not supported: ${e.description ?? e.code}');
+      _snack(tr.captureLockNotSupported(e.description ?? e.code));
     }
   }
 
@@ -147,7 +148,7 @@ class _CaptureScreenState extends State<CaptureScreen>
       final file = await c.takePicture();
       if (mounted) Navigator.of(context).pop(file.path);
     } on CameraException catch (e) {
-      _snack('Capture failed: ${e.description ?? e.code}');
+      _snack(tr.captureFailed(e.description ?? e.code));
       await _startStream();
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -188,14 +189,14 @@ class _CaptureScreenState extends State<CaptureScreen>
       appBar: AppBar(
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
-        title: const Text('Photograph plate'),
+        title: Text(tr.capturePhotographPlate),
       ),
       body: _error != null
           ? Center(
               child: Padding(
                 padding: const EdgeInsets.all(24),
                 child: Text(
-                  'Camera unavailable: $_error',
+                  tr.captureCameraUnavailable(_error!),
                   style: const TextStyle(color: Colors.white),
                   textAlign: TextAlign.center,
                 ),
@@ -332,9 +333,12 @@ class _ChecksBar extends StatelessWidget {
         spacing: 8,
         alignment: WrapAlignment.center,
         children: [
-          chip(tiltOk ? 'Level' : 'Tilt ${tilt.toStringAsFixed(0)}°', tiltOk),
-          chip(sharp ? 'Sharp' : 'Focusing…', sharp),
-          chip(glareOk ? 'No glare' : 'Glare: remove lid / dim light', glareOk),
+          chip(
+            tiltOk ? tr.captureLevel : tr.captureTilt(tilt.toStringAsFixed(0)),
+            tiltOk,
+          ),
+          chip(sharp ? tr.captureSharp : tr.captureFocusing, sharp),
+          chip(glareOk ? tr.captureNoGlare : tr.captureGlare, glareOk),
         ],
       ),
     );
@@ -364,9 +368,7 @@ class _Controls extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             IconButton.filledTonal(
-              tooltip: locked
-                  ? 'Unlock focus & exposure'
-                  : 'Lock focus & exposure',
+              tooltip: locked ? tr.captureUnlock : tr.captureLock,
               onPressed: onLock,
               icon: Icon(locked ? Icons.lock : Icons.lock_open),
             ),

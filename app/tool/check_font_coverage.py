@@ -1,8 +1,9 @@
 """Fail if the app's text uses a character the bundled fonts cannot draw.
 
-The web build bundles Roboto plus a small symbol font (ColonySymbols) instead of
-downloading fallback fonts, so any new symbol in a string literal must be in one
-of them. Run from app/: python tool/check_font_coverage.py
+The web build bundles Roboto, IBM Plex Sans Thai and a small symbol font
+(ColonySymbols) instead of downloading fallback fonts, so every character in the
+code and in the translations (lib/l10n/*.arb) must be in one of them.
+Run from app/: python tool/check_font_coverage.py
 """
 
 import pathlib
@@ -10,14 +11,19 @@ import sys
 
 from fontTools.ttLib import TTFont
 
-FONTS = ["assets/fonts/Roboto-Regular.ttf", "assets/fonts/ColonySymbols-Regular.ttf"]
+FONTS = [
+    "assets/fonts/Roboto-Regular.ttf",
+    "assets/fonts/IBMPlexSansThai-Regular.ttf",
+    "assets/fonts/ColonySymbols-Regular.ttf",
+]
 
 covered = set()
 for path in FONTS:
     covered |= set(TTFont(path).getBestCmap())
 
 missing = {}
-for f in pathlib.Path("lib").rglob("*.dart"):
+sources = [*pathlib.Path("lib").rglob("*.dart"), *pathlib.Path("lib/l10n").glob("*.arb")]
+for f in sources:
     for ch in f.read_text(encoding="utf-8"):
         if ord(ch) > 126 and ord(ch) not in covered:
             missing.setdefault(ch, set()).add(str(f))

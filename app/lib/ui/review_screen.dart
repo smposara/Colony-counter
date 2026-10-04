@@ -13,6 +13,8 @@ import '../core/spots.dart';
 import '../data/plate_record.dart';
 import '../data/plate_store.dart';
 import '../data/sample_info.dart';
+import '../l10n/l10n.dart';
+import '../l10n/labels.dart';
 import 'format.dart';
 import 'photo_flow.dart';
 import 'save_sheet.dart';
@@ -127,7 +129,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
     if (!mounted) return;
     setState(() {
       _photo = bytes;
-      if (bytes == null) _error = 'The photo for this plate is missing.';
+      if (bytes == null) _error = tr.reviewPhotoMissing;
     });
   }
 
@@ -180,7 +182,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
         if (_drop && _spots.isEmpty) _spots = _suggestSpots();
       });
     } catch (e) {
-      if (mounted) setState(() => _error = 'Could not count this photo: $e');
+      if (mounted) setState(() => _error = tr.reviewCouldNotCount('$e'));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -191,18 +193,16 @@ class _ReviewScreenState extends State<ReviewScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Recount plate?'),
-        content: const Text(
-          'Your manual additions and removals will be discarded.',
-        ),
+        title: Text(tr.reviewRecountTitle),
+        content: Text(tr.reviewRecountBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(tr.reviewCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Recount'),
+            child: Text(tr.reviewRecount),
           ),
         ],
       ),
@@ -589,7 +589,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
     final f = await showDialog<PlateFormat>(
       context: context,
       builder: (context) => SimpleDialog(
-        title: const Text('Plate type'),
+        title: Text(tr.reviewPlateType),
         children: [
           for (final f in PlateFormat.values)
             ListTile(
@@ -598,7 +598,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                     ? Icons.radio_button_checked
                     : Icons.radio_button_unchecked,
               ),
-              title: Text(f.label),
+              title: Text(f.text),
               onTap: () => Navigator.pop(context, f),
             ),
         ],
@@ -611,16 +611,28 @@ class _ReviewScreenState extends State<ReviewScreen> {
   }
 
   /// Banner lines for the annotated photo: what the plate is and its count.
+  ///
+  /// Stays in English on purpose: the banner is drawn onto the JPEG with an
+  /// ASCII-only bitmap font, which cannot render Thai.
   List<String> _annotationHeader() {
+    final en = lookupAppLocalizations(const Locale('en'));
+    String dilution(int exp) => exp == 0 ? en.neat : dilutionLabel(exp);
+    String flag(String f) => switch (f) {
+      'spreader' => en.flagSpreader,
+      'tntc' => en.flagTntc,
+      'clusters_estimated' => en.flagClusters,
+      'crowded' => en.flagCrowded,
+      'many_clusters' => en.flagManyClusters,
+      'low_contrast' => en.flagLowContrast,
+      _ => f,
+    };
     final r = widget.record;
     final info = widget.preset?.info;
     final sample = r?.sampleId ?? info?.sampleId ?? '';
     final what = _drop
         ? 'drop plate (${_spots.length} drops)'
         : [
-            dilutionLabel(
-              r?.dilutionExp ?? widget.preset?.slot.dilutionExp ?? 0,
-            ),
+            dilution(r?.dilutionExp ?? widget.preset?.slot.dilutionExp ?? 0),
             'R${r?.replicate ?? widget.preset?.slot.replicate ?? 1}',
           ].join(' · ');
     final classes = _colourMode == ColourMode.none
@@ -635,7 +647,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
       count,
       [
         shortDate(r?.createdAt ?? DateTime.now()),
-        if (_flags.isNotEmpty) _flags.map(flagLabel).join(', '),
+        if (_flags.isNotEmpty) _flags.map(flag).join(', '),
       ].join(' · '),
     ];
   }
@@ -662,13 +674,13 @@ class _ReviewScreenState extends State<ReviewScreen> {
         jpeg,
         'plate_${safe.isEmpty ? 'count' : safe}_${DateTime.now().millisecondsSinceEpoch}.jpg',
         'image/jpeg',
-        subject: 'Colony count',
+        subject: tr.reviewShareSubject,
       );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not share the photo: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(tr.reviewCouldNotShare('$e'))));
       }
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -686,16 +698,16 @@ class _ReviewScreenState extends State<ReviewScreen> {
         final leave = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('Discard this count?'),
-            content: const Text('It has not been saved.'),
+            title: Text(tr.reviewDiscardTitle),
+            content: Text(tr.reviewDiscardBody),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text('Keep'),
+                child: Text(tr.reviewKeep),
               ),
               FilledButton(
                 onPressed: () => Navigator.pop(context, true),
-                child: const Text('Discard'),
+                child: Text(tr.reviewDiscard),
               ),
             ],
           ),
@@ -707,15 +719,15 @@ class _ReviewScreenState extends State<ReviewScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Review count'),
+          title: Text(tr.reviewTitle),
           actions: [
             IconButton(
-              tooltip: 'Undo',
+              tooltip: tr.reviewUndo,
               onPressed: _undo.isEmpty ? null : _undoLast,
               icon: const Icon(Icons.undo),
             ),
             IconButton(
-              tooltip: 'Detection sensitivity',
+              tooltip: tr.reviewSensitivity,
               onPressed: _busy || _plate == null || _photo == null
                   ? null
                   : _adjustSensitivity,
@@ -723,7 +735,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
             ),
             PopupMenuButton<Object>(
               enabled: _plate != null,
-              tooltip: 'Plate type and colours',
+              tooltip: tr.reviewMenuTooltip,
               onSelected: (v) => v is ColourMode
                   ? _setColourMode(v)
                   : v == 'share'
@@ -743,27 +755,27 @@ class _ReviewScreenState extends State<ReviewScreen> {
                 PopupMenuItem(
                   value: 'share',
                   enabled: _photo != null && !_busy,
-                  child: const ListTile(
-                    leading: Icon(Icons.share),
-                    title: Text('Share annotated photo'),
+                  child: ListTile(
+                    leading: const Icon(Icons.share),
+                    title: Text(tr.reviewShareAnnotated),
                     contentPadding: EdgeInsets.zero,
                   ),
                 ),
                 if (widget.record != null) ...[
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'later',
                     child: ListTile(
-                      leading: Icon(Icons.add_a_photo_outlined),
-                      title: Text('Add a later photo (time-lapse)'),
+                      leading: const Icon(Icons.add_a_photo_outlined),
+                      title: Text(tr.reviewAddLaterPhoto),
                       contentPadding: EdgeInsets.zero,
                     ),
                   ),
                   if (widget.record!.seriesId.isNotEmpty)
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 'timelapse',
                       child: ListTile(
-                        leading: Icon(Icons.timeline),
-                        title: Text('Time-lapse'),
+                        leading: const Icon(Icons.timeline),
+                        title: Text(tr.reviewTimelapse),
                         contentPadding: EdgeInsets.zero,
                       ),
                     ),
@@ -772,19 +784,19 @@ class _ReviewScreenState extends State<ReviewScreen> {
                 PopupMenuItem(
                   value: 'format',
                   enabled: !_busy && _photo != null,
-                  child: Text('Plate type: ${_format.label}…'),
+                  child: Text(tr.reviewPlateTypeItem(_format.text)),
                 ),
                 CheckedPopupMenuItem(
                   value: 'drop',
                   checked: _drop,
-                  child: const Text('Drop plate'),
+                  child: Text(tr.reviewDropPlate),
                 ),
                 const PopupMenuDivider(),
                 for (final m in ColourMode.values)
                   CheckedPopupMenuItem(
                     value: m,
                     checked: _colourMode == m,
-                    child: Text('Colours: ${m.label}'),
+                    child: Text(tr.reviewColoursItem(m.text)),
                   ),
               ],
             ),
@@ -808,13 +820,13 @@ class _ReviewScreenState extends State<ReviewScreen> {
     }
     final photo = _photo;
     if (_imageW == 0 || photo == null) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 12),
-            Text('Counting colonies…'),
+            const CircularProgressIndicator(),
+            const SizedBox(height: 12),
+            Text(tr.reviewCounting),
           ],
         ),
       );
@@ -898,17 +910,17 @@ class _ReviewScreenState extends State<ReviewScreen> {
     final t = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
     final edits = [
-      if (_added > 0) '+$_added added',
-      if (_removed > 0) '−$_removed removed',
-      if (_removed < 0) '+${-_removed} in clusters',
+      if (_added > 0) tr.reviewAdded(_added),
+      if (_removed > 0) tr.reviewRemoved(_removed),
+      if (_removed < 0) tr.reviewInClusters(-_removed),
     ];
     final modes = [
-      (_Mode.zoom, Icons.zoom_in, 'Zoom'),
-      (_Mode.edit, Icons.touch_app, 'Edit'),
-      (_Mode.plate, Icons.radio_button_unchecked, 'Plate'),
-      if (_drop) (_Mode.spots, Icons.bubble_chart_outlined, 'Drops'),
+      (_Mode.zoom, Icons.zoom_in, tr.reviewModeZoom),
+      (_Mode.edit, Icons.touch_app, tr.reviewModeEdit),
+      (_Mode.plate, Icons.radio_button_unchecked, tr.reviewModePlate),
+      if (_drop) (_Mode.spots, Icons.bubble_chart_outlined, tr.reviewModeDrops),
       if (_colourMode != ColourMode.none)
-        (_Mode.colour, Icons.palette_outlined, 'Colour'),
+        (_Mode.colour, Icons.palette_outlined, tr.reviewModeColour),
     ];
     if (!modes.any((m) => m.$1 == _mode)) _mode = _Mode.edit;
     final compact = modes.length > 3;
@@ -951,8 +963,11 @@ class _ReviewScreenState extends State<ReviewScreen> {
                             padding: const EdgeInsets.only(bottom: 6),
                             child: Text(
                               edits.isEmpty
-                                  ? 'automatic'
-                                  : 'auto $_autoCount · ${edits.join(' · ')}',
+                                  ? tr.reviewAutomatic
+                                  : tr.reviewAutoEdits(
+                                      _autoCount,
+                                      edits.join(' · '),
+                                    ),
                               style: t.bodySmall,
                               textAlign: TextAlign.end,
                               maxLines: 2,
@@ -995,19 +1010,14 @@ class _ReviewScreenState extends State<ReviewScreen> {
                     ),
                     const SizedBox(height: 6),
                     Text(switch (_mode) {
-                      _Mode.zoom => 'Pinch to zoom, drag to pan.',
-                      _Mode.edit =>
-                        'Tap a mark to remove it, tap empty agar to add one. '
-                            'Long-press a mark to set how many colonies it contains.',
+                      _Mode.zoom => tr.reviewHintZoom,
+                      _Mode.edit => tr.reviewHintEdit,
                       _Mode.plate =>
                         _plate?.isSquare ?? false
-                            ? 'Drag to move the square, use the sliders to resize and turn it, then recount.'
-                            : 'Drag to move the circle, use the slider to resize it, then recount.',
-                      _Mode.spots =>
-                        'Tap a drop to set its dilution and replicate, tap empty agar to add a drop, '
-                            'drag a drop to move it.',
-                      _Mode.colour =>
-                        'Tap a colony to switch its colour class.',
+                            ? tr.reviewHintSquare
+                            : tr.reviewHintCircle,
+                      _Mode.spots => tr.reviewHintDrops,
+                      _Mode.colour => tr.reviewHintColour,
                     }, style: t.bodySmall),
                   ],
                 ),
@@ -1021,7 +1031,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                 children: [
                   if (_mode == _Mode.plate && _plate != null) ...[
                     Slider(
-                      label: 'Size',
+                      label: tr.reviewSize,
                       value: _plate!.radius.clamp(
                         _imageW * 0.15,
                         _imageW * 0.7,
@@ -1052,8 +1062,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
                       icon: const Icon(Icons.refresh),
                       label: Text(
                         _plate!.isSquare
-                            ? 'Recount with this square'
-                            : 'Recount with this circle',
+                            ? tr.reviewRecountSquare
+                            : tr.reviewRecountCircle,
                       ),
                     ),
                   ] else
@@ -1065,7 +1075,9 @@ class _ReviewScreenState extends State<ReviewScreen> {
                             : _save,
                         icon: const Icon(Icons.check),
                         label: Text(
-                          widget.record == null ? 'Save plate' : 'Save changes',
+                          widget.record == null
+                              ? tr.reviewSavePlate
+                              : tr.reviewSaveChanges,
                         ),
                       ),
                     ),
@@ -1108,17 +1120,14 @@ class _ReviewScreenState extends State<ReviewScreen> {
           Icons.warning_amber_rounded,
           cs.tertiaryContainer,
           cs.onTertiaryContainer,
-          'Check this count (${warnings.join(', ')}). Zoom in and correct '
-          'any missed or extra marks before saving.',
+          tr.reviewCheckCount(warnings.join(', ')),
         ),
       if (_accuracyCheckDue)
         banner(
           Icons.fact_check_outlined,
           cs.secondaryContainer,
           cs.onSecondaryContainer,
-          'Accuracy check: please check every colony on this plate. It is '
-          'saved as a reference count to track how well the automatic count '
-          'works on your plates.',
+          tr.reviewAccuracyCheck,
         ),
     ];
   }
@@ -1143,15 +1152,17 @@ class _ReviewScreenState extends State<ReviewScreen> {
                 _ClassDot(colour: _classColour(_colourMode, k)),
                 const SizedBox(width: 4),
                 Text(
-                  '${_colourMode.classNames[k]} ${counts[k]}',
+                  tr.reviewClassCount(_colourMode.className(k), counts[k]),
                   style: t.bodyMedium,
                 ),
               ],
             ),
           if (total > 0)
             Text(
-              '${(counts[1] / total * 100).toStringAsFixed(1)} % '
-              '${_colourMode.classNames[1].toLowerCase()}',
+              tr.reviewClassPercent(
+                (counts[1] / total * 100).toStringAsFixed(1),
+                _colourMode.className(1).toLowerCase(),
+              ),
               style: t.bodySmall,
             ),
         ],
@@ -1161,10 +1172,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
 
   Widget _dropSummary(TextTheme t) {
     if (_spots.isEmpty) {
-      return Text(
-        'No drops marked yet: use Drops to add them.',
-        style: t.bodySmall,
-      );
+      return Text(tr.reviewNoDrops, style: t.bodySmall);
     }
     return Padding(
       padding: const EdgeInsets.only(bottom: 4),
@@ -1362,7 +1370,7 @@ class _ClusterDialogState extends State<_ClusterDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Colonies in this mark'),
+      title: Text(tr.reviewClusterTitle),
       content: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -1387,11 +1395,11 @@ class _ClusterDialogState extends State<_ClusterDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text(tr.reviewCancel),
         ),
         FilledButton(
           onPressed: () => Navigator.pop(context, _n),
-          child: const Text('Set'),
+          child: Text(tr.reviewSet),
         ),
       ],
     );
@@ -1420,16 +1428,12 @@ class _SensitivitySheetState extends State<_SensitivitySheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('Detection sensitivity', style: t.titleMedium),
+          Text(tr.reviewSensitivity, style: t.titleMedium),
           const SizedBox(height: 4),
-          Text(
-            'Higher finds fainter and smaller colonies but may count debris. '
-            'Default: 6.5.',
-            style: t.bodySmall,
-          ),
+          Text(tr.reviewSensitivityHelp, style: t.bodySmall),
           Row(
             children: [
-              const Text('Low'),
+              Text(tr.reviewLow),
               Expanded(
                 child: Slider(
                   value: 10.5 - _k,
@@ -1440,12 +1444,12 @@ class _SensitivitySheetState extends State<_SensitivitySheet> {
                   onChanged: (v) => setState(() => _k = 10.5 - v),
                 ),
               ),
-              const Text('High'),
+              Text(tr.reviewHigh),
             ],
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, _k),
-            child: const Text('Recount'),
+            child: Text(tr.reviewRecount),
           ),
         ],
       ),
@@ -1478,7 +1482,7 @@ class _SpotDialogState extends State<_SpotDialog> {
     final t = Theme.of(context).textTheme;
     final diameterMm = _s.radius * 2 * widget.mmPerPx;
     return AlertDialog(
-      title: Text('Drop ${widget.index + 1} · ${widget.count} colonies'),
+      title: Text(tr.reviewDropTitle(widget.index + 1, widget.count)),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1488,9 +1492,9 @@ class _SpotDialogState extends State<_SpotDialog> {
               Expanded(
                 child: DropdownButtonFormField<int>(
                   initialValue: _s.dilutionExp,
-                  decoration: const InputDecoration(
-                    labelText: 'Dilution',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: tr.reviewDilution,
+                    border: const OutlineInputBorder(),
                   ),
                   items: [
                     for (var e = 0; e <= 10; e++)
@@ -1504,9 +1508,9 @@ class _SpotDialogState extends State<_SpotDialog> {
               Expanded(
                 child: DropdownButtonFormField<int>(
                   initialValue: _s.replicate,
-                  decoration: const InputDecoration(
-                    labelText: 'Replicate',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: tr.reviewReplicate,
+                    border: const OutlineInputBorder(),
                   ),
                   items: [
                     for (var r = 1; r <= 12; r++)
@@ -1521,12 +1525,15 @@ class _SpotDialogState extends State<_SpotDialog> {
           const SizedBox(height: 8),
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
-            title: const Text('Too numerous to count'),
-            subtitle: const Text('Confluent drop'),
+            title: Text(tr.reviewTntc),
+            subtitle: Text(tr.reviewConfluent),
             value: _s.tntc,
             onChanged: (v) => setState(() => _s = _s.copyWith(tntc: v)),
           ),
-          Text('Size ${diameterMm.toStringAsFixed(1)} mm', style: t.bodySmall),
+          Text(
+            tr.reviewDropSize(diameterMm.toStringAsFixed(1)),
+            style: t.bodySmall,
+          ),
           Slider(
             value: diameterMm.clamp(2, 20),
             min: 2,
@@ -1540,15 +1547,15 @@ class _SpotDialogState extends State<_SpotDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context, 'delete'),
-          child: const Text('Delete drop'),
+          child: Text(tr.reviewDeleteDrop),
         ),
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text(tr.reviewCancel),
         ),
         FilledButton(
           onPressed: () => Navigator.pop(context, _s),
-          child: const Text('OK'),
+          child: Text(tr.reviewOk),
         ),
       ],
     );

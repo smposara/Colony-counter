@@ -12,9 +12,12 @@ dependencies:
   file_picker: ^13.1.0
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   idb_shim: ^2.9.10
   image: ^4.10.1
   image_picker: ^1.2.3
+  intl: any
   path_provider: ^2.1.6
   pdf: ^3.13.1
   sensors_plus: ^7.1.1
@@ -28,6 +31,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  generate: true
 
   # Bundled so the web version never needs to download fonts at run time.
   fonts:
@@ -37,6 +41,14 @@ flutter:
         - asset: assets/fonts/Roboto-Medium.ttf
           weight: 500
         - asset: assets/fonts/Roboto-Bold.ttf
+          weight: 700
+    # Thai script (the Thai subset of IBM Plex Sans Thai, OFL).
+    - family: IBMPlexSansThai
+      fonts:
+        - asset: assets/fonts/IBMPlexSansThai-Regular.ttf
+        - asset: assets/fonts/IBMPlexSansThai-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/IBMPlexSansThai-Bold.ttf
           weight: 700
     - family: ColonySymbols
       fonts:

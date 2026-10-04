@@ -12,6 +12,8 @@ import '../data/export.dart';
 import '../data/plate_record.dart';
 import '../data/plate_store.dart';
 import '../data/training_export.dart';
+import '../l10n/l10n.dart';
+import '../l10n/labels.dart';
 import 'accuracy_screen.dart';
 import 'compare_screen.dart';
 import 'format.dart';
@@ -45,23 +47,23 @@ class _HomeScreenState extends State<HomeScreen> {
     };
     return Scaffold(
       appBar: AppBar(
-        title: Text(const ['Colony Counter', 'Samples', 'Compare'][_tab]),
+        title: Text([tr.appTitle, tr.homeSamples, tr.homeCompare][_tab]),
         actions: [
           if (_tab == 0)
             IconButton(
-              tooltip: 'Several plates in one photo',
+              tooltip: tr.homeSeveralPlates,
               icon: const Icon(Icons.grid_view_outlined),
               onPressed: () => countSeveralPlates(context, store),
             ),
           if (_tab == 0)
             IconButton(
-              tooltip: 'Import photo',
+              tooltip: tr.homeImportPhoto,
               icon: const Icon(Icons.photo_library_outlined),
               onPressed: () => countNewPlate(context, store, fromGallery: true),
             ),
           if (_tab == 1)
             IconButton(
-              tooltip: 'Scan plate label',
+              tooltip: tr.homeScanLabel,
               icon: const Icon(Icons.qr_code_scanner),
               onPressed: () async {
                 final label = await scanPlateLabel(context);
@@ -78,28 +80,31 @@ class _HomeScreenState extends State<HomeScreen> {
         0 => FloatingActionButton.extended(
           onPressed: () => countNewPlate(context, store),
           icon: const Icon(Icons.camera_alt_outlined),
-          label: const Text('Count plate'),
+          label: Text(tr.homeCountPlate),
         ),
         1 => FloatingActionButton.extended(
           onPressed: () => openSampleSetup(context, store),
           icon: const Icon(Icons.add),
-          label: const Text('New sample'),
+          label: Text(tr.homeNewSample),
         ),
         _ => null,
       },
       bottomNavigationBar: NavigationBar(
         selectedIndex: _tab,
         onDestinationSelected: (i) => setState(() => _tab = i),
-        destinations: const [
+        destinations: [
           NavigationDestination(
-            icon: Icon(Icons.blur_circular),
-            label: 'Plates',
+            icon: const Icon(Icons.blur_circular),
+            label: tr.homePlates,
           ),
           NavigationDestination(
-            icon: Icon(Icons.science_outlined),
-            label: 'Samples',
+            icon: const Icon(Icons.science_outlined),
+            label: tr.homeSamples,
           ),
-          NavigationDestination(icon: Icon(Icons.show_chart), label: 'Compare'),
+          NavigationDestination(
+            icon: const Icon(Icons.show_chart),
+            label: tr.homeCompare,
+          ),
         ],
       ),
     );
@@ -166,25 +171,22 @@ class _DataMenu extends StatelessWidget {
       ('plates_$stamp.csv', utf8.encode(platesCsv(store)), 'text/csv'),
       ('samples_$stamp.csv', utf8.encode(samplesCsv(store)), 'text/csv'),
       ('colonies_$stamp.csv', utf8.encode(coloniesCsv(store)), 'text/csv'),
-    ], 'Colony counts');
+    ], tr.homeShareCounts);
   }
 
   Future<void> _trainingExport(BuildContext context) async {
     final selection = await showDialog<TrainingSelection>(
       context: context,
       builder: (context) => SimpleDialog(
-        title: const Text('Export training data'),
+        title: Text(tr.homeExportTraining),
         children: [
-          const Padding(
+          Padding(
             padding: EdgeInsets.fromLTRB(24, 0, 24, 8),
-            child: Text(
-              'Photos with every colony mark, in COCO and YOLO formats, for '
-              'training a colony detector on your own plates.',
-            ),
+            child: Text(tr.homeTrainingInfo),
           ),
           for (final s in TrainingSelection.values)
             ListTile(
-              title: Text(s.label),
+              title: Text(s.text),
               trailing: Text('${trainingPlates(store, s).length}'),
               onTap: () => Navigator.pop(context, s),
             ),
@@ -194,26 +196,26 @@ class _DataMenu extends StatelessWidget {
     if (selection == null || !context.mounted) return;
     if (trainingPlates(store, selection).isEmpty) {
       ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('No plates to export.')));
+          .showSnackBar(SnackBar(content: Text(tr.homeNoPlatesToExport)));
       return;
     }
     final messenger = ScaffoldMessenger.of(context);
-    messenger.showSnackBar(const SnackBar(content: Text('Preparing export…')));
+    messenger.showSnackBar(SnackBar(content: Text(tr.homePreparingExport)));
     final zip = await buildTrainingExport(store, selection: selection);
     messenger.hideCurrentSnackBar();
     await _share([
       ('training_${_stamp()}.zip', zip, 'application/zip'),
-    ], 'Colony Counter training data');
+    ], tr.homeShareTraining);
   }
 
   Future<void> _backup(BuildContext context) async {
     final messenger = ScaffoldMessenger.of(context);
-    messenger.showSnackBar(const SnackBar(content: Text('Preparing backup…')));
+    messenger.showSnackBar(SnackBar(content: Text(tr.homePreparingBackup)));
     final zip = await buildBackup(store);
     messenger.hideCurrentSnackBar();
     await _share([
       ('colony-counter-backup_${_stamp()}.zip', zip, 'application/zip'),
-    ], 'Colony Counter backup');
+    ], tr.homeShareBackup);
   }
 
   Future<void> _restore(BuildContext context) async {
@@ -226,17 +228,27 @@ class _DataMenu extends StatelessWidget {
     final bytes = await picked.single.readAsBytes();
     try {
       final r = await restoreBackup(store, bytes);
+      final plates = tr.homeNPlates(r.platesAdded);
+      final samples = tr.homeNSamples(r.samplesAdded);
       messenger.showSnackBar(
         SnackBar(
           content: Text(
-            'Restored ${r.platesAdded} plate${r.platesAdded == 1 ? '' : 's'}'
-            ' and ${r.samplesAdded} sample${r.samplesAdded == 1 ? '' : 's'}'
-            '${r.platesSkipped > 0 ? ' (${r.platesSkipped} already here, kept)' : ''}.',
+            r.platesSkipped > 0
+                ? tr.homeRestoredKept(plates, samples, r.platesSkipped)
+                : tr.homeRestored(plates, samples),
           ),
         ),
       );
     } on FormatException catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text(e.message)));
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            e.message.contains('not a zip')
+                ? tr.restoreNotZip
+                : tr.restoreNotBackup,
+          ),
+        ),
+      );
     }
   }
 
@@ -258,29 +270,23 @@ class _DataMenu extends StatelessWidget {
         PopupMenuItem(
           value: 'csv',
           enabled: !empty,
-          child: const Text('Export CSV'),
+          child: Text(tr.homeExportCsv),
         ),
         PopupMenuItem(
           value: 'backup',
           enabled: !empty,
-          child: const Text('Back up all data'),
+          child: Text(tr.homeBackUpAll),
         ),
-        const PopupMenuItem(
-          value: 'restore',
-          child: Text('Restore from backup'),
-        ),
+        PopupMenuItem(value: 'restore', child: Text(tr.homeRestore)),
         const PopupMenuDivider(),
-        const PopupMenuItem(
-          value: 'accuracy',
-          child: Text('Counting accuracy'),
-        ),
+        PopupMenuItem(value: 'accuracy', child: Text(tr.accuracyTitle)),
         PopupMenuItem(
           value: 'training',
           enabled: store.records.isNotEmpty,
-          child: const Text('Export training data'),
+          child: Text(tr.homeExportTraining),
         ),
         const PopupMenuDivider(),
-        const PopupMenuItem(value: 'settings', child: Text('Settings')),
+        PopupMenuItem(value: 'settings', child: Text(tr.homeSettings)),
       ],
     );
   }
@@ -307,7 +313,58 @@ class _SettingsLauncher {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Counting rule',
+                tr.settingsLanguage,
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+              const SizedBox(height: 8),
+              SegmentedButton<String>(
+                showSelectedIcon: false,
+                segments: [
+                  ButtonSegment(
+                    value: 'system',
+                    label: Text(tr.languageSystem),
+                  ),
+                  const ButtonSegment(value: 'en', label: Text('English')),
+                  const ButtonSegment(value: 'th', label: Text('ไทย')),
+                ],
+                selected: {store.language},
+                onSelectionChanged: (s) {
+                  // The app restarts its screens in the new language.
+                  Navigator.of(context).pop();
+                  store.setDefaults(language: s.first);
+                },
+              ),
+              const SizedBox(height: 20),
+              Text(
+                tr.settingsTheme,
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+              const SizedBox(height: 8),
+              SegmentedButton<String>(
+                showSelectedIcon: false,
+                segments: [
+                  ButtonSegment(
+                    value: 'system',
+                    icon: const Icon(Icons.brightness_auto_outlined),
+                    label: Text(tr.themeSystem),
+                  ),
+                  ButtonSegment(
+                    value: 'light',
+                    icon: const Icon(Icons.light_mode_outlined),
+                    label: Text(tr.themeLight),
+                  ),
+                  ButtonSegment(
+                    value: 'dark',
+                    icon: const Icon(Icons.dark_mode_outlined),
+                    label: Text(tr.themeDark),
+                  ),
+                ],
+                selected: {store.theme},
+                onSelectionChanged: (s) => store.setDefaults(theme: s.first),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                tr.homeCountingRule,
                 style: Theme.of(context).textTheme.titleSmall,
               ),
               const SizedBox(height: 8),
@@ -315,19 +372,19 @@ class _SettingsLauncher {
                 showSelectedIcon: false,
                 segments: [
                   for (final r in CountingRule.spreadRules)
-                    ButtonSegment(value: r, label: Text(r.label)),
+                    ButtonSegment(value: r, label: Text(r.text)),
                 ],
                 selected: {store.rule},
                 onSelectionChanged: (s) => store.setRule(s.first),
               ),
               const SizedBox(height: 4),
               Text(
-                'Countable range: ${store.rule.min}–${store.rule.max} colonies per plate',
+                tr.homeCountableRange(store.rule.min, store.rule.max),
                 style: Theme.of(context).textTheme.bodySmall,
               ),
               const SizedBox(height: 20),
               Text(
-                'Default plated volume',
+                tr.homeDefaultVolume,
                 style: Theme.of(context).textTheme.titleSmall,
               ),
               const SizedBox(height: 8),
@@ -344,15 +401,15 @@ class _SettingsLauncher {
               DropdownButtonFormField<PlateFormat>(
                 isExpanded: true,
                 initialValue: store.defaultFormat,
-                decoration: const InputDecoration(
-                  labelText: 'Default plate type',
-                  helperText: 'For quick counts and new samples',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: tr.homeDefaultPlateType,
+                  helperText: tr.homeDefaultPlateTypeHelp,
+                  border: const OutlineInputBorder(),
                 ),
                 items: [
                   for (final f in PlateFormat.values)
                     if (!f.membrane)
-                      DropdownMenuItem(value: f, child: Text(f.label)),
+                      DropdownMenuItem(value: f, child: Text(f.text)),
                 ],
                 onChanged: (f) => store.setDefaults(format: f),
               ),
@@ -382,11 +439,10 @@ class _EmptyState extends StatelessWidget {
               color: Theme.of(context).colorScheme.primary,
             ),
             const SizedBox(height: 16),
-            Text('No plates yet', style: t.titleLarge),
+            Text(tr.homeNoPlates, style: t.titleLarge),
             const SizedBox(height: 8),
             Text(
-              'Place a 90 mm Nutrient Agar plate in the lightbox with the lid off, '
-              'then tap “Count plate”.',
+              tr.homeEmptyHint,
               textAlign: TextAlign.center,
               style: t.bodyMedium,
             ),
@@ -431,18 +487,16 @@ class RecordTile extends StatelessWidget {
       confirmDismiss: (_) => showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Delete plate?'),
-          content: const Text(
-            'The photo and its count will be removed from this phone.',
-          ),
+          title: Text(tr.homeDeletePlate),
+          content: Text(tr.homeDeletePlateBody),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel'),
+              child: Text(tr.homeCancel),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('Delete'),
+              child: Text(tr.homeDelete),
             ),
           ],
         ),
@@ -461,12 +515,12 @@ class RecordTile extends StatelessWidget {
               Icon(Icons.warning_amber_rounded, color: cs.error, size: 20),
             if (unchecked)
               Tooltip(
-                message: 'Flagged for checking',
+                message: tr.homeFlagged,
                 child: Icon(Icons.help_outline, color: cs.tertiary, size: 20),
               ),
             if (r.verified)
               Tooltip(
-                message: 'Checked every colony',
+                message: tr.homeChecked,
                 child: Icon(
                   Icons.fact_check_outlined,
                   color: cs.primary,
@@ -475,7 +529,7 @@ class RecordTile extends StatelessWidget {
               ),
             if (r.seriesId.isNotEmpty)
               Tooltip(
-                message: 'Time-lapse',
+                message: tr.homeTimelapse,
                 child: Icon(Icons.timeline, color: cs.secondary, size: 20),
               ),
             const SizedBox(width: 6),

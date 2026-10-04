@@ -23,7 +23,12 @@ enum PlateFormat {
   /// A gridded membrane filter (water testing); the counted area is the filter.
   membrane47('47 mm membrane filter', PlateShape.round, 47, membrane: true);
 
-  const PlateFormat(this.label, this.shape, this.sizeMm, {this.membrane = false});
+  const PlateFormat(
+    this.label,
+    this.shape,
+    this.sizeMm, {
+    this.membrane = false,
+  });
 
   final String label;
   final PlateShape shape;
@@ -96,7 +101,8 @@ class Plate {
     // otherwise be counted.
     final k = r - kSquareCorner * r;
     if (u <= k || v <= k) return true;
-    return (u - k) * (u - k) + (v - k) * (v - k) <= math.pow(kSquareCorner * r, 2);
+    return (u - k) * (u - k) + (v - k) * (v - k) <=
+        math.pow(kSquareCorner * r, 2);
   }
 
   /// Corners of a square plate (or a 64-gon for a round one) at [rimFraction].

@@ -1,0 +1,887 @@
+{
+  "@@locale": "en",
+  "sampleKind": "Sample",
+  "sampleLiquid": "Liquid (CFU/mL)",
+  "sampleSolid": "Solid (CFU/g)",
+  "sampleWeight": "Sample weight",
+  "diluentVolume": "Diluent",
+  "solidTenfold": "The initial suspension is 1:10, so it is the 10⁻¹ dilution. Label plates with the total dilution of the sample (e.g. 10⁻² for the next tube).",
+  "solidOther": "The initial suspension is 1:{ratio}. Label plates as if it were the 10⁻¹ dilution; results are corrected by ×{factor}.",
+  "@solidOther": {
+    "placeholders": {
+      "ratio": {
+        "type": "String"
+      },
+      "factor": {
+        "type": "String"
+      }
+    }
+  },
+  "homeSamples": "Samples",
+  "homeCompare": "Compare",
+  "homePlates": "Plates",
+  "homeSeveralPlates": "Several plates in one photo",
+  "homeImportPhoto": "Import photo",
+  "homeScanLabel": "Scan plate label",
+  "homeCountPlate": "Count plate",
+  "homeNewSample": "New sample",
+  "homeShareCounts": "Colony counts",
+  "homeShareTraining": "Colony Counter training data",
+  "homeShareBackup": "Colony Counter backup",
+  "homeExportTraining": "Export training data",
+  "homeTrainingInfo": "Photos with every colony mark, in COCO and YOLO formats, for training a colony detector on your own plates.",
+  "homeNoPlatesToExport": "No plates to export.",
+  "homePreparingExport": "Preparing export…",
+  "homePreparingBackup": "Preparing backup…",
+  "homeNPlates": "{n, plural, =1{1 plate} other{{n} plates}}",
+  "@homeNPlates": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "homeNSamples": "{n, plural, =1{1 sample} other{{n} samples}}",
+  "@homeNSamples": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "homeRestored": "Restored {plates} and {samples}.",
+  "@homeRestored": {
+    "placeholders": {
+      "plates": {
+        "type": "String"
+      },
+      "samples": {
+        "type": "String"
+      }
+    }
+  },
+  "homeRestoredKept": "Restored {plates} and {samples} ({skipped} already here, kept).",
+  "@homeRestoredKept": {
+    "placeholders": {
+      "plates": {
+        "type": "String"
+      },
+      "samples": {
+        "type": "String"
+      },
+      "skipped": {
+        "type": "int"
+      }
+    }
+  },
+  "homeExportCsv": "Export CSV",
+  "homeBackUpAll": "Back up all data",
+  "homeRestore": "Restore from backup",
+  "homeSettings": "Settings",
+  "homeCountingRule": "Counting rule",
+  "homeCountableRange": "Countable range: {min}–{max} colonies per plate",
+  "@homeCountableRange": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "homeDefaultVolume": "Default plated volume",
+  "homeDefaultPlateType": "Default plate type",
+  "homeDefaultPlateTypeHelp": "For quick counts and new samples",
+  "homeNoPlates": "No plates yet",
+  "homeEmptyHint": "Place a 90 mm Nutrient Agar plate in the lightbox with the lid off, then tap “Count plate”.",
+  "homeDeletePlate": "Delete plate?",
+  "homeDeletePlateBody": "The photo and its count will be removed from this phone.",
+  "homeCancel": "Cancel",
+  "homeDelete": "Delete",
+  "homeFlagged": "Flagged for checking",
+  "homeChecked": "Checked every colony",
+  "homeTimelapse": "Time-lapse",
+  "accuracyTitle": "Counting accuracy",
+  "accuracyNoChecked": "No checked plates yet",
+  "accuracyHowTo": "Now and then, check every colony on a plate: zoom in, remove wrong marks, add missed colonies, and set clusters. Then turn on \"Checked every colony\" when saving. The app compares its own count with yours and shows here how accurate it is on your plates.",
+  "accuracyCheckedPlates": "{n, plural, =1{1 checked plate} other{{n} checked plates}}",
+  "@accuracyCheckedPlates": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "accuracyWithin10": "{pct} % of plates within ±10 %",
+  "@accuracyWithin10": {
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "accuracyOfChecked": "of the checked count · {plates}",
+  "@accuracyOfChecked": {
+    "placeholders": {
+      "plates": {
+        "type": "String"
+      }
+    }
+  },
+  "accuracyMeanError": "mean error",
+  "accuracyBias": "bias",
+  "accuracyColoniesOff": "colonies off, on average",
+  "accuracyPrecision": "of marks were colonies",
+  "accuracyRecall": "of colonies found",
+  "accuracyFootnote": "Percentages use plates with 10 or more colonies. Negative bias means the app counts too few.",
+  "accuracyScatterTitle": "Automatic vs checked count",
+  "accuracyNotFlagged": "Not flagged",
+  "accuracyScatterHint": "Tap a dot for details. Dots below the line: the app counted too few. Shaded: within ±10 %.",
+  "accuracyPointDetail": "{plate} · {date}: app {auto}, checked {checked}",
+  "@accuracyPointDetail": {
+    "placeholders": {
+      "plate": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      },
+      "auto": {
+        "type": "int"
+      },
+      "checked": {
+        "type": "int"
+      }
+    }
+  },
+  "accuracyAxisChecked": "checked count →",
+  "accuracyRangeColonies": "{range} colonies",
+  "@accuracyRangeColonies": {
+    "placeholders": {
+      "range": {
+        "type": "String"
+      }
+    }
+  },
+  "accuracyErrorsTitle": "Where the errors are",
+  "accuracyColPlates": "plates",
+  "accuracyWarningsUseful": "If the warnings are useful, flagged plates have the larger errors.",
+  "accuracyCheckedPlatesTitle": "Checked plates",
+  "accuracyAppVsChecked": "app {auto} · checked {checked}",
+  "@accuracyAppVsChecked": {
+    "placeholders": {
+      "auto": {
+        "type": "int"
+      },
+      "checked": {
+        "type": "int"
+      }
+    }
+  },
+  "accuracyAskCheck": "Ask me to check a plate",
+  "accuracyNever": "Never",
+  "accuracyEvery": "Every {n}th",
+  "@accuracyEvery": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "accuracyAskCheckHelp": "The review screen then asks you to check every colony on that plate before saving.",
+  "timelapseHours": "{h} h",
+  "@timelapseHours": {
+    "placeholders": {
+      "h": {
+        "type": "String"
+      }
+    }
+  },
+  "timelapseNoPhotos": "No photos in this series.",
+  "timelapseShareCsv": "Share colony table (CSV)",
+  "timelapseAddLater": "Add a later photo",
+  "timelapsePhotos": "{n, plural, =1{1 photo} other{{n} photos}}",
+  "@timelapsePhotos": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelapseSincePlating": "hours since plating",
+  "timelapseSinceFirst": "hours since the first photo",
+  "timelapseColoniesAt": "{n} colonies at {time}",
+  "@timelapseColoniesAt": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "timelapseAppeared": "{n} appeared after the first photo · half had appeared by {time}",
+  "@timelapseAppeared": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "timelapseGrowth": "Median growth {rate} mm/h in diameter",
+  "@timelapseGrowth": {
+    "placeholders": {
+      "rate": {
+        "type": "String"
+      }
+    }
+  },
+  "timelapseAddLaterHint": "Add a later photo of the same plate to see when colonies appear and how fast they grow.",
+  "timelapseMatching": "Colonies are matched between photos by position, after turning and mirroring the earlier photo to fit the later one. Put the plate the same way up each time if few colonies are visible early on.",
+  "timelapseChartTitle": "Colonies counted over time",
+  "timelapsePhotosTitle": "Photos",
+  "timelapsePhotoRow": "{time} · {n} colonies",
+  "@timelapsePhotoRow": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelapseFirstSeen": "{n} first seen here",
+  "@timelapseFirstSeen": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelapseTurned": "turned {deg}° to fit the next",
+  "@timelapseTurned": {
+    "placeholders": {
+      "deg": {
+        "type": "int"
+      }
+    }
+  },
+  "timelapseTurnedMirrored": "turned {deg}°, mirrored to fit the next",
+  "@timelapseTurnedMirrored": {
+    "placeholders": {
+      "deg": {
+        "type": "int"
+      }
+    }
+  },
+  "timelapseAppearanceTitle": "When each colony appeared",
+  "timelapseBy": "by {time}",
+  "@timelapseBy": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "compareEmpty": "Give samples the same Experiment name and a Condition (e.g. Control / Treated), and optionally a time point, to compare them here: log reduction, % kill, and time-kill or growth curves.",
+  "compareExperiment": "Experiment",
+  "compareControl": "Control",
+  "compareOverTime": "log₁₀ {unit} over time",
+  "@compareOverTime": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "compareChartHint": "Mean ± SD of replicates; tap a point for its value.",
+  "compareResults": "Results",
+  "compareCondition": "Condition",
+  "compareReductionVs": "Reduction vs {control}",
+  "@compareReductionVs": {
+    "placeholders": {
+      "control": {
+        "type": "String"
+      }
+    }
+  },
+  "compareReductionHelp": "log reduction = mean log₁₀(control) − mean log₁₀(treated); SD combines both groups. % kill from the geometric means.",
+  "compareTime": "Time",
+  "compareLogReduction": "log reduction",
+  "compareKill": "% kill",
+  "compareSamples": "Samples",
+  "appTitle": "Colony Counter",
+  "settingsLanguage": "Language",
+  "languageSystem": "Phone setting",
+  "settingsTheme": "Appearance",
+  "themeSystem": "Automatic",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "restoreNotZip": "This file is not a Colony Counter backup (not a zip).",
+  "restoreNotBackup": "This zip is not a Colony Counter backup.",
+  "photoReadingLabel": "Reading label…",
+  "photoNoLabelFound": "No plate label found. Fill the frame with the QR code and try again.",
+  "captureLockNotSupported": "Lock not supported: {error}",
+  "@captureLockNotSupported": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "captureFailed": "Capture failed: {error}",
+  "@captureFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "capturePhotographPlate": "Photograph plate",
+  "captureCameraUnavailable": "Camera unavailable: {error}",
+  "@captureCameraUnavailable": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "captureLevel": "Level",
+  "captureTilt": "Tilt {deg}°",
+  "@captureTilt": {
+    "placeholders": {
+      "deg": {
+        "type": "String"
+      }
+    }
+  },
+  "captureSharp": "Sharp",
+  "captureFocusing": "Focusing…",
+  "captureNoGlare": "No glare",
+  "captureGlare": "Glare: remove lid / dim light",
+  "captureUnlock": "Unlock focus & exposure",
+  "captureLock": "Lock focus & exposure",
+  "multiRoundOnly": "Several plates in one photo works with round dishes only.",
+  "multiLayPlates": "Lay the plates side by side, lids off, on a dark surface, and photograph them from straight above.",
+  "multiTakePhoto": "Take photo",
+  "multiChoosePhoto": "Choose photo",
+  "multiNoPlatesFound": "No plates found in this photo.",
+  "multiPlatesInPhoto": "Plates in photo",
+  "multiPlatesFound": "{n, plural, =1{1 plate found} other{{n} plates found}}",
+  "@multiPlatesFound": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "multiDone": "Done",
+  "multiAddRemove": "Add or remove plates",
+  "multiEditHint": "Tap a circle to remove it, or tap the centre of a missed plate to add one.",
+  "multiUsePencil": "Use the pencil to mark the plates.",
+  "multiAllSaved": "All plates are saved.",
+  "multiTapToCount": "Tap a plate to count it. {n} still to save.",
+  "@multiTapToCount": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "reviewPhotoMissing": "The photo for this plate is missing.",
+  "reviewCouldNotCount": "Could not count this photo: {error}",
+  "@reviewCouldNotCount": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "reviewRecountTitle": "Recount plate?",
+  "reviewRecountBody": "Your manual additions and removals will be discarded.",
+  "reviewCancel": "Cancel",
+  "reviewRecount": "Recount",
+  "reviewPlateType": "Plate type",
+  "reviewShareSubject": "Colony count",
+  "reviewCouldNotShare": "Could not share the photo: {error}",
+  "@reviewCouldNotShare": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "reviewDiscardTitle": "Discard this count?",
+  "reviewDiscardBody": "It has not been saved.",
+  "reviewKeep": "Keep",
+  "reviewDiscard": "Discard",
+  "reviewTitle": "Review count",
+  "reviewUndo": "Undo",
+  "reviewSensitivity": "Detection sensitivity",
+  "reviewMenuTooltip": "Plate type and colours",
+  "reviewShareAnnotated": "Share annotated photo",
+  "reviewAddLaterPhoto": "Add a later photo (time-lapse)",
+  "reviewTimelapse": "Time-lapse",
+  "reviewPlateTypeItem": "Plate type: {type}…",
+  "@reviewPlateTypeItem": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "reviewDropPlate": "Drop plate",
+  "reviewColoursItem": "Colours: {mode}",
+  "@reviewColoursItem": {
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
+  "reviewCounting": "Counting colonies…",
+  "reviewAdded": "+{n} added",
+  "@reviewAdded": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "reviewRemoved": "−{n} removed",
+  "@reviewRemoved": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "reviewInClusters": "+{n} in clusters",
+  "@reviewInClusters": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "reviewModeZoom": "Zoom",
+  "reviewModeEdit": "Edit",
+  "reviewModePlate": "Plate",
+  "reviewModeDrops": "Drops",
+  "reviewModeColour": "Colour",
+  "reviewAutomatic": "automatic",
+  "reviewAutoEdits": "auto {auto} · {edits}",
+  "@reviewAutoEdits": {
+    "placeholders": {
+      "auto": {
+        "type": "int"
+      },
+      "edits": {
+        "type": "String"
+      }
+    }
+  },
+  "reviewHintZoom": "Pinch to zoom, drag to pan.",
+  "reviewHintEdit": "Tap a mark to remove it, tap empty agar to add one. Long-press a mark to set how many colonies it contains.",
+  "reviewHintSquare": "Drag to move the square, use the sliders to resize and turn it, then recount.",
+  "reviewHintCircle": "Drag to move the circle, use the slider to resize it, then recount.",
+  "reviewHintDrops": "Tap a drop to set its dilution and replicate, tap empty agar to add a drop, drag a drop to move it.",
+  "reviewHintColour": "Tap a colony to switch its colour class.",
+  "reviewSize": "Size",
+  "reviewRecountSquare": "Recount with this square",
+  "reviewRecountCircle": "Recount with this circle",
+  "reviewSavePlate": "Save plate",
+  "reviewSaveChanges": "Save changes",
+  "reviewCheckCount": "Check this count ({warnings}). Zoom in and correct any missed or extra marks before saving.",
+  "@reviewCheckCount": {
+    "placeholders": {
+      "warnings": {
+        "type": "String"
+      }
+    }
+  },
+  "reviewAccuracyCheck": "Accuracy check: please check every colony on this plate. It is saved as a reference count to track how well the automatic count works on your plates.",
+  "reviewClassCount": "{name} {n}",
+  "@reviewClassCount": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "reviewClassPercent": "{percent} % {name}",
+  "@reviewClassPercent": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "reviewNoDrops": "No drops marked yet: use Drops to add them.",
+  "reviewClusterTitle": "Colonies in this mark",
+  "reviewSet": "Set",
+  "reviewSensitivityHelp": "Higher finds fainter and smaller colonies but may count debris. Default: 6.5.",
+  "reviewLow": "Low",
+  "reviewHigh": "High",
+  "reviewDropTitle": "Drop {index} · {n} colonies",
+  "@reviewDropTitle": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      },
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "reviewDilution": "Dilution",
+  "reviewReplicate": "Replicate",
+  "reviewTntc": "Too numerous to count",
+  "reviewConfluent": "Confluent drop",
+  "reviewDropSize": "Size {mm} mm",
+  "@reviewDropSize": {
+    "placeholders": {
+      "mm": {
+        "type": "String"
+      }
+    }
+  },
+  "reviewDeleteDrop": "Delete drop",
+  "reviewOk": "OK",
+  "samplesNotFoundTitle": "Sample “{id}” not found",
+  "@samplesNotFoundTitle": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "samplesSetUpNow": "Set up this sample now?",
+  "samplesCancel": "Cancel",
+  "samplesSetUp": "Set up",
+  "samplesPhotographNow": "Photograph this plate now?",
+  "samplesJustOpen": "Just open sample",
+  "samplesPhotograph": "Photograph",
+  "samplesAlreadyCounted": "{plate} is already counted.",
+  "@samplesAlreadyCounted": {
+    "placeholders": {
+      "plate": {}
+    }
+  },
+  "samplesNoResult": "No result yet",
+  "samplesEstimated": "est.",
+  "samplesHours": "{h} h",
+  "@samplesHours": {
+    "placeholders": {
+      "h": {}
+    }
+  },
+  "samplesEmpty": "Set up a sample to plan its dilution series and replicates. The app then tells you which plate to photograph next and reports mean ± SD and log₁₀ CFU/mL across replicates.",
+  "samplesSearchHint": "Search sample, strain, operator, tag…",
+  "samplesNoMatch": "No samples match.",
+  "samplesNoExperiment": "No experiment",
+  "samplesPlatesDone": "{done}/{total} plates",
+  "@samplesPlatesDone": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "samplesPlateCount": "{n, plural, =1{1 plate} other{{n} plates}}",
+  "@samplesPlateCount": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "samplesSlotPlate": "plate",
+  "samplesLabelsSubject": "Plate labels for {id}",
+  "@samplesLabelsSubject": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "samplesDeleteTitle": "Delete {id}?",
+  "@samplesDeleteTitle": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "samplesDeletePlanOnly": "The sample plan will be removed.",
+  "samplesDeleteAsk": "Remove only the plan and keep its {n, plural, =1{1 plate} other{{n} plates}}, or delete the plates too?",
+  "@samplesDeleteAsk": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "samplesKeepPlates": "Keep plates",
+  "samplesDeleteAll": "Delete all",
+  "samplesDelete": "Delete",
+  "samplesEditPlan": "Edit plan",
+  "samplesCreatePlan": "Create plan",
+  "samplesNewLikeThis": "New sample like this",
+  "samplesMulti": "Photograph several plates at once",
+  "samplesPrintLabels": "Print plate labels (PDF)",
+  "samplesDeleteSample": "Delete sample",
+  "samplesPlates": "Plates",
+  "samplesDropsUl": "{v} µL drops",
+  "@samplesDropsUl": {
+    "placeholders": {
+      "v": {}
+    }
+  },
+  "samplesMlFiltered": "{v} mL filtered",
+  "@samplesMlFiltered": {
+    "placeholders": {
+      "v": {}
+    }
+  },
+  "samplesMlPerPlate": "{v} mL per plate",
+  "@samplesMlPerPlate": {
+    "placeholders": {
+      "v": {}
+    }
+  },
+  "samplesPhotographSlot": "Photograph {slot}",
+  "@samplesPhotographSlot": {
+    "placeholders": {
+      "slot": {}
+    }
+  },
+  "samplesImportFor": "Import photo for {slot}",
+  "@samplesImportFor": {
+    "placeholders": {
+      "slot": {}
+    }
+  },
+  "samplesAllDone": "All planned plates are done.",
+  "samplesNoPlan": "This sample has no plan (its plates were saved one by one). Use “Create plan” in the menu for a guided plate list.",
+  "samplesNoCountable": "No countable plates yet",
+  "samplesReplicateCount": "n = {n, plural, =1{1 replicate} other{{n} replicates}}",
+  "@samplesReplicateCount": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "samplesPoolDrops": "Each replicate pools its countable drops ({range} colonies, {rule}) as ΣC / Σ(V × d); log₁₀ is the mean ± SD of the replicates' log values.",
+  "@samplesPoolDrops": {
+    "placeholders": {
+      "range": {},
+      "rule": {}
+    }
+  },
+  "samplesPoolFilters": "Each replicate pools its countable filters ({range} colonies, {rule}) as ΣC / Σ(V × d); log₁₀ is the mean ± SD of the replicates' log values.",
+  "@samplesPoolFilters": {
+    "placeholders": {
+      "range": {},
+      "rule": {}
+    }
+  },
+  "samplesPoolPlates": "Each replicate pools its countable plates ({range} colonies, {rule}) as ΣC / Σ(V × d); log₁₀ is the mean ± SD of the replicates' log values.",
+  "@samplesPoolPlates": {
+    "placeholders": {
+      "range": {},
+      "rule": {}
+    }
+  },
+  "samplesStrain": "Strain",
+  "samplesMedium": "Medium",
+  "samplesBatch": "batch {batch}",
+  "@samplesBatch": {
+    "placeholders": {
+      "batch": {}
+    }
+  },
+  "samplesIncubation": "Incubation",
+  "samplesIncubationAt": "{hours} at {temp}",
+  "@samplesIncubationAt": {
+    "placeholders": {
+      "hours": {},
+      "temp": {}
+    }
+  },
+  "samplesOperator": "Operator",
+  "samplesTags": "Tags",
+  "samplesNotes": "Notes",
+  "samplesDetails": "Details",
+  "setupRequired": "Required",
+  "setupIdTaken": "This sample ID already exists",
+  "setupNewSample": "New sample",
+  "setupEditTitle": "Edit {id}",
+  "@setupEditTitle": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "setupSampleId": "Sample ID",
+  "setupExperiment": "Experiment (optional)",
+  "setupExperimentHelp": "Samples of one experiment can be compared",
+  "setupCondition": "Condition",
+  "setupConditionHelp": "e.g. Control, 1 % NaOCl",
+  "setupTimePoint": "Time point",
+  "setupHoursUnit": "h",
+  "setupOptional": "optional",
+  "setupPlating": "Plating",
+  "setupSpread": "Spread",
+  "setupDrop": "Drop",
+  "setupMembrane": "Membrane",
+  "setupMembraneRange": "Countable range per filter",
+  "setupMembraneUnit": "Results are reported as CFU/100 mL",
+  "setupPlateType": "Plate type",
+  "setupFrom": "From",
+  "setupTo": "To",
+  "setupReplicates": "Replicates",
+  "setupVolumeFiltered": "Volume filtered",
+  "setupVolumePerPlate": "Volume per plate",
+  "setupDropVolume": "Drop volume",
+  "setupFilterCount": "{n, plural, =1{1 filter} other{{n} filters}}.",
+  "@setupFilterCount": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "setupPlateCount": "{n, plural, =1{1 plate} other{{n} plates}}.",
+  "@setupPlateCount": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "setupPlateCountDrops": "{n, plural, =1{1 plate} other{{n} plates}} with {drops} drops each.",
+  "@setupPlateCountDrops": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "drops": {
+        "type": "int"
+      }
+    }
+  },
+  "setupColonyColours": "Colony colours",
+  "setupColourNone": "All colonies are counted together.",
+  "setupColourBlueWhite": "Blue and white colonies are counted separately (X-gal screening).",
+  "setupColourTwo": "Colonies are split into two colour groups (e.g. chromogenic agar).",
+  "setupNotes": "Notes",
+  "setupSave": "Save sample",
+  "setupDetails": "Experiment details",
+  "setupDetailsSummary": "Strain, medium, incubation, operator, tags",
+  "setupStrain": "Strain / organism",
+  "setupMedium": "Medium",
+  "setupBatch": "Batch / lot",
+  "setupIncubation": "Incubation",
+  "setupTemperature": "Temperature",
+  "setupOperator": "Operator",
+  "setupTags": "Tags",
+  "setupTagsHelp": "Comma-separated, e.g. thesis, batch 3",
+  "saveSheetTitle": "Plate details",
+  "saveSheetSampleId": "Sample ID",
+  "saveSheetSampleHelp": "Plates with the same sample ID are pooled for CFU/mL",
+  "saveSheetScan": "Scan plate label",
+  "saveSheetDilution": "Plated dilution",
+  "saveSheetReplicate": "Replicate",
+  "saveSheetDropVolume": "Drop volume",
+  "saveSheetVolumeFiltered": "Volume filtered",
+  "saveSheetVolume": "Volume",
+  "saveSheetEnterVolume": "Enter a volume",
+  "saveSheetDropNote": "Drop plate: each drop has its own dilution and replicate (set them in Drops).",
+  "saveSheetSpreader": "Spreader on plate",
+  "saveSheetSpreaderHelp": "Excluded from CFU/mL",
+  "saveSheetTntc": "Too numerous to count",
+  "saveSheetTntcHelp": "Count is a lower bound",
+  "saveSheetIncubation": "Incubation time (optional)",
+  "saveSheetHoursUnit": "h",
+  "saveSheetIncubationHelp": "Hours since plating, for time-lapse photos",
+  "saveSheetVerified": "Checked every colony",
+  "saveSheetVerifiedHelp": "Use this plate as a reference count for accuracy tracking",
+  "saveSheetNotes": "Notes",
+  "saveSheetAlone": "This plate alone ({rule})",
+  "@saveSheetAlone": {
+    "placeholders": {
+      "rule": {}
+    }
+  },
+  "saveSheetSave": "Save",
+  "methodSpread": "Spread / pour plate",
+  "methodDrop": "Drop plate (Miles–Misra)",
+  "methodMembrane": "Membrane filtration",
+  "layoutReplicates": "One dilution per plate, drops = replicates",
+  "layoutDilutions": "All dilutions on one plate, one drop each",
+  "colourOff": "Off",
+  "colourBlueWhite": "Blue / white",
+  "colourTwo": "Two colours",
+  "classAll": "All",
+  "classWhite": "White",
+  "classBlue": "Blue",
+  "classColourA": "Colour A",
+  "classColourB": "Colour B",
+  "formatDish90": "90 mm dish",
+  "formatDish60": "60 mm dish",
+  "formatDish100": "100 mm dish",
+  "formatDish150": "150 mm dish",
+  "formatSquare100": "100 mm square plate",
+  "formatSquare120": "120 mm square plate",
+  "formatMembrane47": "47 mm membrane filter",
+  "ruleDrop": "Drop 3–30",
+  "ruleMembrane80": "Membrane 20–80",
+  "ruleMembrane200": "Membrane 20–200",
+  "trainingChecked": "Checked plates only",
+  "trainingCorrected": "Checked and corrected plates",
+  "trainingAll": "All plates",
+  "flagSpreader": "Spreader",
+  "flagTntc": "Too many to count",
+  "flagClusters": "Clusters estimated",
+  "flagCrowded": "Crowded plate",
+  "flagManyClusters": "Many touching colonies",
+  "flagLowContrast": "Faint colonies",
+  "neat": "Neat",
+  "unlabelled": "Unlabelled",
+  "dropPlateDrops": "drop plate ({n, plural, =1{1 drop} other{{n} drops}})",
+  "@dropPlateDrops": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "noteAllSpreaders": "all plates have spreaders",
+  "noteNoColonies": "no colonies on least diluted plate",
+  "noteBelowRange": "below countable range ({range})",
+  "@noteBelowRange": {
+    "placeholders": {
+      "range": {}
+    }
+  },
+  "noteAboveRange": "above countable range ({range})",
+  "@noteAboveRange": {
+    "placeholders": {
+      "range": {}
+    }
+  },
+  "noteTntc": "too numerous to count",
+  "noteNoPlateInRange": "no plate in countable range",
+  "estimatePrefix": "est. ",
+  "noEstimate": "no estimate"
+}

@@ -64,6 +64,9 @@ class SampleInfo {
     this.tags = const [],
     this.format = PlateFormat.dish90,
     this.membraneRule = CountingRule.membrane80,
+    this.solid = false,
+    this.sampleWeightG = 25,
+    this.diluentMl = 225,
     DateTime? createdAt,
   }) : createdAt = createdAt ?? DateTime.now();
 
@@ -91,6 +94,16 @@ class SampleInfo {
 
   /// Countable range for membrane filters.
   final CountingRule membraneRule;
+
+  /// A solid sample (food, soil…) reported per gram: [sampleWeightG] g was
+  /// suspended in [diluentMl] mL of diluent to make the initial suspension.
+  final bool solid;
+  final double sampleWeightG;
+  final double diluentMl;
+
+  /// Dilution of the initial suspension, e.g. 10 for 25 g in 225 mL (1:10).
+  double get initialDilution =>
+      sampleWeightG > 0 ? (sampleWeightG + diluentMl) / sampleWeightG : 10;
 
   /// Volume of one drop on a drop plate.
   final double dropVolumeUl;
@@ -135,9 +148,22 @@ class SampleInfo {
   bool get isDrop => method == PlatingMethod.drop;
   bool get isMembrane => method == PlatingMethod.membrane;
 
-  /// Membrane results are reported per 100 mL of water.
-  double get unitFactor => isMembrane ? 100 : 1;
-  String get unitLabel => isMembrane ? 'CFU/100 mL' : 'CFU/mL';
+  bool get isSolid => solid && !isMembrane;
+
+  /// From CFU per mL (as computed from the plate dilutions) to the reported
+  /// unit. Membranes: per 100 mL of water. Solid samples: the initial
+  /// suspension counts as the 10⁻¹ dilution, as is usual; a suspension that
+  /// is not 1:10 is corrected for here.
+  double get unitFactor => isMembrane
+      ? 100
+      : isSolid
+      ? initialDilution / 10
+      : 1;
+  String get unitLabel => isMembrane
+      ? 'CFU/100 mL'
+      : isSolid
+      ? 'CFU/g'
+      : 'CFU/mL';
 
   /// Volume per counted unit (plate or drop), in mL.
   double get unitVolumeMl => isDrop ? dropVolumeUl / 1000 : volumeMl;
@@ -201,6 +227,9 @@ class SampleInfo {
     'tags': tags,
     'format': format.name,
     'membrane_rule': membraneRule.name,
+    if (solid) 'solid': true,
+    if (solid) 'sample_g': sampleWeightG,
+    if (solid) 'diluent_ml': diluentMl,
     'created_at': createdAt.toIso8601String(),
   };
 
@@ -241,6 +270,9 @@ class SampleInfo {
       (r) => r.name == j['membrane_rule'],
       orElse: () => CountingRule.membrane80,
     ),
+    solid: j['solid'] as bool? ?? false,
+    sampleWeightG: (j['sample_g'] as num?)?.toDouble() ?? 25,
+    diluentMl: (j['diluent_ml'] as num?)?.toDouble() ?? 225,
     createdAt: DateTime.tryParse(j['created_at'] as String? ?? ''),
   );
 

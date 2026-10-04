@@ -43,6 +43,8 @@ Future<Uint8List> buildLabelSheet(
   List<LabelSpec> labels, {
   ByteData? fontData,
   ByteData? boldFontData,
+  ByteData? thaiFontData,
+  ByteData? thaiBoldFontData,
 }) async {
   const cols = 3, rows = 8;
   const labelW = 70 * PdfPageFormat.mm, labelH = 37 * PdfPageFormat.mm;
@@ -50,6 +52,11 @@ Future<Uint8List> buildLabelSheet(
   final bold = boldFontData == null
       ? pw.Font.helveticaBold()
       : pw.Font.ttf(boldFontData);
+  // Thai sample IDs and experiment names fall back to a Thai font.
+  final fallback = [if (thaiFontData != null) pw.Font.ttf(thaiFontData)];
+  final boldFallback = [
+    if (thaiBoldFontData != null) pw.Font.ttf(thaiBoldFontData),
+  ];
   final doc = pw.Document(
     title: 'Colony Counter plate labels',
     creator: 'Colony Counter',
@@ -90,7 +97,11 @@ Future<Uint8List> buildLabelSheet(
                           children: [
                             pw.Text(
                               spec.label.sampleId,
-                              style: pw.TextStyle(font: bold, fontSize: 11),
+                              style: pw.TextStyle(
+                                font: bold,
+                                fontSize: 11,
+                                fontFallback: boldFallback,
+                              ),
                               maxLines: 2,
                             ),
                             pw.SizedBox(height: 2),
@@ -101,13 +112,21 @@ Future<Uint8List> buildLabelSheet(
                                 if (spec.label.replicate != null)
                                   'R${spec.label.replicate}',
                               ].join('  '),
-                              style: pw.TextStyle(font: bold, fontSize: 13),
+                              style: pw.TextStyle(
+                                font: bold,
+                                fontSize: 13,
+                                fontFallback: boldFallback,
+                              ),
                             ),
                             if (spec.subtitle.isNotEmpty) ...[
                               pw.SizedBox(height: 2),
                               pw.Text(
                                 spec.subtitle,
-                                style: pw.TextStyle(font: font, fontSize: 7),
+                                style: pw.TextStyle(
+                                  font: font,
+                                  fontSize: 7,
+                                  fontFallback: fallback,
+                                ),
                                 maxLines: 3,
                               ),
                             ],

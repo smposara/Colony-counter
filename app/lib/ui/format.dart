@@ -1,4 +1,5 @@
 import '../data/plate_record.dart';
+import '../l10n/l10n.dart';
 
 const _superscripts = {
   '0': '⁰',
@@ -15,28 +16,31 @@ const _superscripts = {
 
 /// "10⁻⁴" for exponent 4; "Neat" for 0.
 String dilutionLabel(int exp) => exp == 0
-    ? 'Neat'
+    ? tr.neat
     : '10⁻${exp.toString().split('').map((d) => _superscripts[d]).join()}';
 
 /// "1.7 × 10^4" -> "1.7 × 10⁴".
 String prettySci(String s) {
   final i = s.indexOf('^');
   if (i < 0) return s;
-  final exp = s.substring(i + 1);
-  final sup = exp
+  // Only the exponent itself, not digits later in the text ("CFU/100 mL").
+  final m = RegExp(r'^-?\d+').firstMatch(s.substring(i + 1));
+  if (m == null) return s;
+  final sup = m
+      .group(0)!
       .split('')
       .map((c) => c == '-' ? '⁻' : _superscripts[c] ?? c)
       .join();
-  return '${s.substring(0, i)}$sup';
+  return '${s.substring(0, i)}$sup${s.substring(i + 1 + m.end)}';
 }
 
 String flagLabel(String flag) => switch (flag) {
-  'spreader' => 'Spreader',
-  'tntc' => 'Too many to count',
-  'clusters_estimated' => 'Clusters estimated',
-  'crowded' => 'Crowded plate',
-  'many_clusters' => 'Many touching colonies',
-  'low_contrast' => 'Faint colonies',
+  'spreader' => tr.flagSpreader,
+  'tntc' => tr.flagTntc,
+  'clusters_estimated' => tr.flagClusters,
+  'crowded' => tr.flagCrowded,
+  'many_clusters' => tr.flagManyClusters,
+  'low_contrast' => tr.flagLowContrast,
   _ => flag,
 };
 
@@ -47,10 +51,8 @@ String shortDate(DateTime d) {
 
 /// "Lake-A · 10⁻⁴ · R2", or "Lake-A · drop plate (6 drops)".
 String plateLabel(PlateRecord r) {
-  final sample = r.sampleId.isEmpty ? 'Unlabelled' : r.sampleId;
-  if (r.isDropPlate) {
-    return '$sample · drop plate (${r.spots.length} drop${r.spots.length == 1 ? '' : 's'})';
-  }
+  final sample = r.sampleId.isEmpty ? tr.unlabelled : r.sampleId;
+  if (r.isDropPlate) return '$sample · ${tr.dropPlateDrops(r.spots.length)}';
   return '$sample · ${dilutionLabel(r.dilutionExp)} · R${r.replicate}';
 }
 

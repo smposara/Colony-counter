@@ -8,12 +8,13 @@ import '../core/timelapse.dart';
 import '../data/plate_record.dart';
 import '../data/plate_store.dart';
 import '../data/timelapse_data.dart';
+import '../l10n/l10n.dart';
 import 'chart_colours.dart';
 import 'format.dart';
 import 'photo_flow.dart';
 import 'review_screen.dart';
 
-String _h(double h) => '${fixed(h, h % 1 == 0 ? 0 : 1)} h';
+String _h(double h) => tr.timelapseHours(fixed(h, h % 1 == 0 ? 0 : 1));
 
 /// Photos of one plate over time: count growth, when colonies appeared and
 /// how fast they grow.
@@ -35,8 +36,8 @@ class TimelapseScreen extends StatelessWidget {
         final photos = seriesPhotos(store, seriesId);
         if (photos.isEmpty) {
           return Scaffold(
-            appBar: AppBar(title: const Text('Time-lapse')),
-            body: const Center(child: Text('No photos in this series.')),
+            appBar: AppBar(title: Text(tr.homeTimelapse)),
+            body: Center(child: Text(tr.timelapseNoPhotos)),
           );
         }
         final res = analyseSeries(photos);
@@ -49,14 +50,14 @@ class TimelapseScreen extends StatelessWidget {
         ];
         final latest = ordered.last;
         final appearedLater = res.tracks
-            .where((tr) => tr.appearedH > res.frames.first.hours)
+            .where((track) => track.appearedH > res.frames.first.hours)
             .length;
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Time-lapse'),
+            title: Text(tr.homeTimelapse),
             actions: [
               IconButton(
-                tooltip: 'Share colony table (CSV)',
+                tooltip: tr.timelapseShareCsv,
                 icon: const Icon(Icons.ios_share),
                 onPressed: () => shareBytes(
                   Uint8List.fromList(utf8.encode(timelapseCsv(res))),
@@ -70,15 +71,15 @@ class TimelapseScreen extends StatelessWidget {
             onPressed: () =>
                 countNewPlate(context, store, laterPhotoOf: latest),
             icon: const Icon(Icons.add_a_photo_outlined),
-            label: const Text('Add a later photo'),
+            label: Text(tr.timelapseAddLater),
           ),
           body: ListView(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
             children: [
               Text(plateLabel(latest), style: t.titleMedium),
               Text(
-                '${photos.length} photo${photos.length == 1 ? '' : 's'} · '
-                '${timesKnown ? 'hours since plating' : 'hours since the first photo'}',
+                '${tr.timelapsePhotos(photos.length)} · '
+                '${timesKnown ? tr.timelapseSincePlating : tr.timelapseSinceFirst}',
                 style: t.bodySmall,
               ),
               const SizedBox(height: 12),
@@ -89,28 +90,30 @@ class TimelapseScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '${res.tracks.length} colonies at ${_h(res.frames.last.hours)}',
+                        tr.timelapseColoniesAt(
+                          res.tracks.length,
+                          _h(res.frames.last.hours),
+                        ),
                         style: t.headlineSmall,
                       ),
                       const SizedBox(height: 4),
                       if (res.frames.length > 1) ...[
                         Text(
-                          '$appearedLater appeared after the first photo · '
-                          'half had appeared by ${_h(res.medianAppearanceH!)}',
+                          tr.timelapseAppeared(
+                            appearedLater,
+                            _h(res.medianAppearanceH!),
+                          ),
                           style: t.bodyMedium,
                         ),
                         if (res.medianGrowthMmPerH != null)
                           Text(
-                            'Median growth ${fixed(res.medianGrowthMmPerH!, 3)} mm/h '
-                            'in diameter',
+                            tr.timelapseGrowth(
+                              fixed(res.medianGrowthMmPerH!, 3),
+                            ),
                             style: t.bodyMedium,
                           ),
                       ] else
-                        Text(
-                          'Add a later photo of the same plate to see when '
-                          'colonies appear and how fast they grow.',
-                          style: t.bodyMedium,
-                        ),
+                        Text(tr.timelapseAddLaterHint, style: t.bodyMedium),
                     ],
                   ),
                 ),
@@ -125,13 +128,7 @@ class TimelapseScreen extends StatelessWidget {
               if (res.frames.length > 1)
                 _AppearanceMap(store: store, latest: latest, res: res),
               const SizedBox(height: 8),
-              Text(
-                'Colonies are matched between photos by position, after '
-                'turning and mirroring the earlier photo to fit the later one. '
-                'Put the plate the same way up each time if few colonies are '
-                'visible early on.',
-                style: t.bodySmall,
-              ),
+              Text(tr.timelapseMatching, style: t.bodySmall),
             ],
           ),
         );
@@ -156,7 +153,7 @@ class _CountChart extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Colonies counted over time', style: t.titleMedium),
+            Text(tr.timelapseChartTitle, style: t.titleMedium),
             const SizedBox(height: 8),
             AspectRatio(
               aspectRatio: 1.8,
@@ -294,7 +291,7 @@ class _Table extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Photos', style: t.titleMedium),
+        Text(tr.timelapsePhotosTitle, style: t.titleMedium),
         for (var i = 0; i < photos.length; i++)
           ListTile(
             contentPadding: EdgeInsets.zero,
@@ -304,15 +301,18 @@ class _Table extends StatelessWidget {
               child: Text('${i + 1}', style: t.labelMedium),
             ),
             title: Text(
-              '${_h(res.frames[i].hours)} · ${photos[i].count} colonies',
+              tr.timelapsePhotoRow(_h(res.frames[i].hours), photos[i].count),
             ),
             subtitle: Text(
               [
-                if (res.frames.length > 1) '${fresh[i]} first seen here',
+                if (res.frames.length > 1) tr.timelapseFirstSeen(fresh[i]),
                 if (i < res.alignments.length &&
                     res.alignments[i].angle.abs() > 0.05)
-                  'turned ${(res.alignments[i].angle * 180 / math.pi).round()}°'
-                      '${res.alignments[i].mirrored ? ', mirrored' : ''} to fit the next',
+                  (res.alignments[i].mirrored
+                      ? tr.timelapseTurnedMirrored
+                      : tr.timelapseTurned)(
+                    (res.alignments[i].angle * 180 / math.pi).round(),
+                  ),
                 shortDate(photos[i].createdAt),
               ].join(' · '),
             ),
@@ -360,7 +360,7 @@ class _AppearanceMapState extends State<_AppearanceMap> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('When each colony appeared', style: t.titleMedium),
+        Text(tr.timelapseAppearanceTitle, style: t.titleMedium),
         const SizedBox(height: 4),
         Wrap(
           spacing: 12,
@@ -379,7 +379,7 @@ class _AppearanceMapState extends State<_AppearanceMap> {
                     ),
                   ),
                   const SizedBox(width: 4),
-                  Text('by ${_h(hours[i])}', style: t.bodySmall),
+                  Text(tr.timelapseBy(_h(hours[i])), style: t.bodySmall),
                 ],
               ),
           ],
@@ -436,10 +436,10 @@ class _AppearancePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final w = size.width / 250;
-    for (final tr in tracks) {
-      final (x, y) = frame.toImage(tr.x, tr.y);
-      final d = tr.sizes.last.$2 / frame.plate.mmPerPx;
-      final i = hours.indexOf(tr.appearedH);
+    for (final track in tracks) {
+      final (x, y) = frame.toImage(track.x, track.y);
+      final d = track.sizes.last.$2 / frame.plate.mmPerPx;
+      final i = hours.indexOf(track.appearedH);
       canvas.drawCircle(
         Offset(x, y),
         math.max(d * 0.65, w * 3),

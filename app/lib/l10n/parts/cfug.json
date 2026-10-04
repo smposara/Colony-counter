@@ -1,0 +1,9 @@
+{
+  "sampleKind": {"en": "Sample", "th": "ชนิดตัวอย่าง"},
+  "sampleLiquid": {"en": "Liquid (CFU/mL)", "th": "ของเหลว (CFU/mL)"},
+  "sampleSolid": {"en": "Solid (CFU/g)", "th": "ของแข็ง (CFU/g)"},
+  "sampleWeight": {"en": "Sample weight", "th": "น้ำหนักตัวอย่าง"},
+  "diluentVolume": {"en": "Diluent", "th": "สารละลายเจือจาง"},
+  "solidTenfold": {"en": "The initial suspension is 1:10, so it is the 10⁻¹ dilution. Label plates with the total dilution of the sample (e.g. 10⁻² for the next tube).", "th": "สารแขวนลอยเริ่มต้นเป็น 1:10 จึงนับเป็นระดับการเจือจาง 10⁻¹ ให้ระบุระดับการเจือจางรวมของตัวอย่างบนเพลต (เช่น 10⁻² สำหรับหลอดถัดไป)"},
+  "solidOther": {"en": "The initial suspension is 1:{ratio}. Label plates as if it were the 10⁻¹ dilution; results are corrected by ×{factor}.", "th": "สารแขวนลอยเริ่มต้นเป็น 1:{ratio} ให้ระบุระดับการเจือจางบนเพลตเสมือนเป็น 10⁻¹ ผลลัพธ์จะถูกปรับด้วย ×{factor}", "placeholders": {"ratio": {"type": "String"}, "factor": {"type": "String"}}}
+}

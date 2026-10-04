@@ -9,6 +9,7 @@ import '../core/plate.dart';
 import '../data/plate_record.dart';
 import '../data/plate_store.dart';
 import '../data/sample_info.dart';
+import '../l10n/l10n.dart';
 import 'format.dart';
 import 'photo_flow.dart';
 import 'review_screen.dart';
@@ -23,13 +24,8 @@ Future<void> countSeveralPlates(
 }) async {
   final format = info?.format ?? store.defaultFormat;
   if (format.shape == PlateShape.square) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Several plates in one photo works with round dishes only.',
-        ),
-      ),
-    );
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(tr.multiRoundOnly)));
     return;
   }
   final source = await showModalBottomSheet<ImageSource>(
@@ -39,21 +35,18 @@ Future<void> countSeveralPlates(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Padding(
-            padding: EdgeInsets.fromLTRB(24, 0, 24, 8),
-            child: Text(
-              'Lay the plates side by side, lids off, on a dark surface, and '
-              'photograph them from straight above.',
-            ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+            child: Text(tr.multiLayPlates),
           ),
           ListTile(
             leading: const Icon(Icons.camera_alt_outlined),
-            title: const Text('Take photo'),
+            title: Text(tr.multiTakePhoto),
             onTap: () => Navigator.pop(context, ImageSource.camera),
           ),
           ListTile(
             leading: const Icon(Icons.photo_library_outlined),
-            title: const Text('Choose photo'),
+            title: Text(tr.multiChoosePhoto),
             onTap: () => Navigator.pop(context, ImageSource.gallery),
           ),
         ],
@@ -130,7 +123,7 @@ class _MultiPlateScreenState extends State<MultiPlateScreen> {
         _h = res.height;
       });
     } catch (e) {
-      if (mounted) setState(() => _error = 'No plates found in this photo.');
+      if (mounted) setState(() => _error = tr.multiNoPlatesFound);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -232,13 +225,13 @@ class _MultiPlateScreenState extends State<MultiPlateScreen> {
       appBar: AppBar(
         title: Text(
           _plates.isEmpty
-              ? 'Plates in photo'
-              : '${_plates.length} plate${_plates.length == 1 ? '' : 's'} found',
+              ? tr.multiPlatesInPhoto
+              : tr.multiPlatesFound(_plates.length),
         ),
         actions: [
           if (_plates.isNotEmpty || _error == null)
             IconButton(
-              tooltip: _editing ? 'Done' : 'Add or remove plates',
+              tooltip: _editing ? tr.multiDone : tr.multiAddRemove,
               isSelected: _editing,
               onPressed: _busy
                   ? null
@@ -314,13 +307,12 @@ class _MultiPlateScreenState extends State<MultiPlateScreen> {
                   children: [
                     Text(
                       _editing
-                          ? 'Tap a circle to remove it, or tap the centre of a '
-                                'missed plate to add one.'
+                          ? tr.multiEditHint
                           : _plates.isEmpty
-                          ? 'Use the pencil to mark the plates.'
+                          ? tr.multiUsePencil
                           : left == 0
-                          ? 'All plates are saved.'
-                          : 'Tap a plate to count it. $left still to save.',
+                          ? tr.multiAllSaved
+                          : tr.multiTapToCount(left),
                       style: t.bodyMedium,
                     ),
                     if (_plates.isNotEmpty) ...[

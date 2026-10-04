@@ -6,6 +6,8 @@ import '../core/colour.dart';
 import '../core/plate.dart';
 import '../data/plate_store.dart';
 import '../data/sample_info.dart';
+import '../l10n/l10n.dart';
+import '../l10n/labels.dart';
 import 'format.dart';
 
 /// Create or edit a sample's plating plan. Pops with the saved [SampleInfo].
@@ -78,6 +80,13 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
   late final _tags = TextEditingController(text: _base?.tags.join(', ') ?? '');
   late PlatingMethod _method = _base?.method ?? PlatingMethod.spread;
   late PlateFormat _format = _base?.format ?? widget.store.defaultFormat;
+  late bool _solid = _base?.solid ?? false;
+  late final _weight = TextEditingController(
+    text: fixed(_base?.sampleWeightG ?? 25, 0),
+  );
+  late final _diluent = TextEditingController(
+    text: fixed(_base?.diluentMl ?? 225, 0),
+  );
   late CountingRule _membraneRule =
       _base?.membraneRule ?? CountingRule.membrane80;
   late DropLayout _layout = _base?.dropLayout ?? DropLayout.replicates;
@@ -116,6 +125,30 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
     });
   }
 
+  Widget _numberField(TextEditingController c, String label, String unit) =>
+      TextField(
+        controller: c,
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        inputFormatters: [
+          FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+        ],
+        decoration: InputDecoration(
+          labelText: label,
+          suffixText: unit,
+          border: const OutlineInputBorder(),
+        ),
+        onChanged: (_) => setState(() {}),
+      );
+
+  /// How the initial suspension of a solid sample enters the result.
+  String _suspensionHint() {
+    final w = _num(_weight) ?? 0, v = _num(_diluent) ?? 0;
+    if (w <= 0) return '';
+    final f = (w + v) / w;
+    if ((f - 10).abs() < 1e-6) return tr.solidTenfold;
+    return tr.solidOther(fixed(f, f % 1 == 0 ? 0 : 2), fixed(f / 10, 3));
+  }
+
   double? _num(TextEditingController c) =>
       double.tryParse(c.text.trim().replaceAll(',', '.'));
 
@@ -126,8 +159,8 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
         id != widget.edit?.sampleId;
     setState(
       () => _idError = id.isEmpty
-          ? 'Required'
-          : (taken ? 'This sample ID already exists' : null),
+          ? tr.setupRequired
+          : (taken ? tr.setupIdTaken : null),
     );
     if (_idError != null) return;
     final info = SampleInfo(
@@ -155,6 +188,9 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
       ],
       format: _format,
       membraneRule: _membraneRule,
+      solid: _solid && _method != PlatingMethod.membrane,
+      sampleWeightG: _num(_weight) ?? 25,
+      diluentMl: _num(_diluent) ?? 225,
       createdAt: widget.edit?.createdAt,
     );
     widget.store.upsertSample(info, previousId: widget.edit?.sampleId);
@@ -176,6 +212,8 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
       _time,
       _volume,
       _dropVolume,
+      _weight,
+      _diluent,
       _notes,
       _strain,
       _medium,
@@ -228,15 +266,17 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
     final plates = !drop
         ? dilutionCount * _replicates
         : (_layout == DropLayout.replicates ? dilutionCount : _replicates);
-    final perPlate = !drop
-        ? ''
-        : ' with ${_layout == DropLayout.replicates ? _replicates : dilutionCount} drops each';
+    final dropsPerPlate = _layout == DropLayout.replicates
+        ? _replicates
+        : dilutionCount;
     const gap = SizedBox(height: 16);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          widget.edit == null ? 'New sample' : 'Edit ${widget.edit!.sampleId}',
+          widget.edit == null
+              ? tr.setupNewSample
+              : tr.setupEditTitle(widget.edit!.sampleId),
         ),
       ),
       body: ListView(
@@ -245,7 +285,7 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
           TextField(
             controller: _id,
             decoration: InputDecoration(
-              labelText: 'Sample ID',
+              labelText: tr.setupSampleId,
               errorText: _idError,
               border: const OutlineInputBorder(),
             ),
@@ -253,9 +293,9 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
           gap,
           _suggestField(
             _experiment,
-            'Experiment (optional)',
+            tr.setupExperiment,
             experiments,
-            helper: 'Samples of one experiment can be compared',
+            helper: tr.setupExperimentHelp,
           ),
           gap,
           Row(
@@ -264,9 +304,9 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
                 flex: 3,
                 child: _suggestField(
                   _condition,
-                  'Condition',
+                  tr.setupCondition,
                   conditions,
-                  helper: 'e.g. Control, 1 % NaOCl',
+                  helper: tr.setupConditionHelp,
                 ),
               ),
               const SizedBox(width: 12),
@@ -280,63 +320,97 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
                   inputFormatters: [
                     FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
                   ],
-                  decoration: const InputDecoration(
-                    labelText: 'Time point',
-                    suffixText: 'h',
-                    helperText: 'optional',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: tr.setupTimePoint,
+                    suffixText: tr.setupHoursUnit,
+                    helperText: tr.setupOptional,
+                    border: const OutlineInputBorder(),
                   ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 24),
-          Text('Plating', style: t.titleMedium),
+          Text(tr.setupPlating, style: t.titleMedium),
           const SizedBox(height: 8),
           SegmentedButton<PlatingMethod>(
             showSelectedIcon: false,
-            segments: const [
-              ButtonSegment(value: PlatingMethod.spread, label: Text('Spread')),
-              ButtonSegment(value: PlatingMethod.drop, label: Text('Drop')),
+            segments: [
+              ButtonSegment(
+                value: PlatingMethod.spread,
+                label: Text(tr.setupSpread),
+              ),
+              ButtonSegment(
+                value: PlatingMethod.drop,
+                label: Text(tr.setupDrop),
+              ),
               ButtonSegment(
                 value: PlatingMethod.membrane,
-                label: Text('Membrane'),
+                label: Text(tr.setupMembrane),
               ),
             ],
             selected: {_method},
             onSelectionChanged: (s) => _setMethod(s.first),
           ),
           const SizedBox(height: 4),
-          Text(_method.label, style: t.bodySmall),
+          Text(_method.text, style: t.bodySmall),
           gap,
           if (membrane) ...[
             DropdownButtonFormField<CountingRule>(
               isExpanded: true,
               initialValue: _membraneRule,
-              decoration: const InputDecoration(
-                labelText: 'Countable range per filter',
-                helperText: 'Results are reported as CFU/100 mL',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: tr.setupMembraneRange,
+                helperText: tr.setupMembraneUnit,
+                border: const OutlineInputBorder(),
               ),
               items: [
                 for (final r in CountingRule.membraneRules)
-                  DropdownMenuItem(value: r, child: Text(r.label)),
+                  DropdownMenuItem(value: r, child: Text(r.text)),
               ],
               onChanged: (v) => setState(() => _membraneRule = v!),
             ),
-          ] else
+          ] else ...[
+            Text(tr.sampleKind, style: t.bodyLarge),
+            const SizedBox(height: 8),
+            SegmentedButton<bool>(
+              showSelectedIcon: false,
+              segments: [
+                ButtonSegment(value: false, label: Text(tr.sampleLiquid)),
+                ButtonSegment(value: true, label: Text(tr.sampleSolid)),
+              ],
+              selected: {_solid},
+              onSelectionChanged: (v) => setState(() => _solid = v.first),
+            ),
+            if (_solid) ...[
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(child: _numberField(_weight, tr.sampleWeight, 'g')),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _numberField(_diluent, tr.diluentVolume, 'mL'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(_suspensionHint(), style: t.bodySmall),
+            ],
+            gap,
+          ],
+          if (!membrane)
             DropdownButtonFormField<PlateFormat>(
               isExpanded: true,
               key: ValueKey(_method),
               initialValue: _format.membrane ? PlateFormat.dish90 : _format,
-              decoration: const InputDecoration(
-                labelText: 'Plate type',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: tr.setupPlateType,
+                border: const OutlineInputBorder(),
               ),
               items: [
                 for (final f in PlateFormat.values)
                   if (!f.membrane)
-                    DropdownMenuItem(value: f, child: Text(f.label)),
+                    DropdownMenuItem(value: f, child: Text(f.text)),
               ],
               onChanged: (v) => setState(() => _format = v!),
             ),
@@ -345,7 +419,7 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
             children: [
               Expanded(
                 child: _dilutionPicker(
-                  'From',
+                  tr.setupFrom,
                   _from,
                   (v) => setState(() {
                     _from = v;
@@ -356,7 +430,7 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: _dilutionPicker(
-                  'To',
+                  tr.setupTo,
                   _to,
                   (v) => setState(() {
                     _to = v;
@@ -369,7 +443,7 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
           gap,
           Row(
             children: [
-              Text('Replicates', style: t.bodyLarge),
+              Text(tr.setupReplicates, style: t.bodyLarge),
               const Spacer(),
               IconButton.outlined(
                 onPressed: _replicates > 1
@@ -404,7 +478,9 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
                 FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
               ],
               decoration: InputDecoration(
-                labelText: membrane ? 'Volume filtered' : 'Volume per plate',
+                labelText: membrane
+                    ? tr.setupVolumeFiltered
+                    : tr.setupVolumePerPlate,
                 suffixText: 'mL',
                 border: const OutlineInputBorder(),
               ),
@@ -418,10 +494,10 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
               ],
-              decoration: const InputDecoration(
-                labelText: 'Drop volume',
+              decoration: InputDecoration(
+                labelText: tr.setupDropVolume,
                 suffixText: 'µL',
-                border: OutlineInputBorder(),
+                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 8),
@@ -434,7 +510,7 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
                     RadioListTile<DropLayout>(
                       contentPadding: EdgeInsets.zero,
                       value: l,
-                      title: Text(l.label),
+                      title: Text(l.text),
                     ),
                 ],
               ),
@@ -443,27 +519,29 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
           const SizedBox(height: 8),
           Text(
             membrane
-                ? '$plates filter${plates == 1 ? '' : 's'}.'
-                : '$plates plate${plates == 1 ? '' : 's'}$perPlate.',
+                ? tr.setupFilterCount(plates)
+                : drop
+                ? tr.setupPlateCountDrops(plates, dropsPerPlate)
+                : tr.setupPlateCount(plates),
             style: t.bodyMedium,
           ),
           const SizedBox(height: 24),
-          Text('Colony colours', style: t.titleMedium),
+          Text(tr.setupColonyColours, style: t.titleMedium),
           const SizedBox(height: 8),
           SegmentedButton<ColourMode>(
             showSelectedIcon: false,
             segments: [
               for (final m in ColourMode.values)
-                ButtonSegment(value: m, label: Text(m.label)),
+                ButtonSegment(value: m, label: Text(m.text)),
             ],
             selected: {_colour},
             onSelectionChanged: (s) => setState(() => _colour = s.first),
           ),
           const SizedBox(height: 4),
           Text(switch (_colour) {
-            ColourMode.none => 'All colonies are counted together.',
-            ColourMode.blueWhite => 'Blue and white colonies are counted separately (X-gal screening).',
-            ColourMode.twoColours => 'Colonies are split into two colour groups (e.g. chromogenic agar).',
+            ColourMode.none => tr.setupColourNone,
+            ColourMode.blueWhite => tr.setupColourBlueWhite,
+            ColourMode.twoColours => tr.setupColourTwo,
           }, style: t.bodySmall),
           gap,
           _detailsSection(),
@@ -471,13 +549,13 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
           TextField(
             controller: _notes,
             maxLines: 3,
-            decoration: const InputDecoration(
-              labelText: 'Notes',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: tr.setupNotes,
+              border: const OutlineInputBorder(),
             ),
           ),
           const SizedBox(height: 24),
-          FilledButton(onPressed: _save, child: const Text('Save sample')),
+          FilledButton(onPressed: _save, child: Text(tr.setupSave)),
         ],
       ),
     );
@@ -515,11 +593,11 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
       child: ExpansionTile(
         initiallyExpanded: hasAny,
         shape: const Border(),
-        title: const Text('Experiment details'),
-        subtitle: const Text('Strain, medium, incubation, operator, tags'),
+        title: Text(tr.setupDetails),
+        subtitle: Text(tr.setupDetailsSummary),
         childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
         children: [
-          _suggestField(_strain, 'Strain / organism', strains),
+          _suggestField(_strain, tr.setupStrain, strains),
           gap,
           Row(
             children: [
@@ -527,7 +605,7 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
                 flex: 3,
                 child: TextField(
                   controller: _medium,
-                  decoration: deco('Medium'),
+                  decoration: deco(tr.setupMedium),
                 ),
               ),
               const SizedBox(width: 12),
@@ -535,7 +613,7 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
                 flex: 2,
                 child: TextField(
                   controller: _mediumBatch,
-                  decoration: deco('Batch / lot'),
+                  decoration: deco(tr.setupBatch),
                 ),
               ),
             ],
@@ -550,7 +628,10 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
                     decimal: true,
                   ),
                   inputFormatters: number,
-                  decoration: deco('Incubation', suffix: 'h'),
+                  decoration: deco(
+                    tr.setupIncubation,
+                    suffix: tr.setupHoursUnit,
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
@@ -561,20 +642,17 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
                     decimal: true,
                   ),
                   inputFormatters: number,
-                  decoration: deco('Temperature', suffix: '°C'),
+                  decoration: deco(tr.setupTemperature, suffix: '°C'),
                 ),
               ),
             ],
           ),
           gap,
-          _suggestField(_operator, 'Operator', operators),
+          _suggestField(_operator, tr.setupOperator, operators),
           gap,
           TextField(
             controller: _tags,
-            decoration: deco(
-              'Tags',
-              helper: 'Comma-separated, e.g. thesis, batch 3',
-            ),
+            decoration: deco(tr.setupTags, helper: tr.setupTagsHelp),
           ),
         ],
       ),

@@ -9,7 +9,18 @@ tapping, and turn plate counts into CFU/mL. Everything runs on the phone, offlin
 
 _Screenshots from the web build in Chromium on synthetic plates and demo data._
 
-## Features (v0.4)
+## Features (v0.5)
+- **Thai and English** (`lib/l10n/`): every screen is in both languages. The app
+  follows the phone's language, or choose it in Settings → *Language*. Thai text uses
+  the bundled IBM Plex Sans Thai font, also on printed plate labels. CSV files,
+  backups and the annotated photo banner stay in English.
+- **Light and dark themes**: automatic (follows the phone), or fixed light or dark in
+  Settings → *Appearance*.
+- **CFU/g for solid samples** (food, soil): in sample setup choose *Solid (CFU/g)*
+  and enter the sample weight and diluent volume (default 25 g in 225 mL). As usual,
+  the initial suspension counts as the 10⁻¹ dilution, so plates are labelled with
+  their total dilution. A suspension other than 1:10 (e.g. 10 g in 40 mL = 1:5) is
+  corrected for automatically. Results, comparisons and the sample CSV use CFU/g.
 - **Guided capture** (`ui/capture_screen.dart`, phones): circle guide for the dish and
   live checks for level, focus and glare; tap to focus, focus and exposure lock.
 - **Automatic count** (`core/`): a pure-Dart port of the Python reference pipeline in
@@ -111,6 +122,8 @@ lib/
           colour (Lab, blue/white), spots (drop plates), timelapse (tracking)
           annotate (marked-up photo), labels (QR payload, read from photo)
           calculator, stats (replicates, log reduction), capture_quality
+  l10n/   app_en.arb, app_th.arb (generated from parts/*.json by
+          tool/merge_strings.py), labels (localized option names)
   data/   plate_record, sample_info (plans, slots, details), plate_store,
           export (CSV, backup), label_sheet (PDF labels), accuracy,
           training_export, timelapse_data
@@ -132,6 +145,8 @@ test/
   trust_test.dart       accuracy stats, warnings, membrane units, training export,
                         time-lapse pooling; accuracy, time-lapse, multi-plate screens
   synth.dart            synthetic plate photos for the tests above
+  cfug_test.dart        CFU/g for solid samples
+  l10n_test.dart        every string translated; Thai and dark theme render
   capture_quality_test.dart
   fixtures/          synthetic plates + labels (ml/scripts/make_app_fixtures.py)
 tool/compare.dart    prints Dart vs Python vs true counts
@@ -140,8 +155,13 @@ tool/compare.dart    prints Dart vs Python vs true counts
 ## Run it
 ```
 flutter pub get
-flutter test             # 68 tests
+flutter test             # all tests
 python tool/check_font_coverage.py   # every character in lib/ is in the bundled fonts
+```
+To add or change text: edit `lib/l10n/parts/*.json` (English and Thai side by side),
+then run
+```
+python tool/merge_strings.py && flutter gen-l10n
 flutter run              # on a connected phone
 dart run tool/compare.dart
 ```

@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 import '../core/calculator.dart';
 import '../data/plate_record.dart';
 import '../data/plate_store.dart';
+import '../l10n/l10n.dart';
+import '../l10n/labels.dart';
 import 'format.dart';
 import 'photo_flow.dart';
 
@@ -107,18 +109,23 @@ class _SaveSheetState extends State<SaveSheet> {
     final record = _build();
     final rule = widget.store.rule;
     final sample = _sample.text.trim();
-    final membraneRule = widget.store.hasPlan(sample)
-        ? widget.store.sampleInfo(sample).membraneRule
-        : CountingRule.membrane80;
+    final plan = widget.store.hasPlan(sample)
+        ? widget.store.sampleInfo(sample)
+        : null;
+    final membraneRule = plan?.membraneRule ?? CountingRule.membrane80;
+    // Result unit: from the sample's plan (CFU/g for solid samples), else
+    // CFU/100 mL for membranes and CFU/mL otherwise.
+    final factor = plan?.unitFactor ?? (_membrane ? 100.0 : 1.0);
+    final unit = plan?.unitLabel ?? (_membrane ? 'CFU/100 mL' : 'CFU/mL');
     final est = record?.estimateAlone(rule, membraneRule: membraneRule);
     final knownSamples = [
       for (final s in widget.store.allSamples()) s.sampleId,
     ];
     final ruleLabel = _drop
-        ? CountingRule.dropPlate.label
+        ? CountingRule.dropPlate.text
         : _membrane
-        ? membraneRule.label
-        : rule.label;
+        ? membraneRule.text
+        : rule.text;
 
     return Padding(
       padding: EdgeInsets.only(
@@ -129,13 +136,13 @@ class _SaveSheetState extends State<SaveSheet> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Plate details', style: t.titleLarge),
+            Text(tr.saveSheetTitle, style: t.titleLarge),
             const SizedBox(height: 16),
             if (widget.fixedSample)
               InputDecorator(
-                decoration: const InputDecoration(
-                  labelText: 'Sample ID',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: tr.saveSheetSampleId,
+                  border: const OutlineInputBorder(),
                 ),
                 child: Text(_sample.text),
               )
@@ -154,11 +161,11 @@ class _SaveSheetState extends State<SaveSheet> {
                     controller: controller,
                     focusNode: focus,
                     decoration: InputDecoration(
-                      labelText: 'Sample ID',
-                      helperText: 'Plates with the same sample ID are pooled for CFU/mL',
+                      labelText: tr.saveSheetSampleId,
+                      helperText: tr.saveSheetSampleHelp,
                       border: const OutlineInputBorder(),
                       suffixIcon: IconButton(
-                        tooltip: 'Scan plate label',
+                        tooltip: tr.saveSheetScan,
                         icon: const Icon(Icons.qr_code_scanner),
                         onPressed: _scanLabel,
                       ),
@@ -176,9 +183,9 @@ class _SaveSheetState extends State<SaveSheet> {
                     child: DropdownButtonFormField<int>(
                       key: ValueKey('dilution$_scanned'),
                       initialValue: _dilutionExp,
-                      decoration: const InputDecoration(
-                        labelText: 'Plated dilution',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: tr.saveSheetDilution,
+                        border: const OutlineInputBorder(),
                       ),
                       items: [
                         for (var e = 0; e <= 10; e++)
@@ -195,9 +202,9 @@ class _SaveSheetState extends State<SaveSheet> {
                     child: DropdownButtonFormField<int>(
                       key: ValueKey('replicate$_scanned'),
                       initialValue: _replicate,
-                      decoration: const InputDecoration(
-                        labelText: 'Replicate',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: tr.saveSheetReplicate,
+                        border: const OutlineInputBorder(),
                       ),
                       items: [
                         for (var r = 1; r <= 12; r++)
@@ -220,13 +227,13 @@ class _SaveSheetState extends State<SaveSheet> {
               ],
               decoration: InputDecoration(
                 labelText: _drop
-                    ? 'Drop volume'
+                    ? tr.saveSheetDropVolume
                     : _membrane
-                    ? 'Volume filtered'
-                    : 'Volume',
+                    ? tr.saveSheetVolumeFiltered
+                    : tr.saveSheetVolume,
                 suffixText: _drop ? 'µL' : 'mL',
                 border: const OutlineInputBorder(),
-                errorText: _volumeMl == null ? 'Enter a volume' : null,
+                errorText: _volumeMl == null ? tr.saveSheetEnterVolume : null,
               ),
               onChanged: (_) => setState(() {}),
             ),
@@ -234,23 +241,20 @@ class _SaveSheetState extends State<SaveSheet> {
             if (_drop)
               Padding(
                 padding: const EdgeInsets.only(top: 8),
-                child: Text(
-                  'Drop plate: each drop has its own dilution and replicate (set them in Drops).',
-                  style: t.bodySmall,
-                ),
+                child: Text(tr.saveSheetDropNote, style: t.bodySmall),
               )
             else ...[
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Spreader on plate'),
-                subtitle: const Text('Excluded from CFU/mL'),
+                title: Text(tr.saveSheetSpreader),
+                subtitle: Text(tr.saveSheetSpreaderHelp),
                 value: _spreader,
                 onChanged: (v) => setState(() => _spreader = v),
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Too numerous to count'),
-                subtitle: const Text('Count is a lower bound'),
+                title: Text(tr.saveSheetTntc),
+                subtitle: Text(tr.saveSheetTntcHelp),
                 value: _tntc,
                 onChanged: (v) => setState(() => _tntc = v),
               ),
@@ -263,28 +267,26 @@ class _SaveSheetState extends State<SaveSheet> {
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
               ],
-              decoration: const InputDecoration(
-                labelText: 'Incubation time (optional)',
-                suffixText: 'h',
-                helperText: 'Hours since plating, for time-lapse photos',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: tr.saveSheetIncubation,
+                suffixText: tr.saveSheetHoursUnit,
+                helperText: tr.saveSheetIncubationHelp,
+                border: const OutlineInputBorder(),
               ),
             ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('Checked every colony'),
-              subtitle: const Text(
-                'Use this plate as a reference count for accuracy tracking',
-              ),
+              title: Text(tr.saveSheetVerified),
+              subtitle: Text(tr.saveSheetVerifiedHelp),
               value: _verified,
               onChanged: (v) => setState(() => _verified = v),
             ),
             const SizedBox(height: 8),
             TextField(
               controller: _notes,
-              decoration: const InputDecoration(
-                labelText: 'Notes',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: tr.saveSheetNotes,
+                border: const OutlineInputBorder(),
               ),
               maxLines: 2,
             ),
@@ -295,23 +297,18 @@ class _SaveSheetState extends State<SaveSheet> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('This plate alone ($ruleLabel)', style: t.labelMedium),
+                    Text(tr.saveSheetAlone(ruleLabel), style: t.labelMedium),
                     const SizedBox(height: 4),
                     Text(
                       est == null
                           ? '—'
                           : prettySci(
-                              _membrane
-                                  ? est.describe(
-                                      factor: 100,
-                                      unit: 'CFU/100 mL',
-                                    )
-                                  : est.toString(),
+                              estimateText(est, factor: factor, unit: unit),
                             ),
                       style: t.titleLarge,
                     ),
                     if (est != null && est.note.isNotEmpty)
-                      Text(est.note, style: t.bodySmall),
+                      Text(estimateNote(est), style: t.bodySmall),
                   ],
                 ),
               ),
@@ -321,7 +318,7 @@ class _SaveSheetState extends State<SaveSheet> {
               onPressed: record == null
                   ? null
                   : () => Navigator.pop(context, record),
-              child: const Text('Save'),
+              child: Text(tr.saveSheetSave),
             ),
           ],
         ),
