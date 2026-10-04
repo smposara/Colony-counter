@@ -200,6 +200,12 @@ abstract class AppLocalizations {
   /// **'Could not open {target}'**
   String aboutCannotOpen(String target);
 
+  /// No description provided for @aboutPrivacyPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy policy'**
+  String get aboutPrivacyPolicy;
+
   /// No description provided for @sampleKind.
   ///
   /// In en, this message translates to:

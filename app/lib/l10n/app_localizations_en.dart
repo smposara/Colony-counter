@@ -71,6 +71,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get aboutPrivacyPolicy => 'Privacy policy';
+
+  @override
   String get sampleKind => 'Sample';
 
   @override

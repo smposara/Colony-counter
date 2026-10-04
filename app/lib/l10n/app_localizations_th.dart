@@ -71,6 +71,9 @@ class AppLocalizationsTh extends AppLocalizations {
   }
 
   @override
+  String get aboutPrivacyPolicy => 'นโยบายความเป็นส่วนตัว';
+
+  @override
   String get sampleKind => 'ชนิดตัวอย่าง';
 
   @override

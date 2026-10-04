@@ -5,6 +5,7 @@ const kAppBuild = 5;
 const kDeveloper = 'Pongsak Sarapukdee';
 const kEmail = 'sarapukdee@gmail.com';
 const kWebsite = 'https://cc.amphur.in.th';
+const kPrivacyUrl = 'https://cc.amphur.in.th/privacy.html';
 const kSourceUrl = 'https://github.com/smposara/Colony-counter';
 const kLicenseName = 'GNU AGPL-3.0';
 const kLicenseUrl = 'https://www.gnu.org/licenses/agpl-3.0.html';

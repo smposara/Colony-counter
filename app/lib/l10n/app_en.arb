@@ -44,6 +44,7 @@
       }
     }
   },
+  "aboutPrivacyPolicy": "Privacy policy",
   "sampleKind": "Sample",
   "sampleLiquid": "Liquid (CFU/mL)",
   "sampleSolid": "Solid (CFU/g)",

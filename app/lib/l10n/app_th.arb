@@ -17,6 +17,7 @@
   "aboutIntendedUseText": "สำหรับงานวิจัยและการเรียนการสอน ไม่ใช่เครื่องมือทางการแพทย์หรือการวินิจฉัย โปรดตรวจสอบผลการนับอัตโนมัติทุกครั้ง",
   "aboutCopyright": "© {year} {developer}",
   "aboutCannotOpen": "เปิด {target} ไม่ได้",
+  "aboutPrivacyPolicy": "นโยบายความเป็นส่วนตัว",
   "sampleKind": "ชนิดตัวอย่าง",
   "sampleLiquid": "ของเหลว (CFU/mL)",
   "sampleSolid": "ของแข็ง (CFU/g)",

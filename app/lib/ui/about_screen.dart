@@ -112,6 +112,12 @@ class AboutScreen extends StatelessWidget {
           ),
           const Divider(),
           note(Icons.lock_outline, tr.aboutPrivacy, tr.aboutPrivacyText),
+          link(
+            Icons.policy_outlined,
+            tr.aboutPrivacyPolicy,
+            kPrivacyUrl,
+            Uri.parse(kPrivacyUrl),
+          ),
           note(
             Icons.science_outlined,
             tr.aboutIntendedUse,
