@@ -1,11 +1,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.CAMERA" />
-    <!-- Added by the camera plugin but never used: the app takes photos only
-         (no video or sound) and saves them in its own folder. Removed so the
-         Play Store listing does not show microphone or storage access. -->
+    <!-- Added by plugins and libraries but never used: the app takes photos only
+         (no video or sound), saves them in its own folder, opens files through
+         the system pickers and works offline. Removed so the Play Store listing
+         does not show microphone, storage or network access. -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" tools:node="remove" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:node="remove" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" tools:node="remove" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" tools:node="remove" />
     <application
         android:label="Colony Counter"
         android:name="${applicationName}"
