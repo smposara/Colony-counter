@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 
 import '../core/calculator.dart';
 import 'plate_record.dart';
+import 'sample_info.dart';
 import 'storage/storage.dart';
 
 /// Saved plates and settings, on top of a [StorageBackend] (files on phones,
@@ -14,11 +15,13 @@ class PlateStore extends ChangeNotifier {
   final StorageBackend backend;
   final List<PlateRecord> _records = [];
   final Map<String, Uint8List> _photoCache = {};
+  final Map<String, SampleInfo> _samples = {};
   CountingRule rule = CountingRule.fdaBam;
   double defaultVolumeMl = 0.1;
 
   static const _recordsKey = 'plates';
   static const _settingsKey = 'settings';
+  static const _samplesKey = 'samples';
   static const _photoCacheSize = 24;
 
   static Future<PlateStore> open() async {
@@ -39,10 +42,18 @@ class PlateStore extends ChangeNotifier {
       );
       _records.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     }
+    _samples.clear();
+    final samplesJson = await backend.readText(_samplesKey);
+    if (samplesJson != null) {
+      for (final e in jsonDecode(samplesJson) as List) {
+        final info = SampleInfo.fromJson(e as Map<String, dynamic>);
+        _samples[info.sampleId] = info;
+      }
+    }
     final settingsJson = await backend.readText(_settingsKey);
     if (settingsJson != null) {
       final s = jsonDecode(settingsJson) as Map<String, dynamic>;
-      rule = CountingRule.values.firstWhere(
+      rule = CountingRule.spreadRules.firstWhere(
         (r) => r.name == s['rule'],
         orElse: () => CountingRule.fdaBam,
       );
@@ -99,13 +110,113 @@ class PlateStore extends ChangeNotifier {
     await _saveSettings();
   }
 
-  /// Samples (by sample ID) with their plates, newest sample first.
+  /// Plates grouped by sample ID.
   Map<String, List<PlateRecord>> samples() {
     final out = <String, List<PlateRecord>>{};
     for (final r in _records) {
       if (r.sampleId.isNotEmpty) (out[r.sampleId] ??= []).add(r);
     }
     return out;
+  }
+
+  List<PlateRecord> platesOf(String sampleId) => [
+    for (final r in _records)
+      if (r.sampleId == sampleId) r,
+  ];
+
+  /// Every known sample: those set up in advance and those with plates,
+  /// newest first.
+  List<SampleInfo> allSamples() {
+    final grouped = samples();
+    final ids = {..._samples.keys, ...grouped.keys};
+    final list = [for (final id in ids) sampleInfo(id)];
+    list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return list;
+  }
+
+  /// The saved plan for [id], or one inferred from its plates.
+  SampleInfo sampleInfo(String id) =>
+      _samples[id] ?? SampleInfo.inferred(id, platesOf(id));
+
+  bool hasPlan(String id) => _samples.containsKey(id);
+
+  List<String> experiments() {
+    final names = {
+      for (final s in allSamples())
+        if (s.experiment.isNotEmpty) s.experiment,
+    }.toList();
+    names.sort();
+    return names;
+  }
+
+  Future<void> upsertSample(SampleInfo info, {String? previousId}) async {
+    if (previousId != null && previousId != info.sampleId) {
+      _samples.remove(previousId);
+      // Move the plates to the new ID.
+      for (var i = 0; i < _records.length; i++) {
+        if (_records[i].sampleId == previousId) {
+          _records[i] = _records[i].copyWith(sampleId: info.sampleId);
+        }
+      }
+      await _save();
+    }
+    _samples[info.sampleId] = info;
+    await _saveSamples();
+  }
+
+  /// Removes the sample plan; with [withPlates] also deletes its plates.
+  Future<void> deleteSample(String id, {bool withPlates = false}) async {
+    _samples.remove(id);
+    if (withPlates) {
+      for (final r in platesOf(id)) {
+        _photoCache.remove(r.imagePath);
+        await backend.deletePhoto(r.imagePath);
+      }
+      _records.removeWhere((r) => r.sampleId == id);
+      await _save();
+    }
+    await _saveSamples();
+  }
+
+  /// Adds plates, samples and photos from a backup. Items whose ID already
+  /// exists here are skipped. Returns (plates added, plates skipped, samples added).
+  Future<(int, int, int)> importAll(
+    List<PlateRecord> plates,
+    List<SampleInfo> sampleInfos,
+    Future<Uint8List?> Function(String imagePath) photo,
+  ) async {
+    final have = {for (final r in _records) r.id};
+    var added = 0, skipped = 0, samplesAdded = 0;
+    for (final r in plates) {
+      if (have.contains(r.id)) {
+        skipped++;
+        continue;
+      }
+      final bytes = await photo(r.imagePath);
+      if (bytes != null) await backend.writePhoto(r.imagePath, bytes);
+      _records.add(r);
+      added++;
+    }
+    for (final info in sampleInfos) {
+      if (!_samples.containsKey(info.sampleId)) {
+        _samples[info.sampleId] = info;
+        samplesAdded++;
+      }
+    }
+    _records.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    await _save();
+    await _saveSamples();
+    return (added, skipped, samplesAdded);
+  }
+
+  List<SampleInfo> get samplePlans => List.unmodifiable(_samples.values);
+
+  Future<void> _saveSamples() async {
+    await backend.writeText(
+      _samplesKey,
+      jsonEncode([for (final s in _samples.values) s.toJson()]),
+    );
+    notifyListeners();
   }
 
   Future<void> _save() async {

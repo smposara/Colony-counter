@@ -2,7 +2,10 @@ import 'dart:math' as math;
 
 import '../core/calculator.dart';
 import '../core/classical.dart';
+import '../core/colour.dart';
 import '../core/plate.dart';
+import '../core/spots.dart';
+import '../core/stats.dart';
 
 /// One counted plate, as saved in the history.
 class PlateRecord {
@@ -24,6 +27,9 @@ class PlateRecord {
     this.tntc = false,
     this.guided = false,
     this.kSigma = 4.0,
+    this.replicate = 1,
+    this.spots = const [],
+    this.colourMode = ColourMode.none,
   });
 
   final String id;
@@ -52,6 +58,25 @@ class PlateRecord {
   final bool guided;
   final double kSigma;
 
+  /// Replicate number within its sample (1-based).
+  final int replicate;
+
+  /// Drops on a drop plate; empty for spread / pour plates. For drop plates
+  /// [volumeMl] is the volume of one drop.
+  final List<Spot> spots;
+  final ColourMode colourMode;
+
+  bool get isDropPlate => spots.isNotEmpty;
+
+  /// Colonies per colour class (index = class).
+  List<int> get classCounts {
+    final out = List.filled(colourMode.classNames.length, 0);
+    for (final c in colonies) {
+      out[c.cls.clamp(0, out.length - 1)] += c.n;
+    }
+    return out;
+  }
+
   int get count => colonies.fold(0, (s, c) => s + c.n);
   int get added => colonies.where((c) => c.manual).length;
   double get dilution => math.pow(10, -dilutionExp).toDouble();
@@ -64,8 +89,27 @@ class PlateRecord {
     tntc: tntc,
   );
 
-  Estimate estimateAlone(CountingRule rule) =>
-      estimate([toPlateCount()], rule: rule);
+  /// The countable units of this plate: the whole plate, or each drop.
+  List<Observation> observations() {
+    if (!isDropPlate) return [Observation(toPlateCount(), replicate)];
+    return [
+      for (final s in spots)
+        Observation(
+          PlateCount(
+            countInSpot(s, colonies),
+            math.pow(10, -s.dilutionExp).toDouble(),
+            volumeMl: volumeMl,
+            tntc: s.tntc,
+          ),
+          s.replicate,
+        ),
+    ];
+  }
+
+  /// CFU/mL from this plate alone (all its drops pooled for a drop plate).
+  Estimate estimateAlone(CountingRule spreadRule) => estimate([
+    for (final o in observations()) o.count,
+  ], rule: isDropPlate ? CountingRule.dropPlate : spreadRule);
 
   PlateRecord copyWith({
     String? sampleId,
@@ -75,6 +119,9 @@ class PlateRecord {
     bool? spreader,
     bool? tntc,
     List<Colony>? colonies,
+    int? replicate,
+    List<Spot>? spots,
+    ColourMode? colourMode,
   }) => PlateRecord(
     id: id,
     createdAt: createdAt,
@@ -93,6 +140,9 @@ class PlateRecord {
     tntc: tntc ?? this.tntc,
     guided: guided,
     kSigma: kSigma,
+    replicate: replicate ?? this.replicate,
+    spots: spots ?? this.spots,
+    colourMode: colourMode ?? this.colourMode,
   );
 
   Map<String, dynamic> toJson() => {
@@ -113,6 +163,9 @@ class PlateRecord {
     'tntc': tntc,
     'guided': guided,
     'k_sigma': kSigma,
+    'replicate': replicate,
+    if (spots.isNotEmpty) 'spots': [for (final s in spots) s.toJson()],
+    if (colourMode != ColourMode.none) 'colour_mode': colourMode.name,
   };
 
   factory PlateRecord.fromJson(Map<String, dynamic> j) => PlateRecord(
@@ -136,65 +189,14 @@ class PlateRecord {
     tntc: j['tntc'] as bool? ?? false,
     guided: j['guided'] as bool? ?? false,
     kSigma: (j['k_sigma'] as num?)?.toDouble() ?? 4.0,
-  );
-}
-
-/// CSV with one row per plate, plus the pooled estimate for its sample.
-String recordsToCsv(List<PlateRecord> records, CountingRule rule) {
-  String esc(Object? v) {
-    final s = '$v';
-    return s.contains(RegExp(r'[",\n]')) ? '"${s.replaceAll('"', '""')}"' : s;
-  }
-
-  final bySample = <String, List<PlateRecord>>{};
-  for (final r in records) {
-    if (r.sampleId.isNotEmpty) (bySample[r.sampleId] ??= []).add(r);
-  }
-  final sampleEstimate = {
-    for (final e in bySample.entries)
-      e.key: estimate([for (final r in e.value) r.toPlateCount()], rule: rule),
-  };
-
-  final rows = <List<Object?>>[
-    [
-      'plate_id',
-      'date',
-      'sample_id',
-      'dilution',
-      'volume_ml',
-      'auto_count',
-      'final_count',
-      'added',
-      'flags',
-      'spreader',
-      'tntc',
-      'plate_cfu_per_ml',
-      'sample_cfu_per_ml',
-      'sample_qualifier',
-      'rule',
-      'notes',
-      'image',
+    replicate: (j['replicate'] as num?)?.toInt() ?? 1,
+    spots: [
+      for (final s in j['spots'] as List? ?? const [])
+        Spot.fromJson(s as Map<String, dynamic>),
     ],
-    for (final r in records)
-      [
-        r.id,
-        r.createdAt.toIso8601String(),
-        r.sampleId,
-        '1e-${r.dilutionExp}',
-        r.volumeMl,
-        r.autoCount,
-        r.count,
-        r.added,
-        r.flags.join(';'),
-        r.spreader,
-        r.tntc,
-        r.spreader ? '' : cfuPerMl(r.count, r.dilution, r.volumeMl),
-        sampleEstimate[r.sampleId]?.value ?? '',
-        sampleEstimate[r.sampleId]?.qualifier.name ?? '',
-        rule.label,
-        r.notes,
-        r.imagePath,
-      ],
-  ];
-  return '${rows.map((row) => row.map(esc).join(',')).join('\n')}\n';
+    colourMode: ColourMode.values.firstWhere(
+      (m) => m.name == j['colour_mode'],
+      orElse: () => ColourMode.none,
+    ),
+  );
 }

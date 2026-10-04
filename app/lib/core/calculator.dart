@@ -11,13 +11,19 @@ import 'dart:math' as math;
 enum CountingRule {
   fdaBam('FDA BAM', 25, 250),
   iso7218('ISO 7218', 10, 300),
-  range30to300('30–300', 30, 300);
+  range30to300('30–300', 30, 300),
+
+  /// Drop plates (Miles–Misra): colonies per 10–20 µL spot.
+  dropPlate('Drop 3–30', 3, 30);
 
   const CountingRule(this.label, this.min, this.max);
 
   final String label;
   final int min;
   final int max;
+
+  /// Rules a user can choose for whole (spread / pour) plates.
+  static const spreadRules = [fdaBam, iso7218, range30to300];
 }
 
 class PlateCount {

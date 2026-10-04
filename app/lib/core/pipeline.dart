@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:image/image.dart' as img;
 
 import 'classical.dart';
+import 'colour.dart';
 import 'gray_image.dart';
 import 'normalize.dart';
 import 'plate.dart';
@@ -125,8 +126,12 @@ CountResult countPhoto(
     ),
   );
   final up = 1 / scale;
+  final full = [for (final c in res.colonies) c.scaled(up)];
+  final colours = colonyColours(photo, full);
   return CountResult(
-    colonies: [for (final c in res.colonies) c.scaled(up)],
+    colonies: [
+      for (var i = 0; i < full.length; i++) full[i].withColour(colours[i]),
+    ],
     plate: res.plate.scaled(up),
     polarity: res.polarity,
     flags: res.flags,

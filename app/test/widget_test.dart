@@ -112,7 +112,10 @@ void main() {
       'Lake-A',
     );
     await tester.pump();
-    await tester.tap(find.widgetWithText(FilledButton, 'Save'));
+    final save = find.widgetWithText(FilledButton, 'Save');
+    await tester.ensureVisible(save);
+    await tester.pumpAndSettle();
+    await tester.tap(save);
     await _settleReal(tester, () => store.records.isNotEmpty);
 
     expect(store.records.single.sampleId, 'Lake-A');

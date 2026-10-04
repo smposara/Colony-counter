@@ -3,51 +3,81 @@
 Photograph a 90 mm agar plate, get an automatic colony count, correct it by
 tapping, and turn plate counts into CFU/mL. Everything runs on the phone, offline.
 
-| Review a count | History | Pooled CFU/mL for a sample |
+| Sample plan & replicates | Drop plate, blue/white | Time-kill comparison |
 |---|---|---|
-| ![review](../docs/screenshots/review.png) | ![home](../docs/screenshots/home.png) | ![sample](../docs/screenshots/sample.png) |
+| ![sample](../docs/screenshots/sample-detail.png) | ![drops](../docs/screenshots/drop-plate.png) | ![compare](../docs/screenshots/compare.png) |
 
-_Screenshots are rendered by the test harness on a synthetic plate. Shadows draw as
-black rings there, and some superscripts show as boxes because only Roboto is loaded.
-Phones use their system fonts._
+_Screenshots from the web build in Chromium on synthetic plates and demo data._
 
-## Features (v0.1)
-- **Guided capture** (`ui/capture_screen.dart`): circle guide for the dish and live
-  checks for level (motion sensor), focus (sharpness relative to the recent best)
-  and glare (clipped pixels). Also: tap to focus, focus and exposure lock, flash off.
+## Features (v0.2)
+- **Guided capture** (`ui/capture_screen.dart`, phones): circle guide for the dish and
+  live checks for level, focus and glare; tap to focus, focus and exposure lock.
 - **Automatic count** (`core/`): a pure-Dart port of the Python reference pipeline in
-  `ml/`. Steps: find the plate, mask the rim, correct the background, threshold,
-  split touching colonies, estimate clusters, flag spreaders and too-numerous plates.
-  Runs on a background isolate.
+  `ml/`. Steps: find the plate, mask the rim, correct the background, threshold, split
+  touching colonies, estimate clusters, flag spreaders and too-numerous plates. Each
+  colony's colour is measured too.
 - **Review and edit** (`ui/review_screen.dart`):
-  - tap a mark to remove it; tap empty agar to add one
-  - long-press a mark to set "×N" for clusters
-  - undo, pinch-zoom, move or resize the plate circle, sensitivity slider and recount
-- **CFU/mL** (`core/calculator.dart`): per plate and pooled per sample ID, using
-  ΣC / Σ(V·d). Counting rules: FDA BAM 25–250, ISO 7218 10–300, or 30–300. Results
-  are marked estimated, "<" or ">" when no plate is in range.
-- **History and export**: plates are saved on the phone (JSON plus the photo); swipe
-  to delete; export everything as a CSV via the share sheet.
+  - tap to remove or add a colony; long-press to set "×N" for clusters
+  - undo, zoom, move or resize the plate circle, sensitivity slider and recount
+- **Samples with dilution series and replicates** (`ui/samples_screen.dart`,
+  `data/sample_info.dart`):
+  - Set up a sample once: dilutions (e.g. 10⁻⁴ to 10⁻⁶), number of replicates,
+    volume, and optionally experiment, condition and time point.
+  - The app lists every plate in the plan and offers "Photograph 10⁻⁵ · R2" for the
+    next one. Sample, dilution and replicate are filled in automatically.
+  - The result is **mean ± SD, CV and log₁₀ CFU/mL ± SD** across replicates. Each
+    replicate pools its countable plates as ΣC / Σ(V·d). Counting rules: FDA BAM
+    25–250, ISO 7218 10–300, or 30–300.
+  - "New sample like this" copies a plan, e.g. for the next time point.
+- **Drop plates (Miles–Misra)**:
+  - Drops are found automatically by grouping nearby colonies. Tap a drop to set its
+    dilution, replicate or TNTC, tap empty agar to add one, and drag to move it.
+  - Two layouts: one dilution per plate (drops are replicates), or all dilutions on
+    one plate. Drops are counted with the 3–30 colony range and the drop volume.
+- **Colony colours**: *Blue / white* (X-gal screening) or *Two colours* (chromogenic
+  agar). Each colony's colour is classified automatically, the app shows counts per
+  class and the percentage, and you tap a colony to switch its class.
+- **Compare** (`ui/compare_screen.dart`): samples with the same *Experiment* name are
+  tabulated by condition and time point as log₁₀ ± SD.
+  - **log reduction ± SD** and **% kill** against a chosen control (at the same time
+    point, or the control's only one).
+  - A **time-kill / growth chart** with error bars when there are two or more time
+    points.
+- **Export and backup**:
+  - *Export CSV* shares two files: one row per plate (including drops and colour
+    classes), and one row per sample with mean, SD, CV and log₁₀.
+  - *Back up all data* makes one zip with every plate, plan, photo and both CSVs.
+  - *Restore from backup* merges a zip back in; plates already present are kept.
+    Use this to move data between phones and browsers, or to protect the web
+    version's data.
 
 ## Layout
 ```
 lib/
   core/   gray_image, plate, normalize, classical, pipeline   ← counting (pure Dart)
-          calculator, capture_quality                         ← CFU maths, live checks
-  data/   plate_record (model + CSV), plate_store (JSON on disk)
-  ui/     home, capture, review, save sheet, samples
+          colour (Lab, blue/white), spots (drop plates)
+          calculator, stats (replicates, log reduction), capture_quality
+  data/   plate_record, sample_info (plans, slots), plate_store, export (CSV, backup)
+          storage/ (files on phones, IndexedDB on web)
+  ui/     home (tabs), capture, photo_flow, review, save sheet,
+          samples, sample_setup, compare (table + chart)
 test/
   core_test.dart     golden plates: accuracy vs truth and vs the Python pipeline
   widget_test.dart   count → tap-edit → undo → save, end to end
-  data_test.dart, capture_quality_test.dart
-  fixtures/          synthetic plates + labels from ml/colonycounter/synth.py
+  drop_plate_test.dart  drop plate from a plan: drops, dilutions, blue/white, CFU/mL
+  ui_flows_test.dart    sample setup, replicate stats + next plate, log reduction
+  features_test.dart    replicate stats, colour classes, drop-spot detection
+  data_test.dart        CSVs, plan slots, backup → restore round trip
+  capture_quality_test.dart
+  fixtures/          synthetic plates + labels (ml/scripts/make_app_fixtures.py)
 tool/compare.dart    prints Dart vs Python vs true counts
 ```
 
 ## Run it
 ```
 flutter pub get
-flutter test             # 24 tests
+flutter test             # 42 tests
+python tool/check_font_coverage.py   # every character in lib/ is in the bundled fonts
 flutter run              # on a connected phone
 dart run tool/compare.dart
 ```

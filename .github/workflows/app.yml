@@ -24,6 +24,7 @@ jobs:
       - run: flutter pub get
       - run: flutter analyze
       - run: flutter test
+      - run: pip install fonttools && python tool/check_font_coverage.py
 
   android:
     needs: test

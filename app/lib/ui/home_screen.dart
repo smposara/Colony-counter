@@ -1,82 +1,93 @@
 import 'dart:convert';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../core/calculator.dart';
+import '../data/export.dart';
 import '../data/plate_record.dart';
 import '../data/plate_store.dart';
-import 'capture_screen.dart';
+import 'compare_screen.dart';
 import 'format.dart';
+import 'photo_flow.dart';
 import 'review_screen.dart';
 import 'samples_screen.dart';
 
-/// Web photos are scaled to at most this many pixels on the long side. The
-/// browser also applies the photo's rotation while scaling, so the pixels are
-/// upright, and storage stays small.
-const double _webMaxSide = 3000;
-
-class HomeScreen extends StatelessWidget {
+/// The app's three areas: individual plates, samples (series and replicates),
+/// and comparisons between conditions.
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key, required this.store});
 
   final PlateStore store;
 
-  Future<void> _capture(BuildContext context) async {
-    if (kIsWeb) {
-      // In the browser, open the phone's own camera app (best image quality).
-      await _pick(context, ImageSource.camera);
-      return;
-    }
-    final path = await Navigator.of(context)
-        .push<String>(MaterialPageRoute(builder: (_) => const CaptureScreen()));
-    if (path == null || !context.mounted) return;
-    final bytes = await XFile(path).readAsBytes();
-    if (!context.mounted) return;
-    await _review(context, bytes, guided: true);
-  }
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
 
-  Future<void> _pick(BuildContext context, ImageSource source) async {
-    final picked = await ImagePicker().pickImage(
-      source: source,
-      maxWidth: kIsWeb ? _webMaxSide : null,
-      maxHeight: kIsWeb ? _webMaxSide : null,
-      imageQuality: kIsWeb ? 92 : null,
-    );
-    if (picked == null || !context.mounted) return;
-    final bytes = await picked.readAsBytes();
-    if (!context.mounted) return;
-    await _review(context, bytes, guided: false);
-  }
+class _HomeScreenState extends State<HomeScreen> {
+  int _tab = 0;
 
-  Future<void> _review(
-    BuildContext context,
-    Uint8List photo, {
-    required bool guided,
-  }) => Navigator.of(context).push(
-    MaterialPageRoute(
-      builder: (_) => ReviewScreen(store: store, photo: photo, guided: guided),
-    ),
-  );
+  PlateStore get store => widget.store;
 
-  Future<void> _export(BuildContext context) async {
-    if (store.records.isEmpty) return;
-    final stamp = DateTime.now()
-        .toIso8601String()
-        .substring(0, 19)
-        .replaceAll(':', '-');
-    final name = 'colony_counts_$stamp.csv';
-    final csv = utf8.encode(recordsToCsv(store.records, store.rule));
-    // Phones open the share sheet; browsers that cannot share files download it.
-    await SharePlus.instance.share(
-      ShareParams(
-        files: [XFile.fromData(csv, mimeType: 'text/csv', name: name)],
-        fileNameOverrides: [name],
-        subject: 'Colony counts',
+  @override
+  Widget build(BuildContext context) {
+    final body = switch (_tab) {
+      0 => _PlatesTab(store: store),
+      1 => SamplesTab(store: store),
+      _ => CompareTab(store: store),
+    };
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(const ['Colony Counter', 'Samples', 'Compare'][_tab]),
+        actions: [
+          if (_tab == 0)
+            IconButton(
+              tooltip: 'Import photo',
+              icon: const Icon(Icons.photo_library_outlined),
+              onPressed: () => countNewPlate(context, store, fromGallery: true),
+            ),
+          _DataMenu(store: store),
+        ],
+      ),
+      body: body,
+      floatingActionButton: switch (_tab) {
+        0 => FloatingActionButton.extended(
+          onPressed: () => countNewPlate(context, store),
+          icon: const Icon(Icons.camera_alt_outlined),
+          label: const Text('Count plate'),
+        ),
+        1 => FloatingActionButton.extended(
+          onPressed: () => openSampleSetup(context, store),
+          icon: const Icon(Icons.add),
+          label: const Text('New sample'),
+        ),
+        _ => null,
+      },
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _tab,
+        onDestinationSelected: (i) => setState(() => _tab = i),
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.blur_circular),
+            label: 'Plates',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.science_outlined),
+            label: 'Samples',
+          ),
+          NavigationDestination(icon: Icon(Icons.show_chart), label: 'Compare'),
+        ],
       ),
     );
   }
+}
+
+class _PlatesTab extends StatelessWidget {
+  const _PlatesTab({required this.store});
+
+  final PlateStore store;
 
   @override
   Widget build(BuildContext context) {
@@ -84,61 +95,130 @@ class HomeScreen extends StatelessWidget {
       listenable: store,
       builder: (context, _) {
         final records = store.records;
-        return Scaffold(
-          appBar: AppBar(
-            title: const Text('Colony Counter'),
-            actions: [
-              IconButton(
-                tooltip: 'Samples & CFU/mL',
-                icon: const Icon(Icons.science_outlined),
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => SamplesScreen(store: store),
-                  ),
-                ),
-              ),
-              IconButton(
-                tooltip: 'Import photo',
-                icon: const Icon(Icons.photo_library_outlined),
-                onPressed: () => _pick(context, ImageSource.gallery),
-              ),
-              PopupMenuButton<String>(
-                onSelected: (v) {
-                  if (v == 'export') _export(context);
-                  if (v == 'settings') _showSettings(context);
-                },
-                itemBuilder: (_) => [
-                  PopupMenuItem(
-                    value: 'export',
-                    enabled: records.isNotEmpty,
-                    child: const Text('Export CSV'),
-                  ),
-                  const PopupMenuItem(
-                    value: 'settings',
-                    child: Text('Settings'),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          body: records.isEmpty
-              ? const _EmptyState()
-              : ListView.separated(
-                  padding: const EdgeInsets.only(bottom: 96),
-                  itemCount: records.length,
-                  separatorBuilder: (_, _) => const Divider(height: 1),
-                  itemBuilder: (context, i) =>
-                      _RecordTile(store: store, record: records[i]),
-                ),
-          floatingActionButton: FloatingActionButton.extended(
-            onPressed: () => _capture(context),
-            icon: const Icon(Icons.camera_alt_outlined),
-            label: const Text('Count plate'),
-          ),
+        if (records.isEmpty) return const _EmptyState();
+        return ListView.separated(
+          padding: const EdgeInsets.only(bottom: 96),
+          itemCount: records.length,
+          separatorBuilder: (_, _) => const Divider(height: 1),
+          itemBuilder: (context, i) =>
+              RecordTile(store: store, record: records[i]),
         );
       },
     );
   }
+}
+
+/// Export, backup, restore and settings.
+class _DataMenu extends StatelessWidget {
+  const _DataMenu({required this.store});
+
+  final PlateStore store;
+
+  static String _stamp() =>
+      DateTime.now().toIso8601String().substring(0, 19).replaceAll(':', '-');
+
+  Future<void> _share(
+    List<(String, List<int>, String)> files,
+    String subject,
+  ) async {
+    // Phones open the share sheet; browsers that cannot share files download them.
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [
+          for (final (name, bytes, mime) in files)
+            XFile.fromData(
+              Uint8List.fromList(bytes),
+              mimeType: mime,
+              name: name,
+            ),
+        ],
+        fileNameOverrides: [for (final f in files) f.$1],
+        subject: subject,
+      ),
+    );
+  }
+
+  Future<void> _exportCsv() async {
+    final stamp = _stamp();
+    await _share([
+      ('plates_$stamp.csv', utf8.encode(platesCsv(store)), 'text/csv'),
+      ('samples_$stamp.csv', utf8.encode(samplesCsv(store)), 'text/csv'),
+    ], 'Colony counts');
+  }
+
+  Future<void> _backup(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.showSnackBar(const SnackBar(content: Text('Preparing backup…')));
+    final zip = await buildBackup(store);
+    messenger.hideCurrentSnackBar();
+    await _share([
+      ('colony-counter-backup_${_stamp()}.zip', zip, 'application/zip'),
+    ], 'Colony Counter backup');
+  }
+
+  Future<void> _restore(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final picked = await FilePicker.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: const ['zip'],
+    );
+    if (picked.isEmpty) return;
+    final bytes = await picked.single.readAsBytes();
+    try {
+      final r = await restoreBackup(store, bytes);
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            'Restored ${r.platesAdded} plate${r.platesAdded == 1 ? '' : 's'}'
+            ' and ${r.samplesAdded} sample${r.samplesAdded == 1 ? '' : 's'}'
+            '${r.platesSkipped > 0 ? ' (${r.platesSkipped} already here, kept)' : ''}.',
+          ),
+        ),
+      );
+    } on FormatException catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(e.message)));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final empty = store.records.isEmpty && store.samplePlans.isEmpty;
+    return PopupMenuButton<String>(
+      onSelected: (v) => switch (v) {
+        'csv' => _exportCsv(),
+        'backup' => _backup(context),
+        'restore' => _restore(context),
+        _ => showSettingsSheet(context, store),
+      },
+      itemBuilder: (_) => [
+        PopupMenuItem(
+          value: 'csv',
+          enabled: !empty,
+          child: const Text('Export CSV'),
+        ),
+        PopupMenuItem(
+          value: 'backup',
+          enabled: !empty,
+          child: const Text('Back up all data'),
+        ),
+        const PopupMenuItem(
+          value: 'restore',
+          child: Text('Restore from backup'),
+        ),
+        const PopupMenuDivider(),
+        const PopupMenuItem(value: 'settings', child: Text('Settings')),
+      ],
+    );
+  }
+}
+
+void showSettingsSheet(BuildContext context, PlateStore store) =>
+    _SettingsLauncher(store)._showSettings(context);
+
+class _SettingsLauncher {
+  _SettingsLauncher(this.store);
+
+  final PlateStore store;
 
   void _showSettings(BuildContext context) {
     showModalBottomSheet<void>(
@@ -160,7 +240,7 @@ class HomeScreen extends StatelessWidget {
               SegmentedButton<CountingRule>(
                 showSelectedIcon: false,
                 segments: [
-                  for (final r in CountingRule.values)
+                  for (final r in CountingRule.spreadRules)
                     ButtonSegment(value: r, label: Text(r.label)),
                 ],
                 selected: {store.rule},
@@ -227,8 +307,8 @@ class _EmptyState extends StatelessWidget {
   }
 }
 
-class _RecordTile extends StatelessWidget {
-  const _RecordTile({required this.store, required this.record});
+class RecordTile extends StatelessWidget {
+  const RecordTile({super.key, required this.store, required this.record});
 
   final PlateStore store;
   final PlateRecord record;
@@ -275,11 +355,7 @@ class _RecordTile extends StatelessWidget {
         leading: ClipOval(
           child: _Thumbnail(store: store, record: r),
         ),
-        title: Text(
-          r.sampleId.isEmpty
-              ? 'Unlabelled · ${dilutionLabel(r.dilutionExp)}'
-              : '${r.sampleId} · ${dilutionLabel(r.dilutionExp)}',
-        ),
+        title: Text(plateLabel(r)),
         subtitle: Text(shortDate(r.createdAt)),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,

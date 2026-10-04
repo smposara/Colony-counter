@@ -5,16 +5,23 @@ import 'package:flutter/material.dart';
 
 import '../core/background.dart';
 import '../core/classical.dart';
+import '../core/colour.dart';
 import '../core/pipeline.dart';
 import '../core/plate.dart';
+import '../core/spots.dart';
 import '../data/plate_record.dart';
 import '../data/plate_store.dart';
+import '../data/sample_info.dart';
 import 'format.dart';
+import 'photo_flow.dart';
 import 'save_sheet.dart';
 
 const double kRimFraction = 0.95;
 
-enum _Mode { zoom, edit, plate }
+enum _Mode { zoom, edit, plate, spots, colour }
+
+/// Default drop diameter for a 10 µL drop on agar.
+const double kDropDiameterMm = 7;
 
 /// Shows the automatic count over the photo and lets the user correct it.
 ///
@@ -27,12 +34,16 @@ class ReviewScreen extends StatefulWidget {
     this.photo,
     this.record,
     this.guided = false,
+    this.preset,
   }) : assert(photo != null || record != null);
 
   final PlateStore store;
   final Uint8List? photo;
   final PlateRecord? record;
   final bool guided;
+
+  /// Sample plan and plate slot this new photo belongs to, if any.
+  final PlatePreset? preset;
 
   @override
   State<ReviewScreen> createState() => _ReviewScreenState();
@@ -52,8 +63,14 @@ class _ReviewScreenState extends State<ReviewScreen> {
   int _autoCount = 0;
   List<String> _flags = [];
   double _kSigma = 4.0;
-  final List<List<Colony>> _undo = [];
+  final List<(List<Colony>, List<Spot>)> _undo = [];
   bool _dirty = false;
+
+  /// Drops of a drop plate (empty for whole plates).
+  List<Spot> _spots = [];
+  bool _drop = false;
+  ColourMode _colourMode = ColourMode.none;
+  int? _dragSpot;
 
   @override
   void initState() {
@@ -68,7 +85,13 @@ class _ReviewScreenState extends State<ReviewScreen> {
       _autoCount = r.autoCount;
       _flags = List.of(r.flags);
       _kSigma = r.kSigma;
+      _spots = List.of(r.spots);
+      _drop = r.isDropPlate;
+      _colourMode = r.colourMode;
     } else {
+      final info = widget.preset?.info;
+      _drop = info?.isDrop ?? false;
+      _colourMode = info?.colourMode ?? ColourMode.none;
       _photo = widget.photo!;
       _recount();
     }
@@ -108,11 +131,12 @@ class _ReviewScreenState extends State<ReviewScreen> {
         _imageW = res.imageWidth;
         _imageH = res.imageHeight;
         _plate = res.plate;
-        _colonies = res.colonies;
+        _colonies = _classified(res.colonies, _colourMode);
         _autoCount = res.count;
         _flags = res.flags;
         _undo.clear();
         _dirty = true;
+        if (_drop && _spots.isEmpty) _spots = _suggestSpots();
       });
     } catch (e) {
       if (mounted) setState(() => _error = 'Could not count this photo: $e');
@@ -143,6 +167,112 @@ class _ReviewScreenState extends State<ReviewScreen> {
       ),
     );
     return ok ?? false;
+  }
+
+  // --- drops and colours ----------------------------------------------------
+
+  static List<Colony> _classified(List<Colony> colonies, ColourMode mode) {
+    if (mode == ColourMode.none) {
+      return [for (final c in colonies) c.withCls(0)];
+    }
+    final measured = [
+      for (final c in colonies)
+        if (c.colour != null) c.colour!,
+    ];
+    final cls = classifyColours(measured, mode);
+    var k = 0;
+    return [
+      for (final c in colonies) c.colour == null ? c : c.withCls(cls[k++]),
+    ];
+  }
+
+  double get _dropRadiusPx => kDropDiameterMm / 2 / (_plate?.mmPerPx ?? 0.05);
+
+  /// Dilution and replicate for the [i]-th drop, from the sample plan.
+  Spot _labelSpot(Spot s, int i) {
+    final preset = widget.preset;
+    final info = preset?.info;
+    if (info == null || !info.isDrop) {
+      return s.copyWith(
+        dilutionExp: widget.record?.dilutionExp ?? 0,
+        replicate: i + 1,
+      );
+    }
+    if (info.dropLayout == DropLayout.replicates) {
+      return s.copyWith(
+        dilutionExp: preset!.slot.dilutionExp ?? info.dilutions.first,
+        replicate: i % info.replicates + 1,
+      );
+    }
+    return s.copyWith(
+      dilutionExp: info.dilutions[i % info.dilutions.length],
+      replicate: preset!.slot.replicate ?? 1,
+    );
+  }
+
+  List<Spot> _suggestSpots() {
+    final pl = _plate;
+    if (pl == null) return [];
+    final found = suggestSpots(
+      _colonies,
+      pl.mmPerPx,
+      dropDiameterMm: kDropDiameterMm,
+    );
+    return [for (var i = 0; i < found.length; i++) _labelSpot(found[i], i)];
+  }
+
+  int? _hitSpot(Offset p) {
+    int? best;
+    for (var i = 0; i < _spots.length; i++) {
+      if (_spots[i].contains(p.dx, p.dy) &&
+          (best == null || _spots[i].radius < _spots[best].radius)) {
+        best = i;
+      }
+    }
+    return best;
+  }
+
+  void _setDrop(bool drop) {
+    setState(() {
+      _push();
+      _drop = drop;
+      if (drop && _spots.isEmpty) _spots = _suggestSpots();
+      if (!drop) _spots = [];
+      _mode = drop ? _Mode.spots : _Mode.edit;
+    });
+  }
+
+  void _setColourMode(ColourMode mode) {
+    setState(() {
+      _push();
+      _colourMode = mode;
+      _colonies = _classified(_colonies, mode);
+      _mode = mode == ColourMode.none ? _Mode.edit : _Mode.colour;
+    });
+  }
+
+  Future<void> _editSpot(int i) async {
+    // A Spot to keep, 'delete' to remove it, or null when dismissed.
+    final result = await showDialog<Object>(
+      context: context,
+      builder: (context) => _SpotDialog(
+        spot: _spots[i],
+        index: i,
+        count: countInSpot(_spots[i], _colonies),
+        mmPerPx: _plate?.mmPerPx ?? 0.05,
+      ),
+    );
+    if (!mounted || result == null || result == _spots[i]) return;
+    setState(() {
+      _push();
+      final next = [..._spots];
+      if (result is Spot) {
+        next[i] = result;
+      } else {
+        next.removeAt(i);
+      }
+      _spots = next;
+    });
   }
 
   // --- editing -------------------------------------------------------------
@@ -182,11 +312,36 @@ class _ReviewScreenState extends State<ReviewScreen> {
   }
 
   void _push() {
-    _undo.add(_colonies);
+    _undo.add((_colonies, _spots));
     _dirty = true;
   }
 
   void _onTap(Offset p) {
+    if (_mode == _Mode.spots) {
+      final i = _hitSpot(p);
+      if (i != null) {
+        _editSpot(i);
+      } else if (_insidePlate(p)) {
+        setState(() {
+          _push();
+          _spots = [
+            ..._spots,
+            _labelSpot(Spot(p.dx, p.dy, _dropRadiusPx), _spots.length),
+          ];
+        });
+      }
+      return;
+    }
+    if (_mode == _Mode.colour) {
+      final i = _hit(p);
+      if (i == null) return;
+      setState(() {
+        _push();
+        _colonies = [..._colonies]
+          ..[i] = _colonies[i].withCls(1 - _colonies[i].cls);
+      });
+      return;
+    }
     if (_mode != _Mode.edit) return;
     final i = _hit(p);
     setState(() {
@@ -220,7 +375,28 @@ class _ReviewScreenState extends State<ReviewScreen> {
 
   void _undoLast() {
     if (_undo.isEmpty) return;
-    setState(() => _colonies = _undo.removeLast());
+    setState(() {
+      final (colonies, spots) = _undo.removeLast();
+      _colonies = colonies;
+      _spots = spots;
+    });
+  }
+
+  void _panStart(Offset p) {
+    if (_mode != _Mode.spots) return;
+    _dragSpot = _hitSpot(p);
+    if (_dragSpot != null) _push();
+  }
+
+  void _panUpdate(Offset delta) {
+    if (_mode == _Mode.plate) return _movePlate(delta);
+    final i = _dragSpot;
+    if (i == null) return;
+    setState(() {
+      final s = _spots[i];
+      _spots = [..._spots]
+        ..[i] = s.copyWith(cx: s.cx + delta.dx, cy: s.cy + delta.dy);
+    });
   }
 
   void _movePlate(Offset delta) {
@@ -263,20 +439,31 @@ class _ReviewScreenState extends State<ReviewScreen> {
       colonies: _colonies,
       autoCount: _autoCount,
       flags: _flags,
-      sampleId: existing?.sampleId ?? _lastSampleId(),
-      dilutionExp: existing?.dilutionExp ?? 0,
-      volumeMl: existing?.volumeMl ?? widget.store.defaultVolumeMl,
+      sampleId: existing?.sampleId ?? widget.preset?.info.sampleId ?? '',
+      dilutionExp:
+          existing?.dilutionExp ?? widget.preset?.slot.dilutionExp ?? 0,
+      volumeMl:
+          existing?.volumeMl ??
+          widget.preset?.info.unitVolumeMl ??
+          (_drop ? 0.01 : widget.store.defaultVolumeMl),
       notes: existing?.notes ?? '',
       spreader: existing?.spreader ?? _flags.contains('spreader'),
       tntc: existing?.tntc ?? _flags.contains('tntc'),
       guided: existing?.guided ?? widget.guided,
       kSigma: _kSigma,
+      replicate: existing?.replicate ?? widget.preset?.slot.replicate ?? 1,
+      spots: _drop ? _spots : const [],
+      colourMode: _colourMode,
     );
     final result = await showModalBottomSheet<PlateRecord>(
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
-      builder: (context) => SaveSheet(store: widget.store, draft: draft),
+      builder: (context) => SaveSheet(
+        store: widget.store,
+        draft: draft,
+        fixedSample: widget.preset != null,
+      ),
     );
     if (result == null) return;
     var record = result;
@@ -288,9 +475,6 @@ class _ReviewScreenState extends State<ReviewScreen> {
     _dirty = false;
     if (mounted) Navigator.of(context).pop();
   }
-
-  String _lastSampleId() =>
-      widget.store.records.isEmpty ? '' : widget.store.records.first.sampleId;
 
   // --- UI ------------------------------------------------------------------
 
@@ -338,6 +522,26 @@ class _ReviewScreenState extends State<ReviewScreen> {
                   : _adjustSensitivity,
               icon: const Icon(Icons.tune),
             ),
+            PopupMenuButton<Object>(
+              enabled: _plate != null,
+              tooltip: 'Plate type and colours',
+              onSelected: (v) =>
+                  v is ColourMode ? _setColourMode(v) : _setDrop(!_drop),
+              itemBuilder: (_) => [
+                CheckedPopupMenuItem(
+                  value: 'drop',
+                  checked: _drop,
+                  child: const Text('Drop plate'),
+                ),
+                const PopupMenuDivider(),
+                for (final m in ColourMode.values)
+                  CheckedPopupMenuItem(
+                    value: m,
+                    checked: _colourMode == m,
+                    child: Text('Colours: ${m.label}'),
+                  ),
+              ],
+            ),
           ],
         ),
         body: Column(
@@ -373,6 +577,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
       builder: (context, box) {
         _fitScale = math.min(box.maxWidth / _imageW, box.maxHeight / _imageH);
         final plateMode = _mode == _Mode.plate;
+        // Dragging moves the plate circle or a drop instead of the view.
+        final lockView = plateMode || _mode == _Mode.spots;
         return Stack(
           children: [
             Positioned.fill(
@@ -381,8 +587,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
                 child: InteractiveViewer(
                   transformationController: _viewer,
                   maxScale: 12,
-                  panEnabled: !plateMode,
-                  scaleEnabled: !plateMode,
+                  panEnabled: !lockView,
+                  scaleEnabled: !lockView,
                   onInteractionUpdate: (_) =>
                       setState(() {}), // keep stroke widths crisp
                   child: Center(
@@ -395,9 +601,13 @@ class _ReviewScreenState extends State<ReviewScreen> {
                           onTapUp: (d) => _onTap(d.localPosition),
                           onLongPressStart: (d) =>
                               _onLongPress(d.localPosition),
-                          onPanUpdate: plateMode
-                              ? (d) => _movePlate(d.delta)
+                          onPanStart: lockView
+                              ? (d) => _panStart(d.localPosition)
                               : null,
+                          onPanUpdate: lockView
+                              ? (d) => _panUpdate(d.delta)
+                              : null,
+                          onPanEnd: lockView ? (_) => _dragSpot = null : null,
                           child: Stack(
                             fit: StackFit.expand,
                             children: [
@@ -412,6 +622,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
                                   colonies: _colonies,
                                   scale: _screenScale,
                                   plateMode: plateMode,
+                                  spots: _drop ? _spots : const [],
+                                  colourMode: _colourMode,
                                 ),
                               ),
                             ],
@@ -444,122 +656,241 @@ class _ReviewScreenState extends State<ReviewScreen> {
       if (_removed > 0) '−$_removed removed',
       if (_removed < 0) '+${-_removed} in clusters',
     ];
+    final modes = [
+      (_Mode.zoom, Icons.zoom_in, 'Zoom'),
+      (_Mode.edit, Icons.touch_app, 'Edit'),
+      (_Mode.plate, Icons.radio_button_unchecked, 'Plate'),
+      if (_drop) (_Mode.spots, Icons.bubble_chart_outlined, 'Drops'),
+      if (_colourMode != ColourMode.none)
+        (_Mode.colour, Icons.palette_outlined, 'Colour'),
+    ];
+    if (!modes.any((m) => m.$1 == _mode)) _mode = _Mode.edit;
+    final compact = modes.length > 3;
     return Material(
       elevation: 3,
       child: SafeArea(
         top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    '$_count',
-                    style: t.displaySmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 6),
-                    child: Text('CFU', style: t.titleMedium),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(bottom: 6),
-                      child: Text(
-                        edits.isEmpty
-                            ? 'automatic'
-                            : 'auto $_autoCount · ${edits.join(' · ')}',
-                        style: t.bodySmall,
-                        textAlign: TextAlign.end,
-                        maxLines: 2,
-                      ),
-                    ),
-                  ),
-                ],
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Details scroll on short phones; the Save / Recount actions below
+            // always stay visible.
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.sizeOf(context).height * 0.4,
               ),
-              if (_flags.isNotEmpty)
-                Wrap(
-                  spacing: 6,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    for (final f in _flags)
-                      Chip(
-                        label: Text(flagLabel(f)),
-                        visualDensity: VisualDensity.compact,
-                        backgroundColor: f == 'clusters_estimated'
-                            ? null
-                            : cs.errorContainer,
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          '$_count',
+                          style: t.displaySmall?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 6),
+                          child: Text('CFU', style: t.titleMedium),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.only(bottom: 6),
+                            child: Text(
+                              edits.isEmpty
+                                  ? 'automatic'
+                                  : 'auto $_autoCount · ${edits.join(' · ')}',
+                              style: t.bodySmall,
+                              textAlign: TextAlign.end,
+                              maxLines: 2,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (_colourMode != ColourMode.none) _classSummary(t),
+                    if (_drop) _dropSummary(t),
+                    if (_flags.isNotEmpty)
+                      Wrap(
+                        spacing: 6,
+                        children: [
+                          for (final f in _flags)
+                            Chip(
+                              label: Text(flagLabel(f)),
+                              visualDensity: VisualDensity.compact,
+                              backgroundColor: f == 'clusters_estimated'
+                                  ? null
+                                  : cs.errorContainer,
+                            ),
+                        ],
                       ),
+                    const SizedBox(height: 8),
+                    SegmentedButton<_Mode>(
+                      showSelectedIcon: !compact,
+                      segments: [
+                        for (final (mode, icon, label) in modes)
+                          ButtonSegment(
+                            value: mode,
+                            icon: compact ? null : Icon(icon),
+                            label: Text(label),
+                          ),
+                      ],
+                      selected: {_mode},
+                      onSelectionChanged: (s) =>
+                          setState(() => _mode = s.first),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(switch (_mode) {
+                      _Mode.zoom => 'Pinch to zoom, drag to pan.',
+                      _Mode.edit =>
+                        'Tap a mark to remove it, tap empty agar to add one. '
+                            'Long-press a mark to set how many colonies it contains.',
+                      _Mode.plate => 'Drag to move the circle, use the slider to resize it, then recount.',
+                      _Mode.spots =>
+                        'Tap a drop to set its dilution and replicate, tap empty agar to add a drop, '
+                            'drag a drop to move it.',
+                      _Mode.colour =>
+                        'Tap a colony to switch its colour class.',
+                    }, style: t.bodySmall),
                   ],
                 ),
-              const SizedBox(height: 8),
-              SegmentedButton<_Mode>(
-                segments: const [
-                  ButtonSegment(
-                    value: _Mode.zoom,
-                    icon: Icon(Icons.zoom_in),
-                    label: Text('Zoom'),
-                  ),
-                  ButtonSegment(
-                    value: _Mode.edit,
-                    icon: Icon(Icons.touch_app),
-                    label: Text('Edit'),
-                  ),
-                  ButtonSegment(
-                    value: _Mode.plate,
-                    icon: Icon(Icons.radio_button_unchecked),
-                    label: Text('Plate'),
-                  ),
-                ],
-                selected: {_mode},
-                onSelectionChanged: (s) => setState(() => _mode = s.first),
               ),
-              const SizedBox(height: 6),
-              Text(switch (_mode) {
-                _Mode.zoom => 'Pinch to zoom, drag to pan.',
-                _Mode.edit =>
-                  'Tap a mark to remove it, tap empty agar to add one. '
-                      'Long-press a mark to set how many colonies it contains.',
-                _Mode.plate => 'Drag to move the circle, use the slider to resize it, then recount.',
-              }, style: t.bodySmall),
-              if (_mode == _Mode.plate && _plate != null) ...[
-                Slider(
-                  value: _plate!.radius.clamp(_imageW * 0.15, _imageW * 0.7),
-                  min: _imageW * 0.15,
-                  max: _imageW * 0.7,
-                  onChanged: (v) =>
-                      setState(() => _plate = _plate!.copyWith(radius: v)),
-                ),
-                FilledButton.tonalIcon(
-                  onPressed: _busy || _photo == null ? null : _applyPlate,
-                  icon: const Icon(Icons.refresh),
-                  label: const Text('Recount with this circle'),
-                ),
-              ] else
-                Padding(
-                  padding: const EdgeInsets.only(top: 6),
-                  child: FilledButton.icon(
-                    onPressed: _busy || _plate == null || _photo == null
-                        ? null
-                        : _save,
-                    icon: const Icon(Icons.check),
-                    label: Text(
-                      widget.record == null ? 'Save plate' : 'Save changes',
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (_mode == _Mode.plate && _plate != null) ...[
+                    Slider(
+                      value: _plate!.radius.clamp(
+                        _imageW * 0.15,
+                        _imageW * 0.7,
+                      ),
+                      min: _imageW * 0.15,
+                      max: _imageW * 0.7,
+                      onChanged: (v) =>
+                          setState(() => _plate = _plate!.copyWith(radius: v)),
                     ),
-                  ),
-                ),
-            ],
-          ),
+                    FilledButton.tonalIcon(
+                      onPressed: _busy || _photo == null ? null : _applyPlate,
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('Recount with this circle'),
+                    ),
+                  ] else
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: FilledButton.icon(
+                        onPressed: _busy || _plate == null || _photo == null
+                            ? null
+                            : _save,
+                        icon: const Icon(Icons.check),
+                        label: Text(
+                          widget.record == null ? 'Save plate' : 'Save changes',
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
+
+  Widget _classSummary(TextTheme t) {
+    final counts = List.filled(_colourMode.classNames.length, 0);
+    for (final c in _colonies) {
+      counts[c.cls.clamp(0, counts.length - 1)] += c.n;
+    }
+    final total = counts.fold(0, (a, b) => a + b);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Wrap(
+        spacing: 14,
+        runSpacing: 4,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          for (var k = 0; k < counts.length; k++)
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _ClassDot(colour: _classColour(_colourMode, k)),
+                const SizedBox(width: 4),
+                Text(
+                  '${_colourMode.classNames[k]} ${counts[k]}',
+                  style: t.bodyMedium,
+                ),
+              ],
+            ),
+          if (total > 0)
+            Text(
+              '${(counts[1] / total * 100).toStringAsFixed(1)} % '
+              '${_colourMode.classNames[1].toLowerCase()}',
+              style: t.bodySmall,
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _dropSummary(TextTheme t) {
+    if (_spots.isEmpty) {
+      return Text(
+        'No drops marked yet: use Drops to add them.',
+        style: t.bodySmall,
+      );
+    }
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Wrap(
+        spacing: 6,
+        runSpacing: 4,
+        children: [
+          for (var i = 0; i < _spots.length; i++)
+            ActionChip(
+              visualDensity: VisualDensity.compact,
+              label: Text(
+                '${i + 1}: ${dilutionLabel(_spots[i].dilutionExp)} R${_spots[i].replicate} · '
+                '${_spots[i].tntc ? 'TNTC' : countInSpot(_spots[i], _colonies)}',
+              ),
+              onPressed: () => _editSpot(i),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+Color _classColour(ColourMode mode, int cls) => switch ((mode, cls)) {
+  (ColourMode.blueWhite, 1) => const Color(0xFF40C4FF),
+  (ColourMode.twoColours, 1) => const Color(0xFFFF4081),
+  _ => Colors.greenAccent,
+};
+
+class _ClassDot extends StatelessWidget {
+  const _ClassDot({required this.colour});
+
+  final Color colour;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: 12,
+    height: 12,
+    decoration: BoxDecoration(
+      shape: BoxShape.circle,
+      border: Border.all(color: colour, width: 2.5),
+    ),
+  );
 }
 
 class _OverlayPainter extends CustomPainter {
@@ -568,8 +899,12 @@ class _OverlayPainter extends CustomPainter {
     required this.colonies,
     required this.scale,
     required this.plateMode,
+    required this.spots,
+    required this.colourMode,
   });
 
+  final List<Spot> spots;
+  final ColourMode colourMode;
   final Plate? plate;
   final List<Colony> colonies;
 
@@ -603,10 +938,44 @@ class _OverlayPainter extends CustomPainter {
         );
       }
     }
+    for (var i = 0; i < spots.length; i++) {
+      final sp = spots[i];
+      canvas.drawCircle(
+        Offset(sp.cx, sp.cy),
+        sp.radius,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2 * px
+          ..color = sp.tntc ? Colors.redAccent : Colors.amberAccent,
+      );
+      final label = TextPainter(
+        text: TextSpan(
+          text: '${i + 1} · ${sp.tntc ? 'TNTC' : countInSpot(sp, colonies)}',
+          style: TextStyle(
+            color: Colors.black,
+            backgroundColor: sp.tntc ? Colors.redAccent : Colors.amberAccent,
+            fontSize: 13 * px,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      label.paint(
+        canvas,
+        Offset(
+          sp.cx - label.width / 2,
+          sp.cy - sp.radius - label.height - 2 * px,
+        ),
+      );
+    }
     final auto = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2 * px
       ..color = Colors.greenAccent;
+    final class1 = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5 * px
+      ..color = _classColour(colourMode, 1);
     final manual = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2 * px
@@ -617,7 +986,13 @@ class _OverlayPainter extends CustomPainter {
       ..color = Colors.orangeAccent;
     for (final c in colonies) {
       final r = math.max(c.radiusPx * 1.25, 5 * px);
-      final paint = c.n > 1 ? cluster : (c.manual ? manual : auto);
+      final paint = c.n > 1
+          ? cluster
+          : (c.manual
+                ? manual
+                : (colourMode != ColourMode.none && c.cls == 1
+                      ? class1
+                      : auto));
       canvas.drawCircle(Offset(c.x, c.y), r, paint);
       if (c.n > 1) {
         final tp = TextPainter(
@@ -641,7 +1016,9 @@ class _OverlayPainter extends CustomPainter {
       old.plate != plate ||
       old.colonies != colonies ||
       old.scale != scale ||
-      old.plateMode != plateMode;
+      old.plateMode != plateMode ||
+      old.spots != spots ||
+      old.colourMode != colourMode;
 }
 
 class _ClusterDialog extends StatefulWidget {
@@ -746,6 +1123,108 @@ class _SensitivitySheetState extends State<_SensitivitySheet> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _SpotDialog extends StatefulWidget {
+  const _SpotDialog({
+    required this.spot,
+    required this.index,
+    required this.count,
+    required this.mmPerPx,
+  });
+
+  final Spot spot;
+  final int index;
+  final int count;
+  final double mmPerPx;
+
+  @override
+  State<_SpotDialog> createState() => _SpotDialogState();
+}
+
+class _SpotDialogState extends State<_SpotDialog> {
+  late Spot _s = widget.spot;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    final diameterMm = _s.radius * 2 * widget.mmPerPx;
+    return AlertDialog(
+      title: Text('Drop ${widget.index + 1} · ${widget.count} colonies'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: DropdownButtonFormField<int>(
+                  initialValue: _s.dilutionExp,
+                  decoration: const InputDecoration(
+                    labelText: 'Dilution',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: [
+                    for (var e = 0; e <= 10; e++)
+                      DropdownMenuItem(value: e, child: Text(dilutionLabel(e))),
+                  ],
+                  onChanged: (v) =>
+                      setState(() => _s = _s.copyWith(dilutionExp: v)),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: DropdownButtonFormField<int>(
+                  initialValue: _s.replicate,
+                  decoration: const InputDecoration(
+                    labelText: 'Replicate',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: [
+                    for (var r = 1; r <= 12; r++)
+                      DropdownMenuItem(value: r, child: Text('R$r')),
+                  ],
+                  onChanged: (v) =>
+                      setState(() => _s = _s.copyWith(replicate: v)),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Too numerous to count'),
+            subtitle: const Text('Confluent drop'),
+            value: _s.tntc,
+            onChanged: (v) => setState(() => _s = _s.copyWith(tntc: v)),
+          ),
+          Text('Size ${diameterMm.toStringAsFixed(1)} mm', style: t.bodySmall),
+          Slider(
+            value: diameterMm.clamp(2, 20),
+            min: 2,
+            max: 20,
+            onChanged: (v) => setState(
+              () => _s = _s.copyWith(radius: v / 2 / widget.mmPerPx),
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, 'delete'),
+          child: const Text('Delete drop'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(context, _s),
+          child: const Text('OK'),
+        ),
+      ],
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:typed_data';
 
+import 'colour.dart';
 import 'gray_image.dart';
 
 /// Tuning for the classical detector (mirrors ml/colonycounter/classical.py).
@@ -43,6 +44,8 @@ class Colony {
     this.n = 1,
     this.score = 0,
     this.manual = false,
+    this.colour,
+    this.cls = 0,
   });
 
   final double x;
@@ -54,11 +57,27 @@ class Colony {
   /// Added by the user during review.
   final bool manual;
 
-  Colony scaled(double s) =>
-      Colony(x * s, y * s, radiusPx * s, n: n, score: score, manual: manual);
+  /// Mean colour of the colony centre, when measured.
+  final Lab? colour;
 
-  Colony withN(int n) =>
-      Colony(x, y, radiusPx, n: n, score: score, manual: manual);
+  /// Colour class (0 or 1) under the plate's [ColourMode].
+  final int cls;
+
+  Colony _copy({double? s, int? n, Lab? colour, int? cls}) => Colony(
+    x * (s ?? 1),
+    y * (s ?? 1),
+    radiusPx * (s ?? 1),
+    n: n ?? this.n,
+    score: score,
+    manual: manual,
+    colour: colour ?? this.colour,
+    cls: cls ?? this.cls,
+  );
+
+  Colony scaled(double s) => _copy(s: s);
+  Colony withN(int n) => _copy(n: n);
+  Colony withColour(Lab colour) => _copy(colour: colour);
+  Colony withCls(int cls) => _copy(cls: cls);
 
   Map<String, dynamic> toJson() => {
     'x': x,
@@ -67,6 +86,8 @@ class Colony {
     'n': n,
     if (score != 0) 'score': score,
     if (manual) 'manual': true,
+    if (colour != null) 'lab': colour!.toJson(),
+    if (cls != 0) 'cls': cls,
   };
 
   factory Colony.fromJson(Map<String, dynamic> j) => Colony(
@@ -76,6 +97,8 @@ class Colony {
     n: (j['n'] as num?)?.toInt() ?? 1,
     score: (j['score'] as num?)?.toDouble() ?? 0,
     manual: j['manual'] as bool? ?? false,
+    colour: j['lab'] == null ? null : Lab.fromJson(j['lab'] as List),
+    cls: (j['cls'] as num?)?.toInt() ?? 0,
   );
 }
 
