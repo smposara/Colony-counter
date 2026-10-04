@@ -39,6 +39,8 @@ flutter:
     - assets/fonts/LICENSE-Roboto.txt
     - assets/fonts/LICENSE-IBMPlexSansThai.txt
     - assets/fonts/LICENSE-ColonySymbols.txt
+    # The app icon, shown on the About page.
+    - assets/icon/icon-256.png
 
   # Bundled so the web version never needs to download fonts at run time.
   fonts:

@@ -44,14 +44,11 @@ class AboutScreen extends StatelessWidget {
         children: [
           const SizedBox(height: 16),
           Center(
-            child: CircleAvatar(
-              radius: 40,
-              backgroundColor: cs.primaryContainer,
-              child: Icon(
-                Icons.blur_circular,
-                size: 56,
-                color: cs.onPrimaryContainer,
-              ),
+            child: Image.asset(
+              'assets/icon/icon-256.png',
+              width: 88,
+              height: 88,
+              semanticLabel: tr.appTitle,
             ),
           ),
           const SizedBox(height: 12),

@@ -172,6 +172,10 @@ dart run tool/compare.dart
 CI (`.github/workflows/app.yml`) runs analyze and tests, then builds a release APK
 (downloadable as a workflow artifact) and an unsigned iOS build.
 
+**App icon:** the source artwork is in `assets/icon/` (SVG): the full icon, the Android
+adaptive foreground and monochrome (themed-icon) layers, and the web maskable icon.
+Colours: blue #1565C0 and orange #FF9800, matching Cells Calculator.
+
 **APK signing:** every APK is signed with the same release key, so a new APK installs
 over the previous one. The key is kept out of the repository, in three repository
 secrets: `ANDROID_KEYSTORE_BASE64` (the .jks file, base64), `ANDROID_KEYSTORE_PASSWORD`
