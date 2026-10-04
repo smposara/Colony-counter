@@ -58,7 +58,34 @@ To regenerate the golden fixtures after changing the Python pipeline, run
 `python ml/scripts/make_app_fixtures.py` from the repo root. The Dart count must stay
 within ±5 % of Python's.
 
-## Known limitations / next steps
+## Web version (iPhone without the App Store)
+The same app also builds as a web app that runs in Safari on iPhone, or in any
+modern browser:
+```
+app/tool/package_web.sh        # → dist/colony-counter-web.zip (about 6 MB)
+```
+**Hosting:** unzip into any folder on a static web host. No server code and no
+rewrite rules are needed, and the app works from a subfolder. Requirements:
+- **HTTPS.** The browser only allows the camera on secure pages (`localhost` is
+  fine for testing).
+- `.wasm` files should be served as `application/wasm` (most hosts already do; on
+  Apache add `AddType application/wasm .wasm`).
+- Fonts and the rendering engine are bundled; nothing loads from Google or any
+  CDN.
+
+**On the iPhone:** open the URL in Safari, then Share → *Add to Home Screen* so it
+opens full screen like an app.
+- **Camera:** "Count plate" opens the iPhone's own camera. The in-app guide circle and
+  live level/focus/glare checks are phone-app only.
+- **Counting:** runs in the browser on the phone. Nothing is uploaded. Photos are
+  scaled to 3000 px on the long side first.
+- **Storage:** plates are saved in the browser's IndexedDB. Safari may clear a site's
+  data if it is unused for about 7 days unless it was added to the Home Screen, so
+  export the CSV regularly.
+- **Speed:** counting runs on the page's main thread (browsers have no isolates), so
+  the screen pauses for a few seconds while counting.
+
+
 - **Not yet tried on a physical phone.** The build environment had no Android SDK or
   Xcode. Check the camera flow, the live checks and timing on real devices first.
 - Photos are analysed with their short side scaled to 1800 px (about 65 µm/px for a

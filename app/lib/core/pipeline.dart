@@ -1,4 +1,3 @@
-import 'dart:isolate';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
@@ -136,9 +135,3 @@ CountResult countPhoto(
     imageHeight: photo.height,
   );
 }
-
-/// [countPhoto] on a background isolate so the UI stays responsive.
-Future<CountResult> countPhotoInBackground(
-  Uint8List bytes, [
-  CountOptions o = const CountOptions(),
-]) => Isolate.run(() => countPhoto(bytes, o));

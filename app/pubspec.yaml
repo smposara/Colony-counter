@@ -10,6 +10,7 @@ dependencies:
   camera: ^0.12.1
   flutter:
     sdk: flutter
+  idb_shim: ^2.9.10
   image: ^4.10.1
   image_picker: ^1.2.3
   path_provider: ^2.1.6
@@ -23,3 +24,16 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  # Bundled so the web version never needs to download fonts at run time.
+  fonts:
+    - family: Roboto
+      fonts:
+        - asset: assets/fonts/Roboto-Regular.ttf
+        - asset: assets/fonts/Roboto-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Roboto-Bold.ttf
+          weight: 700
+    - family: ColonySymbols
+      fonts:
+        - asset: assets/fonts/ColonySymbols-Regular.ttf

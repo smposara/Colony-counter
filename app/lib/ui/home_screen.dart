@@ -1,8 +1,8 @@
-import 'dart:io';
+import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../core/calculator.dart';
@@ -13,27 +13,46 @@ import 'format.dart';
 import 'review_screen.dart';
 import 'samples_screen.dart';
 
+/// Web photos are scaled to at most this many pixels on the long side. The
+/// browser also applies the photo's rotation while scaling, so the pixels are
+/// upright, and storage stays small.
+const double _webMaxSide = 3000;
+
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key, required this.store});
 
   final PlateStore store;
 
   Future<void> _capture(BuildContext context) async {
+    if (kIsWeb) {
+      // In the browser, open the phone's own camera app (best image quality).
+      await _pick(context, ImageSource.camera);
+      return;
+    }
     final path = await Navigator.of(context)
         .push<String>(MaterialPageRoute(builder: (_) => const CaptureScreen()));
     if (path == null || !context.mounted) return;
-    await _review(context, File(path), guided: true);
+    final bytes = await XFile(path).readAsBytes();
+    if (!context.mounted) return;
+    await _review(context, bytes, guided: true);
   }
 
-  Future<void> _import(BuildContext context) async {
-    final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
+  Future<void> _pick(BuildContext context, ImageSource source) async {
+    final picked = await ImagePicker().pickImage(
+      source: source,
+      maxWidth: kIsWeb ? _webMaxSide : null,
+      maxHeight: kIsWeb ? _webMaxSide : null,
+      imageQuality: kIsWeb ? 92 : null,
+    );
     if (picked == null || !context.mounted) return;
-    await _review(context, File(picked.path), guided: false);
+    final bytes = await picked.readAsBytes();
+    if (!context.mounted) return;
+    await _review(context, bytes, guided: false);
   }
 
   Future<void> _review(
     BuildContext context,
-    File photo, {
+    Uint8List photo, {
     required bool guided,
   }) => Navigator.of(context).push(
     MaterialPageRoute(
@@ -43,16 +62,17 @@ class HomeScreen extends StatelessWidget {
 
   Future<void> _export(BuildContext context) async {
     if (store.records.isEmpty) return;
-    final dir = await getTemporaryDirectory();
     final stamp = DateTime.now()
         .toIso8601String()
         .substring(0, 19)
         .replaceAll(':', '-');
-    final file = File('${dir.path}/colony_counts_$stamp.csv');
-    await file.writeAsString(recordsToCsv(store.records, store.rule));
+    final name = 'colony_counts_$stamp.csv';
+    final csv = utf8.encode(recordsToCsv(store.records, store.rule));
+    // Phones open the share sheet; browsers that cannot share files download it.
     await SharePlus.instance.share(
       ShareParams(
-        files: [XFile(file.path, mimeType: 'text/csv')],
+        files: [XFile.fromData(csv, mimeType: 'text/csv', name: name)],
+        fileNameOverrides: [name],
         subject: 'Colony counts',
       ),
     );
@@ -80,7 +100,7 @@ class HomeScreen extends StatelessWidget {
               IconButton(
                 tooltip: 'Import photo',
                 icon: const Icon(Icons.photo_library_outlined),
-                onPressed: () => _import(context),
+                onPressed: () => _pick(context, ImageSource.gallery),
               ),
               PopupMenuButton<String>(
                 onSelected: (v) {
@@ -253,14 +273,7 @@ class _RecordTile extends StatelessWidget {
       onDismissed: (_) => store.delete(r),
       child: ListTile(
         leading: ClipOval(
-          child: Image.file(
-            store.photoFile(r),
-            width: 48,
-            height: 48,
-            fit: BoxFit.cover,
-            cacheWidth: 144,
-            errorBuilder: (_, _, _) => const SizedBox(width: 48, height: 48),
-          ),
+          child: _Thumbnail(store: store, record: r),
         ),
         title: Text(
           r.sampleId.isEmpty
@@ -283,6 +296,49 @@ class _RecordTile extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _Thumbnail extends StatefulWidget {
+  const _Thumbnail({required this.store, required this.record});
+
+  final PlateStore store;
+  final PlateRecord record;
+
+  @override
+  State<_Thumbnail> createState() => _ThumbnailState();
+}
+
+class _ThumbnailState extends State<_Thumbnail> {
+  late Future<Uint8List?> _photo = widget.store.readPhoto(widget.record);
+
+  @override
+  void didUpdateWidget(_Thumbnail old) {
+    super.didUpdateWidget(old);
+    if (old.record.imagePath != widget.record.imagePath) {
+      _photo = widget.store.readPhoto(widget.record);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    const empty = SizedBox(width: 48, height: 48);
+    return FutureBuilder<Uint8List?>(
+      future: _photo,
+      builder: (context, snap) {
+        final bytes = snap.data;
+        if (bytes == null) return empty;
+        return Image.memory(
+          bytes,
+          width: 48,
+          height: 48,
+          fit: BoxFit.cover,
+          cacheWidth: 144,
+          gaplessPlayback: true,
+          errorBuilder: (_, _, _) => empty,
+        );
+      },
     );
   }
 }

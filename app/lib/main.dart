@@ -21,13 +21,28 @@ class ColonyCounterApp extends StatelessWidget {
     const seed = Color(0xFF2E7D6B);
     return MaterialApp(
       title: 'Colony Counter',
-      theme: ThemeData(colorSchemeSeed: seed, useMaterial3: true),
-      darkTheme: ThemeData(
-        colorSchemeSeed: seed,
-        brightness: Brightness.dark,
-        useMaterial3: true,
-      ),
+      theme: _theme(seed, Brightness.light),
+      darkTheme: _theme(seed, Brightness.dark),
       home: HomeScreen(store: store),
     );
   }
+}
+
+/// Bundled Roboto, with a small symbol font for superscripts (10⁻⁵) that
+/// Roboto lacks, so text never depends on downloaded or system fonts.
+ThemeData _theme(Color seed, Brightness brightness) {
+  final base = ThemeData(
+    colorSchemeSeed: seed,
+    brightness: brightness,
+    useMaterial3: true,
+    fontFamily: 'Roboto',
+  );
+  return base.copyWith(
+    textTheme: base.textTheme.apply(
+      fontFamilyFallback: const ['ColonySymbols'],
+    ),
+    primaryTextTheme: base.primaryTextTheme.apply(
+      fontFamilyFallback: const ['ColonySymbols'],
+    ),
+  );
 }

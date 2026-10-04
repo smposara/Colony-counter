@@ -5,6 +5,7 @@ import 'package:colony_counter/core/classical.dart';
 import 'package:colony_counter/core/plate.dart';
 import 'package:colony_counter/data/plate_record.dart';
 import 'package:colony_counter/data/plate_store.dart';
+import 'package:colony_counter/data/storage/storage_io.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 PlateRecord _record(
@@ -60,13 +61,13 @@ void main() {
   test('store persists records and settings', () async {
     final dir = await Directory.systemTemp.createTemp('cc_store');
     addTearDown(() => dir.delete(recursive: true));
-    final store = PlateStore(dir);
+    final store = PlateStore(DirectoryStorage(dir));
     await store.load();
     await store.upsert(_record('1', 10, 2));
     await store.upsert(_record('2', 30, 1, sample: 'S2'));
     await store.setRule(CountingRule.iso7218);
 
-    final again = PlateStore(dir);
+    final again = PlateStore(DirectoryStorage(dir));
     await again.load();
     expect(again.records.map((r) => r.id), ['2', '1']); // newest first
     expect(again.rule, CountingRule.iso7218);

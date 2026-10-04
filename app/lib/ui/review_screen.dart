@@ -1,8 +1,9 @@
-import 'dart:io';
 import 'dart:math' as math;
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
+import '../core/background.dart';
 import '../core/classical.dart';
 import '../core/pipeline.dart';
 import '../core/plate.dart';
@@ -17,7 +18,7 @@ enum _Mode { zoom, edit, plate }
 
 /// Shows the automatic count over the photo and lets the user correct it.
 ///
-/// Open with [photo] for a new capture (it is counted on arrival) or with
+/// Open with [photo] (encoded image bytes) for a new capture (it is counted on arrival) or with
 /// [record] to revisit a saved plate.
 class ReviewScreen extends StatefulWidget {
   const ReviewScreen({
@@ -29,7 +30,7 @@ class ReviewScreen extends StatefulWidget {
   }) : assert(photo != null || record != null);
 
   final PlateStore store;
-  final File? photo;
+  final Uint8List? photo;
   final PlateRecord? record;
   final bool guided;
 
@@ -39,7 +40,7 @@ class ReviewScreen extends StatefulWidget {
 
 class _ReviewScreenState extends State<ReviewScreen> {
   final _viewer = TransformationController();
-  late final File _photo;
+  Uint8List? _photo;
 
   bool _busy = false;
   String? _error;
@@ -59,7 +60,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
     super.initState();
     final r = widget.record;
     if (r != null) {
-      _photo = widget.store.photoFile(r);
+      _loadSavedPhoto(r);
       _imageW = r.imageWidth;
       _imageH = r.imageHeight;
       _plate = r.plate;
@@ -71,6 +72,15 @@ class _ReviewScreenState extends State<ReviewScreen> {
       _photo = widget.photo!;
       _recount();
     }
+  }
+
+  Future<void> _loadSavedPhoto(PlateRecord r) async {
+    final bytes = await widget.store.readPhoto(r);
+    if (!mounted) return;
+    setState(() {
+      _photo = bytes;
+      if (bytes == null) _error = 'The photo for this plate is missing.';
+    });
   }
 
   int get _count => _colonies.fold(0, (s, c) => s + c.n);
@@ -85,9 +95,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
       _error = null;
     });
     try {
-      final bytes = await _photo.readAsBytes();
       final res = await countPhotoInBackground(
-        bytes,
+        _photo!,
         CountOptions(
           plate: plate,
           rimFraction: kRimFraction,
@@ -272,7 +281,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
     if (result == null) return;
     var record = result;
     if (existing == null) {
-      final name = await widget.store.importPhoto(_photo, record.id);
+      final name = await widget.store.savePhoto(_photo!, record.id);
       record = PlateRecord.fromJson({...record.toJson(), 'image': name});
     }
     await widget.store.upsert(record);
@@ -324,7 +333,9 @@ class _ReviewScreenState extends State<ReviewScreen> {
             ),
             IconButton(
               tooltip: 'Detection sensitivity',
-              onPressed: _busy || _plate == null ? null : _adjustSensitivity,
+              onPressed: _busy || _plate == null || _photo == null
+                  ? null
+                  : _adjustSensitivity,
               icon: const Icon(Icons.tune),
             ),
           ],
@@ -345,7 +356,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
         child: Padding(padding: const EdgeInsets.all(24), child: Text(_error!)),
       );
     }
-    if (_imageW == 0) {
+    final photo = _photo;
+    if (_imageW == 0 || photo == null) {
       return const Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -389,8 +401,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
                           child: Stack(
                             fit: StackFit.expand,
                             children: [
-                              Image.file(
-                                _photo,
+                              Image.memory(
+                                photo,
                                 fit: BoxFit.fill,
                                 gaplessPlayback: true,
                               ),
@@ -525,7 +537,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                       setState(() => _plate = _plate!.copyWith(radius: v)),
                 ),
                 FilledButton.tonalIcon(
-                  onPressed: _busy ? null : _applyPlate,
+                  onPressed: _busy || _photo == null ? null : _applyPlate,
                   icon: const Icon(Icons.refresh),
                   label: const Text('Recount with this circle'),
                 ),
@@ -533,7 +545,9 @@ class _ReviewScreenState extends State<ReviewScreen> {
                 Padding(
                   padding: const EdgeInsets.only(top: 6),
                   child: FilledButton.icon(
-                    onPressed: _busy || _plate == null ? null : _save,
+                    onPressed: _busy || _plate == null || _photo == null
+                        ? null
+                        : _save,
                     icon: const Icon(Icons.check),
                     label: Text(
                       widget.record == null ? 'Save plate' : 'Save changes',

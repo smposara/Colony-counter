@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:colony_counter/data/plate_store.dart';
+import 'package:colony_counter/data/storage/storage_io.dart';
 import 'package:colony_counter/main.dart';
 import 'package:colony_counter/ui/review_screen.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 Future<PlateStore> _tempStore() async {
   final dir = await Directory.systemTemp.createTemp('cc_widget');
   addTearDown(() => dir.delete(recursive: true));
-  final store = PlateStore(dir);
+  final store = PlateStore(DirectoryStorage(dir));
   await store.load();
   return store;
 }
@@ -63,7 +64,7 @@ void main() {
       MaterialApp(
         home: ReviewScreen(
           store: store,
-          photo: File('test/fixtures/sparse.jpg'),
+          photo: File('test/fixtures/sparse.jpg').readAsBytesSync(),
           guided: true,
         ),
       ),
@@ -118,6 +119,9 @@ void main() {
     expect(store.records.single.count, auto - 1);
     expect(store.records.single.autoCount, auto);
     expect(store.records.single.guided, isTrue);
-    expect(store.photoFile(store.records.single).existsSync(), isTrue);
+    final saved = await tester.runAsync(
+      () => store.readPhoto(store.records.single),
+    );
+    expect(saved, isNotNull);
   });
 }

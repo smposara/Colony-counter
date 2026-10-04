@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:camera/camera.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 
@@ -58,7 +58,7 @@ class _CaptureScreenState extends State<CaptureScreen>
         back,
         ResolutionPreset.max,
         enableAudio: false,
-        imageFormatGroup: Platform.isIOS
+        imageFormatGroup: defaultTargetPlatform == TargetPlatform.iOS
             ? ImageFormatGroup.bgra8888
             : ImageFormatGroup.yuv420,
       );
