@@ -14,6 +14,7 @@ import '../data/plate_store.dart';
 import '../data/training_export.dart';
 import '../l10n/l10n.dart';
 import '../l10n/labels.dart';
+import 'about_screen.dart';
 import 'accuracy_screen.dart';
 import 'compare_screen.dart';
 import 'format.dart';
@@ -265,6 +266,9 @@ class _DataMenu extends StatelessWidget {
           MaterialPageRoute<void>(builder: (_) => AccuracyScreen(store: store)),
         ),
         'training' => _trainingExport(context),
+        'about' => Navigator.of(
+          context,
+        ).push(MaterialPageRoute<void>(builder: (_) => const AboutScreen())),
         _ => showSettingsSheet(context, store),
       },
       itemBuilder: (_) => [
@@ -288,6 +292,7 @@ class _DataMenu extends StatelessWidget {
         ),
         const PopupMenuDivider(),
         PopupMenuItem(value: 'settings', child: Text(tr.homeSettings)),
+        PopupMenuItem(value: 'about', child: Text(tr.aboutTitle)),
       ],
     );
   }

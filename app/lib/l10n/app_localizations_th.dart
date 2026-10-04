@@ -10,6 +10,67 @@ class AppLocalizationsTh extends AppLocalizations {
   AppLocalizationsTh([String locale = 'th']) : super(locale);
 
   @override
+  String get aboutTitle => 'เกี่ยวกับแอป';
+
+  @override
+  String get aboutTagline =>
+      'นับโคโลนี (CFU) บนจานอาหารเลี้ยงเชื้อด้วยกล้องโทรศัพท์';
+
+  @override
+  String aboutVersion(String version, int build) {
+    return 'เวอร์ชัน $version (บิลด์ $build)';
+  }
+
+  @override
+  String get aboutDeveloper => 'ผู้พัฒนา';
+
+  @override
+  String get aboutEmail => 'อีเมล';
+
+  @override
+  String get aboutWebsite => 'เว็บไซต์';
+
+  @override
+  String get aboutSource => 'ซอร์สโค้ด';
+
+  @override
+  String get aboutLicense => 'สัญญาอนุญาต';
+
+  @override
+  String get aboutLicenseText =>
+      'ซอฟต์แวร์เสรีและโอเพนซอร์ส ใช้งาน ศึกษา แจกจ่าย และแก้ไขได้ หากนำฉบับที่แก้ไขไปให้ผู้อื่นใช้ รวมถึงให้บริการเป็นเว็บไซต์ ต้องเปิดเผยซอร์สโค้ดภายใต้สัญญาอนุญาตเดียวกัน';
+
+  @override
+  String get aboutOpenSource => 'สัญญาอนุญาตโอเพนซอร์ส';
+
+  @override
+  String get aboutOpenSourceSub => 'ไลบรารีและฟอนต์ที่แอปใช้';
+
+  @override
+  String get aboutPrivacy => 'ความเป็นส่วนตัว';
+
+  @override
+  String get aboutPrivacyText =>
+      'การนับทำงานบนอุปกรณ์นี้ ภาพถ่ายและผลการนับเก็บไว้ในอุปกรณ์นี้ (หรือในเบราว์เซอร์นี้) เว้นแต่คุณส่งออกหรือแชร์เอง';
+
+  @override
+  String get aboutIntendedUse => 'วัตถุประสงค์การใช้งาน';
+
+  @override
+  String get aboutIntendedUseText =>
+      'สำหรับงานวิจัยและการเรียนการสอน ไม่ใช่เครื่องมือทางการแพทย์หรือการวินิจฉัย โปรดตรวจสอบผลการนับอัตโนมัติทุกครั้ง';
+
+  @override
+  String aboutCopyright(int year, String developer) {
+    return '© $year $developer';
+  }
+
+  @override
+  String aboutCannotOpen(String target) {
+    return 'เปิด $target ไม่ได้';
+  }
+
+  @override
   String get sampleKind => 'ชนิดตัวอย่าง';
 
   @override

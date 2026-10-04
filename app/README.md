@@ -9,11 +9,15 @@ tapping, and turn plate counts into CFU/mL. Everything runs on the phone, offlin
 
 _Screenshots from the web build in Chromium on synthetic plates and demo data._
 
-## Features (v0.5)
+## Features (v0.5.0)
 - **Thai and English** (`lib/l10n/`): every screen is in both languages. The app
   follows the phone's language, or choose it in Settings → *Language*. Thai text uses
   the bundled IBM Plex Sans Thai font, also on printed plate labels. CSV files,
   backups and the annotated photo banner stay in English.
+- **About** (menu → *About*): version, developer, contact email, website, source
+  code, licence (GNU AGPL-3.0, see `LICENSE`) and the open-source licences of the
+  libraries and bundled fonts. The details live in `lib/app_info.dart`; keep
+  `kAppVersion` / `kAppBuild` in step with `version:` in pubspec.yaml (a test checks).
 - **Light and dark themes**: automatic (follows the phone), or fixed light or dark in
   Settings → *Appearance*.
 - **CFU/g for solid samples** (food, soil): in sample setup choose *Solid (CFU/g)*

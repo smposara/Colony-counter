@@ -10,6 +10,67 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get aboutTitle => 'About';
+
+  @override
+  String get aboutTagline =>
+      'Count colonies (CFU) on agar plates with your phone camera.';
+
+  @override
+  String aboutVersion(String version, int build) {
+    return 'Version $version (build $build)';
+  }
+
+  @override
+  String get aboutDeveloper => 'Developer';
+
+  @override
+  String get aboutEmail => 'Email';
+
+  @override
+  String get aboutWebsite => 'Website';
+
+  @override
+  String get aboutSource => 'Source code';
+
+  @override
+  String get aboutLicense => 'Licence';
+
+  @override
+  String get aboutLicenseText =>
+      'Free and open-source software. You may use, study, share and change it. Changed versions offered to others, including as a website, must share their source code under the same licence.';
+
+  @override
+  String get aboutOpenSource => 'Open-source licences';
+
+  @override
+  String get aboutOpenSourceSub => 'Libraries and fonts used by the app';
+
+  @override
+  String get aboutPrivacy => 'Privacy';
+
+  @override
+  String get aboutPrivacyText =>
+      'Counting runs on this device. Photos and results stay on this device (or in this browser) unless you export or share them.';
+
+  @override
+  String get aboutIntendedUse => 'Intended use';
+
+  @override
+  String get aboutIntendedUseText =>
+      'For research and teaching. Not a medical or diagnostic device. Always check the automatic count.';
+
+  @override
+  String aboutCopyright(int year, String developer) {
+    return '© $year $developer';
+  }
+
+  @override
+  String aboutCannotOpen(String target) {
+    return 'Could not open $target';
+  }
+
+  @override
   String get sampleKind => 'Sample';
 
   @override

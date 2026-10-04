@@ -1,5 +1,49 @@
 {
   "@@locale": "en",
+  "aboutTitle": "About",
+  "aboutTagline": "Count colonies (CFU) on agar plates with your phone camera.",
+  "aboutVersion": "Version {version} (build {build})",
+  "@aboutVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      },
+      "build": {
+        "type": "int"
+      }
+    }
+  },
+  "aboutDeveloper": "Developer",
+  "aboutEmail": "Email",
+  "aboutWebsite": "Website",
+  "aboutSource": "Source code",
+  "aboutLicense": "Licence",
+  "aboutLicenseText": "Free and open-source software. You may use, study, share and change it. Changed versions offered to others, including as a website, must share their source code under the same licence.",
+  "aboutOpenSource": "Open-source licences",
+  "aboutOpenSourceSub": "Libraries and fonts used by the app",
+  "aboutPrivacy": "Privacy",
+  "aboutPrivacyText": "Counting runs on this device. Photos and results stay on this device (or in this browser) unless you export or share them.",
+  "aboutIntendedUse": "Intended use",
+  "aboutIntendedUseText": "For research and teaching. Not a medical or diagnostic device. Always check the automatic count.",
+  "aboutCopyright": "© {year} {developer}",
+  "@aboutCopyright": {
+    "placeholders": {
+      "year": {
+        "type": "int"
+      },
+      "developer": {
+        "type": "String"
+      }
+    }
+  },
+  "aboutCannotOpen": "Could not open {target}",
+  "@aboutCannotOpen": {
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
   "sampleKind": "Sample",
   "sampleLiquid": "Liquid (CFU/mL)",
   "sampleSolid": "Solid (CFU/g)",

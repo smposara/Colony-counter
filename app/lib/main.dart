@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -9,8 +10,25 @@ import 'ui/home_screen.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  _registerFontLicences();
   final store = await PlateStore.open();
   runApp(ColonyCounterApp(store: store));
+}
+
+/// The bundled fonts' licences, listed under About → Open-source licences
+/// next to those of the libraries.
+void _registerFontLicences() {
+  LicenseRegistry.addLicense(() async* {
+    for (final (name, file) in const [
+      ('Roboto (font)', 'LICENSE-Roboto.txt'),
+      ('IBM Plex Sans Thai (font)', 'LICENSE-IBMPlexSansThai.txt'),
+      ('DejaVu Sans, as ColonySymbols (font)', 'LICENSE-ColonySymbols.txt'),
+    ]) {
+      yield LicenseEntryWithLineBreaks([
+        name,
+      ], await rootBundle.loadString('assets/fonts/$file'));
+    }
+  });
 }
 
 class ColonyCounterApp extends StatelessWidget {

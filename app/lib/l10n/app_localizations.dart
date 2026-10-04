@@ -98,6 +98,108 @@ abstract class AppLocalizations {
     Locale('th'),
   ];
 
+  /// No description provided for @aboutTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get aboutTitle;
+
+  /// No description provided for @aboutTagline.
+  ///
+  /// In en, this message translates to:
+  /// **'Count colonies (CFU) on agar plates with your phone camera.'**
+  String get aboutTagline;
+
+  /// No description provided for @aboutVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version} (build {build})'**
+  String aboutVersion(String version, int build);
+
+  /// No description provided for @aboutDeveloper.
+  ///
+  /// In en, this message translates to:
+  /// **'Developer'**
+  String get aboutDeveloper;
+
+  /// No description provided for @aboutEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get aboutEmail;
+
+  /// No description provided for @aboutWebsite.
+  ///
+  /// In en, this message translates to:
+  /// **'Website'**
+  String get aboutWebsite;
+
+  /// No description provided for @aboutSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Source code'**
+  String get aboutSource;
+
+  /// No description provided for @aboutLicense.
+  ///
+  /// In en, this message translates to:
+  /// **'Licence'**
+  String get aboutLicense;
+
+  /// No description provided for @aboutLicenseText.
+  ///
+  /// In en, this message translates to:
+  /// **'Free and open-source software. You may use, study, share and change it. Changed versions offered to others, including as a website, must share their source code under the same licence.'**
+  String get aboutLicenseText;
+
+  /// No description provided for @aboutOpenSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Open-source licences'**
+  String get aboutOpenSource;
+
+  /// No description provided for @aboutOpenSourceSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Libraries and fonts used by the app'**
+  String get aboutOpenSourceSub;
+
+  /// No description provided for @aboutPrivacy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy'**
+  String get aboutPrivacy;
+
+  /// No description provided for @aboutPrivacyText.
+  ///
+  /// In en, this message translates to:
+  /// **'Counting runs on this device. Photos and results stay on this device (or in this browser) unless you export or share them.'**
+  String get aboutPrivacyText;
+
+  /// No description provided for @aboutIntendedUse.
+  ///
+  /// In en, this message translates to:
+  /// **'Intended use'**
+  String get aboutIntendedUse;
+
+  /// No description provided for @aboutIntendedUseText.
+  ///
+  /// In en, this message translates to:
+  /// **'For research and teaching. Not a medical or diagnostic device. Always check the automatic count.'**
+  String get aboutIntendedUseText;
+
+  /// No description provided for @aboutCopyright.
+  ///
+  /// In en, this message translates to:
+  /// **'© {year} {developer}'**
+  String aboutCopyright(int year, String developer);
+
+  /// No description provided for @aboutCannotOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open {target}'**
+  String aboutCannotOpen(String target);
+
   /// No description provided for @sampleKind.
   ///
   /// In en, this message translates to:
