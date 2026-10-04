@@ -40,7 +40,31 @@ jobs:
           flutter-version: "3.47.6"
           channel: stable
           cache: true
+      # Sign every build with the same key (repository secrets), so a new APK
+      # installs over the previous one. Without the secrets (e.g. pull requests
+      # from forks) the APK is signed with a throwaway debug key.
+      - name: Set up signing key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "::warning::ANDROID_KEYSTORE_BASE64 is not set: this APK uses a throwaway debug key and cannot update an installed app."
+            exit 0
+          fi
+          echo "$KEYSTORE_BASE64" | base64 -d > android/app/release.jks
+          cat > android/key.properties <<EOF
+          storeFile=release.jks
+          storePassword=$KEYSTORE_PASSWORD
+          keyAlias=$KEY_ALIAS
+          keyPassword=$KEYSTORE_PASSWORD
+          EOF
       - run: flutter build apk --release
+      - name: Show signing certificate
+        run: |
+          apksigner=$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)
+          "$apksigner" verify --print-certs build/app/outputs/flutter-apk/app-release.apk | grep -E "SHA-256|DN"
       - uses: actions/upload-artifact@v4
         with:
           name: colony-counter-apk

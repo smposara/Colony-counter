@@ -168,6 +168,15 @@ dart run tool/compare.dart
 CI (`.github/workflows/app.yml`) runs analyze and tests, then builds a release APK
 (downloadable as a workflow artifact) and an unsigned iOS build.
 
+**APK signing:** every APK is signed with the same release key, so a new APK installs
+over the previous one. The key is kept out of the repository, in three repository
+secrets: `ANDROID_KEYSTORE_BASE64` (the .jks file, base64), `ANDROID_KEYSTORE_PASSWORD`
+and `ANDROID_KEY_ALIAS`. CI writes them to `android/key.properties`; the android job
+prints the certificate's SHA-256 so you can check it never changes. For a local signed
+build, create `android/key.properties` with `storeFile`, `storePassword`, `keyAlias`,
+`keyPassword` (both files are git-ignored). Without it, release builds use the debug
+key. Keep a backup of the keystore: if it is lost, installed apps cannot be updated.
+
 To regenerate the golden fixtures after changing the Python pipeline, run
 `python ml/scripts/make_app_fixtures.py` from the repo root. The Dart count must stay
 within ±5 % of Python's.
