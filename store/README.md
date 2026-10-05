@@ -33,6 +33,26 @@ as the Android app (same Flutter interface).
 
 Tablet screenshots are optional; without them the listing is shown as a phone app.
 
+## Promo video (optional)
+
+`video/colony-counter-promo-en.mp4` and `video/colony-counter-promo-th.mp4`: 43 s,
+1920 × 1080, no voice or music. The video shows the colony count on a real demo
+photo, then the store screenshots with captions.
+
+Play takes a **YouTube link**, not a file:
+1. Upload each video to YouTube (studio.youtube.com → Create → Upload videos).
+   - Visibility: **Public** or **Unlisted**.
+   - Audience: "No, it's not made for kids".
+   - Leave monetisation off, because Play does not show videos with ads.
+   - Allow embedding. It is on by default; check it under Show more → License and distribution.
+2. Optional: add music in YouTube Studio → Editor → Audio, which has free tracks.
+3. Play Console → Main store listing → **Video** → paste the English link.
+   In the Thai (th-TH) translation, paste the Thai link.
+
+To rebuild the video after the screenshots change, run `node render.js en video
+colony-counter-promo-en.mp4` (and `th`) in `video/`. It needs Playwright with
+Chromium and ffmpeg. The captions are in `video/promo.html`.
+
 ## Before you start
 
 1. **Publish the privacy policy.** Upload the latest web zip to cc.amphur.in.th, then

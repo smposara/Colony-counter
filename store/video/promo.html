@@ -1,0 +1,218 @@
+<!doctype html><meta charset="utf-8"><style>
+@font-face{font-family:R;src:url(Roboto-Regular.ttf)}@font-face{font-family:R;font-weight:700;src:url(Roboto-Bold.ttf)}@font-face{font-family:R;font-weight:500;src:url(Roboto-Medium.ttf)}
+@font-face{font-family:T;src:url(IBMPlexSansThai-Regular.ttf)}@font-face{font-family:T;font-weight:700;src:url(IBMPlexSansThai-Bold.ttf)}@font-face{font-family:T;font-weight:500;src:url(IBMPlexSansThai-Medium.ttf)}
+html,body{margin:0;background:#0D47A1}
+#v{width:1920px;height:1080px;position:relative;overflow:hidden;font-family:R,T,sans-serif;color:#fff;
+ background:radial-gradient(circle at 80% 15%,#1E88E5 0,transparent 55%),linear-gradient(135deg,#1976D2,#1565C0 45%,#0D47A1)}
+.ring{position:absolute;border-radius:50%;border:3px solid rgba(255,255,255,.08)}
+.abs{position:absolute}
+#phone{left:390px;top:106px;width:500px;height:867px;border-radius:58px;background:#0a0f1a;box-shadow:0 30px 80px rgba(0,0,0,.45)}
+#screen{position:absolute;left:14px;top:14px;width:472px;height:839px;border-radius:46px;overflow:hidden;background:#000}
+#screen img.shot{position:absolute;top:0;width:472px;height:839px}
+#strip{position:absolute;top:0;left:0;height:839px}
+.pane{position:absolute;top:0;width:472px;height:839px;background:#fff;overflow:hidden}
+#cap{left:1010px;width:800px;top:0;height:1080px}
+.capbox{position:absolute;left:0;width:800px}
+.kick{display:inline-block;background:#FF9800;color:#2B1700;font-weight:700;font-size:26px;padding:6px 18px;border-radius:30px;margin-bottom:26px}
+.h{font-size:72px;font-weight:700;line-height:1.12;margin:0 0 24px}
+.s{font-size:36px;font-weight:400;line-height:1.45;color:#E3F2FD}
+#hero{position:absolute;inset:0;background:#000}
+#hero canvas{position:absolute;left:0;top:0}
+#count{position:absolute;left:0;right:0;bottom:70px;text-align:center}
+#count b{font-size:96px;font-weight:700}
+#count span{font-size:40px;font-weight:500;color:#FFE0B2;margin-left:12px}
+#status{position:absolute;left:0;right:0;top:70px;text-align:center;font-size:30px;font-weight:500;color:#B3E5FC}
+#intro,#outro{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+#intro img,#outro img{width:220px;height:220px;border-radius:50px;box-shadow:0 16px 40px rgba(0,0,0,.3)}
+.title{font-size:110px;font-weight:700;margin:40px 0 10px}
+.tag{font-size:46px;font-weight:500;color:#FFE0B2}
+.bul{margin-top:44px;font-size:38px;color:#E3F2FD;line-height:1.7}
+.bul i{display:inline-block;width:14px;height:14px;border-radius:50%;background:#FF9800;margin:0 22px;vertical-align:6px}
+.web{margin-top:40px;font-size:40px;font-weight:700;color:#fff;background:rgba(255,255,255,.12);padding:12px 34px;border-radius:40px}
+</style>
+<div id="v">
+ <div class="ring" id="r1" style="width:900px;height:900px"></div>
+ <div class="ring" id="r2" style="width:620px;height:620px"></div>
+ <div class="ring" id="r3" style="width:1300px;height:1300px"></div>
+ <div id="intro"><img src="icon.svg"><div class="title">Colony Counter</div><div class="tag" id="itag"></div></div>
+ <div class="abs" id="phone"><div id="screen">
+  <div id="strip"></div>
+ </div></div>
+ <div class="abs" id="cap"></div>
+ <div id="outro"><img src="icon.svg"><div class="title">Colony Counter</div><div class="tag" id="otag"></div><div class="bul" id="obul"></div><div class="web">cc.amphur.in.th</div></div>
+</div>
+<script>
+const LANG = new URLSearchParams(location.search).get('lang') || 'en';
+const DIR = LANG === 'th' ? 'th-TH' : 'en-US';
+const TXT = {
+ en: {
+  tag: 'Count colonies with your phone camera',
+  counting: 'Counting colonies…', done: 'Done', cfu: 'colonies',
+  out: ['Free', 'No ads', 'Works offline', 'Thai & English'],
+  scenes: [
+   ['Snap a plate', 'Colonies are found and counted automatically, in seconds.'],
+   ['Check and correct', 'Tap to add or remove a colony. You stay in control of every count.'],
+   ['Every plate in order', 'Saved with its sample, dilution and replicate.'],
+   ['CFU/mL, CFU/g, CFU/100 mL', 'Mean ± SD and log₁₀ from replicates, following FDA BAM or ISO 7218.'],
+   ['Compare over time', 'Time-kill and growth curves, ready to share.'],
+   ['Time-lapse', 'Follow colonies as they appear and grow.'],
+   ['Several plates, one photo', 'Each plate is found for you, then counted one by one.'],
+   ['Know your accuracy', 'Compare automatic counts with the counts you checked.'],
+  ]},
+ th: {
+  tag: 'นับโคโลนีแบคทีเรียด้วยกล้องโทรศัพท์',
+  counting: 'กำลังนับโคโลนี…', done: 'เสร็จแล้ว', cfu: 'โคโลนี',
+  out: ['ฟรี', 'ไม่มีโฆษณา', 'ใช้งานออฟไลน์', 'ภาษาไทยและอังกฤษ'],
+  scenes: [
+   ['ถ่ายภาพเพลต', 'แอปหาและนับโคโลนีให้อัตโนมัติ ภายในไม่กี่วินาที'],
+   ['ตรวจและแก้ไขได้', 'แตะเพื่อเพิ่มหรือลบโคโลนี ทุกผลนับอยู่ในการควบคุมของคุณ'],
+   ['ทุกเพลตเป็นระเบียบ', 'บันทึกพร้อมตัวอย่าง ระดับการเจือจาง และซ้ำที่'],
+   ['CFU/mL, CFU/g, CFU/100 mL', 'ค่าเฉลี่ย ± SD และ log₁₀ จากค่าซ้ำ ตาม FDA BAM หรือ ISO 7218'],
+   ['เปรียบเทียบตามเวลา', 'กราฟ time-kill และกราฟการเจริญ พร้อมแชร์'],
+   ['ไทม์แลปส์', 'ติดตามโคโลนีที่เกิดขึ้นใหม่และขยายขนาดตามเวลา'],
+   ['หลายเพลตในภาพเดียว', 'แอปหาแต่ละเพลตให้ แล้วนับทีละเพลต'],
+   ['รู้ความแม่นยำ', 'เทียบผลนับอัตโนมัติกับผลที่คุณตรวจแล้ว'],
+  ]},
+}[LANG];
+const SHOTS = ['1-review', '2-plates', '4-sample-detail', '5-compare', '6-timelapse', '8-multi-plate', '7-accuracy'];
+
+// Timeline (seconds)
+const T_INTRO = 3.4, T_HERO = 7.0, T_SHOT = 3.9, T_SLIDE = 0.55, T_OUTRO = 5.0;
+const T_SHOTS0 = T_INTRO + T_HERO;
+const T_OUT0 = T_SHOTS0 + SHOTS.length * T_SHOT;
+const DURATION = T_OUT0 + T_OUTRO;
+
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const ease = x => { x = clamp(x); return x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; };
+const easeOut = x => 1 - Math.pow(1 - clamp(x), 3);
+const $ = id => document.getElementById(id);
+
+// Panes: hero (canvas) + one pane per screenshot, laid out side by side.
+const W = 472, H = 839;
+const strip = $('strip');
+const hero = document.createElement('div'); hero.className = 'pane'; hero.id = 'hero';
+hero.innerHTML = '<canvas width="944" height="1678" style="width:472px;height:839px"></canvas><div id="status"></div><div id="count"><b>0</b><span></span></div>';
+strip.appendChild(hero);
+SHOTS.forEach((s, i) => {
+ const p = document.createElement('div'); p.className = 'pane'; p.style.left = (i + 1) * W + 'px';
+ // Screenshots are 1080x1920; the screen is a little taller, so pin to the top
+ // and fill below with the app's bottom colour.
+ p.innerHTML = `<img class="shot" src="${DIR}/${s}.png" style="height:${W * 1920 / 1080}px">`;
+ strip.appendChild(p);
+});
+$('itag').textContent = TXT.tag; $('otag').textContent = TXT.tag;
+$('obul').innerHTML = TXT.out.join('<i></i>');
+$('count').querySelector('span').textContent = TXT.cfu;
+
+// Captions
+const cap = $('cap');
+const caps = TXT.scenes.map((c, i) => {
+ const d = document.createElement('div'); d.className = 'capbox';
+ d.innerHTML = `<div class="kick">${i + 1} / ${TXT.scenes.length}</div><div class="h">${c[0]}</div><div class="s">${c[1]}</div>`;
+ cap.appendChild(d); return d;
+});
+function placeCaps() { caps.forEach(d => { d.style.top = (540 - d.offsetHeight / 2) + 'px'; }); }
+
+// Hero plate drawing
+let img, col;
+const cv = hero.querySelector('canvas'), ctx = cv.getContext('2d');
+function drawHero(p) { // p = progress 0..1 of the counting animation
+ const sc = 2; ctx.setTransform(sc, 0, 0, sc, 0, 0);
+ ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+ // Fit the plate (circle) to the screen width with a margin.
+ const R = 210, cx = W / 2, cy = H / 2 - 20;
+ const k = R / col.r;
+ ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, R + 26, 0, Math.PI * 2); ctx.clip();
+ ctx.drawImage(img, cx - col.cx * k, cy - col.cy * k, img.width * k, img.height * k);
+ ctx.restore();
+ // plate outline draws first
+ const po = clamp(p / 0.15);
+ ctx.strokeStyle = '#1DE9B6'; ctx.lineWidth = 3;
+ ctx.beginPath(); ctx.arc(cx, cy, R, -Math.PI / 2, -Math.PI / 2 + po * Math.PI * 2); ctx.stroke();
+ // scan line top to bottom
+ const sp = clamp((p - 0.15) / 0.75);
+ const yScan = cy - R + sp * 2 * R;
+ let n = 0;
+ ctx.lineWidth = 2.2;
+ for (const [x, y, r] of col.pts) {
+  const yy = cy + (y - col.cy) * k;
+  if (yy > yScan) continue;
+  n++;
+  const age = clamp((yScan - yy) / 40);
+  const rr = r * k * (1 + 0.6 * (1 - age));
+  ctx.globalAlpha = 0.4 + 0.6 * age;
+  ctx.beginPath(); ctx.arc(cx + (x - col.cx) * k, yy, rr, 0, Math.PI * 2); ctx.stroke();
+ }
+ ctx.globalAlpha = 1;
+ if (sp > 0 && sp < 1) {
+  const half = Math.sqrt(Math.max(0, R * R - (yScan - cy) ** 2));
+  const g = ctx.createLinearGradient(0, yScan - 30, 0, yScan);
+  g.addColorStop(0, 'rgba(29,233,182,0)'); g.addColorStop(1, 'rgba(29,233,182,.35)');
+  ctx.fillStyle = g; ctx.fillRect(cx - half, yScan - 30, 2 * half, 30);
+  ctx.strokeStyle = '#1DE9B6'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(cx - half, yScan); ctx.lineTo(cx + half, yScan); ctx.stroke();
+ }
+ return sp >= 1 ? col.pts.length : n;
+}
+
+window.render = function (t) {
+ // background rings drift slowly
+ const a = t * 0.08;
+ $('r1').style.left = (1350 + 60 * Math.cos(a)) + 'px'; $('r1').style.top = (-260 + 40 * Math.sin(a)) + 'px';
+ $('r2').style.left = (-200 + 50 * Math.sin(a)) + 'px'; $('r2').style.top = (640 + 40 * Math.cos(a)) + 'px';
+ $('r3').style.left = (1150 + 40 * Math.sin(a * .7)) + 'px'; $('r3').style.top = (-460 + 30 * Math.cos(a)) + 'px';
+
+ // Intro: icon pops, title and tagline rise; leaves upwards.
+ const intro = $('intro');
+ const iin = easeOut(t / 0.8), iout = ease((t - (T_INTRO - 0.6)) / 0.6);
+ intro.style.opacity = Math.min(clamp(t / 0.5), 1 - iout);
+ intro.style.transform = `translateY(${(1 - iin) * 40 - iout * 60}px) scale(${0.94 + 0.06 * iin})`;
+ intro.style.display = t < T_INTRO + 0.05 ? 'flex' : 'none';
+
+ // Phone: rises in after the intro, leaves before the outro.
+ const pin = easeOut((t - (T_INTRO - 0.3)) / 0.9), pout = ease((t - T_OUT0) / 0.8);
+ const phone = $('phone');
+ phone.style.transform = `translateY(${(1 - pin) * 1100 + pout * 1100}px) rotate(${(1 - pin) * 6}deg)`;
+ phone.style.display = (pin > 0 && pout < 1) ? 'block' : 'none';
+
+ // Which pane is on screen: slide to the next one at each scene start.
+ let pos = 0;
+ for (let i = 0; i < SHOTS.length; i++) pos += ease((t - (T_SHOTS0 + i * T_SHOT)) / T_SLIDE);
+ strip.style.transform = `translateX(${-pos * W}px)`;
+
+ // Hero counting animation
+ const hp = clamp((t - (T_INTRO + 0.9)) / 4.2);
+ const n = drawHero(hp);
+ $('count').querySelector('b').textContent = n;
+ $('status').textContent = hp >= 1 ? '✓ ' + TXT.done : TXT.counting;
+ const pulse = hp >= 1 ? 1 + 0.12 * Math.sin(clamp((t - (T_INTRO + 5.1)) / 0.5) * Math.PI) : 1;
+ $('count').style.transform = `scale(${pulse})`;
+
+ // Captions: scene 0 = hero, 1.. = screenshots
+ const starts = [T_INTRO + 0.4].concat(SHOTS.map((_, i) => T_SHOTS0 + i * T_SHOT));
+ caps.forEach((d, i) => {
+  const s = starts[i], e = i + 1 < starts.length ? starts[i + 1] : T_OUT0;
+  const fin = easeOut((t - s - 0.15) / 0.6), fout = ease((t - e + 0.05) / 0.35);
+  d.style.opacity = Math.min(fin, 1 - fout);
+  d.style.transform = `translateY(${(1 - fin) * 50 - fout * 40}px)`;
+ });
+
+ // Outro
+ const outro = $('outro');
+ const oin = easeOut((t - T_OUT0 - 0.4) / 0.9);
+ outro.style.display = t > T_OUT0 ? 'flex' : 'none';
+ outro.style.opacity = oin;
+ outro.style.transform = `translateY(${(1 - oin) * 50}px)`;
+};
+
+window.ready = (async () => {
+ await document.fonts.ready;
+ col = await (await fetch('colonies.json')).json();
+ img = new Image(); img.src = 'plate.jpg'; await img.decode();
+ await Promise.all([...document.images].map(i => i.decode().catch(() => {})));
+ placeCaps();
+ window.DURATION = DURATION;
+ render(0);
+ return DURATION;
+})();
+</script>
