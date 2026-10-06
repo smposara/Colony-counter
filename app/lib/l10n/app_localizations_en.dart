@@ -74,6 +74,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aboutPrivacyPolicy => 'Privacy policy';
 
   @override
+  String get aboutStand => '3D-printed photo stand';
+
+  @override
   String get sampleKind => 'Sample';
 
   @override

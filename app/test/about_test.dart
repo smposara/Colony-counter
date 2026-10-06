@@ -32,6 +32,7 @@ void main() {
     expect(find.text('Pongsak Sarapukdee'), findsOneWidget);
     expect(find.text('sarapukdee@gmail.com'), findsOneWidget);
     expect(find.text('https://cc.amphur.in.th'), findsOneWidget);
+    expect(find.text('https://cc.amphur.in.th/stand.html'), findsOneWidget);
     expect(
       find.text('https://github.com/smposara/Colony-counter'),
       findsOneWidget,

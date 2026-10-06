@@ -91,5 +91,9 @@
   "aboutPrivacyPolicy": {
     "en": "Privacy policy",
     "th": "นโยบายความเป็นส่วนตัว"
+  },
+  "aboutStand": {
+    "en": "3D-printed photo stand",
+    "th": "แท่นถ่ายภาพพิมพ์ 3 มิติ"
   }
 }

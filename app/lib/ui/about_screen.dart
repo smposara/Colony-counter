@@ -88,6 +88,12 @@ class AboutScreen extends StatelessWidget {
             ),
           ),
           link(Icons.language, tr.aboutWebsite, kWebsite, Uri.parse(kWebsite)),
+          link(
+            Icons.view_in_ar_outlined,
+            tr.aboutStand,
+            kStandUrl,
+            Uri.parse(kStandUrl),
+          ),
           link(Icons.code, tr.aboutSource, kSourceUrl, Uri.parse(kSourceUrl)),
           const Divider(),
           ListTile(

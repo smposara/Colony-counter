@@ -18,6 +18,7 @@
   "aboutCopyright": "© {year} {developer}",
   "aboutCannotOpen": "เปิด {target} ไม่ได้",
   "aboutPrivacyPolicy": "นโยบายความเป็นส่วนตัว",
+  "aboutStand": "แท่นถ่ายภาพพิมพ์ 3 มิติ",
   "sampleKind": "ชนิดตัวอย่าง",
   "sampleLiquid": "ของเหลว (CFU/mL)",
   "sampleSolid": "ของแข็ง (CFU/g)",

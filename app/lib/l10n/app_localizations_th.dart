@@ -74,6 +74,9 @@ class AppLocalizationsTh extends AppLocalizations {
   String get aboutPrivacyPolicy => 'นโยบายความเป็นส่วนตัว';
 
   @override
+  String get aboutStand => 'แท่นถ่ายภาพพิมพ์ 3 มิติ';
+
+  @override
   String get sampleKind => 'ชนิดตัวอย่าง';
 
   @override

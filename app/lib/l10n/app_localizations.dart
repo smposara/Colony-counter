@@ -206,6 +206,12 @@ abstract class AppLocalizations {
   /// **'Privacy policy'**
   String get aboutPrivacyPolicy;
 
+  /// No description provided for @aboutStand.
+  ///
+  /// In en, this message translates to:
+  /// **'3D-printed photo stand'**
+  String get aboutStand;
+
   /// No description provided for @sampleKind.
   ///
   /// In en, this message translates to:
