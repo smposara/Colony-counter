@@ -226,16 +226,31 @@ class PlateStore extends ChangeNotifier {
     Future<Uint8List?> Function(String imagePath) photo,
   ) async {
     final have = {for (final r in _records) r.id};
+    final usedNames = {for (final r in _records) r.imagePath};
     var added = 0, skipped = 0, samplesAdded = 0;
     for (final r in plates) {
-      if (have.contains(r.id)) {
+      // A backup can list the same plate twice (e.g. merged exports).
+      if (!have.add(r.id)) {
         skipped++;
         continue;
       }
       final bytes = await photo(r.imagePath);
       // The name comes from the backup file: never let it leave the photo
-      // folder (e.g. "../settings.json").
-      final safe = safePhotoName(r.imagePath, r.id);
+      // folder (e.g. "../settings.json"), and never overwrite another
+      // plate's photo.
+      var safe = safePhotoName(r.imagePath, r.id);
+      if (usedNames.contains(safe)) {
+        final stem = safe.endsWith('.jpg')
+            ? safe.substring(0, safe.length - 4)
+            : safe;
+        var n = 2;
+        while (usedNames.contains('${stem}_$n.jpg')) {
+          n++;
+        }
+        safe = '${stem}_$n.jpg';
+      }
+      usedNames.add(safe);
+      _photoCache.remove(safe);
       if (bytes != null) await backend.writePhoto(safe, bytes);
       _records.add(
         safe == r.imagePath

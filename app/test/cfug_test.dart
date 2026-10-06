@@ -92,19 +92,48 @@ void main() {
     expect(row['sample_g'], '10.0');
   });
 
-  testWidgets('the Samples list shows results in each sample\'s unit', (tester) async {
+  testWidgets('the Samples list shows results in each sample\'s unit', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(1080, 6000);
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.reset);
     final store = PlateStore(MemoryStorage());
     await tester.runAsync(() async {
       await store.load();
-      await store.upsertSample(SampleInfo(sampleId: 'Soil', solid: true, sampleWeightG: 10, diluentMl: 40, dilutions: const [2], replicates: 1));
+      await store.upsertSample(
+        SampleInfo(
+          sampleId: 'Soil',
+          solid: true,
+          sampleWeightG: 10,
+          diluentMl: 40,
+          dilutions: const [2],
+          replicates: 1,
+        ),
+      );
       await store.upsert(_plate('Soil', 100, 2, 1));
-      await store.upsertSample(SampleInfo(sampleId: 'Tap', method: PlatingMethod.membrane, dilutions: const [0], replicates: 1, volumeMl: 100));
-      await store.upsert(PlateRecord.fromJson({..._plate('Tap', 45, 0, 1).toJson(), 'volume_ml': 100, 'id': 'tap'}));
+      await store.upsertSample(
+        SampleInfo(
+          sampleId: 'Tap',
+          method: PlatingMethod.membrane,
+          dilutions: const [0],
+          replicates: 1,
+          volumeMl: 100,
+        ),
+      );
+      await store.upsert(
+        PlateRecord.fromJson({
+          ..._plate('Tap', 45, 0, 1).toJson(),
+          'volume_ml': 100,
+          'id': 'tap',
+        }),
+      );
     });
-    await tester.pumpWidget(MaterialApp(home: Scaffold(body: SamplesTab(store: store))));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(body: SamplesTab(store: store)),
+      ),
+    );
     await tester.pump();
     expect(find.text('5.0 × 10⁴'), findsOneWidget); // CFU/g, corrected for 1:5
     expect(find.text('4.5 × 10¹'), findsOneWidget); // 45 CFU/100 mL

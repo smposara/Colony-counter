@@ -25,17 +25,25 @@ void main() {
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(const MaterialApp(home: AboutScreen()));
-    expect(find.text('Version $kAppVersion (build $kAppBuild)'), findsOneWidget);
+    expect(
+      find.text('Version $kAppVersion (build $kAppBuild)'),
+      findsOneWidget,
+    );
     expect(find.text('Pongsak Sarapukdee'), findsOneWidget);
     expect(find.text('sarapukdee@gmail.com'), findsOneWidget);
     expect(find.text('https://cc.amphur.in.th'), findsOneWidget);
-    expect(find.text('https://github.com/smposara/Colony-counter'), findsOneWidget);
+    expect(
+      find.text('https://github.com/smposara/Colony-counter'),
+      findsOneWidget,
+    );
     expect(find.text('Licence: GNU AGPL-3.0'), findsOneWidget);
   });
 
   testWidgets('open-source licences include the bundled fonts', (tester) async {
     LicenseRegistry.addLicense(() async* {
-      yield const LicenseEntryWithLineBreaks(['IBM Plex Sans Thai (font)'], 'OFL');
+      yield const LicenseEntryWithLineBreaks([
+        'IBM Plex Sans Thai (font)',
+      ], 'OFL');
     });
     tester.view.physicalSize = const Size(1080, 4000);
     tester.view.devicePixelRatio = 3;
@@ -43,7 +51,9 @@ void main() {
     await tester.pumpWidget(const MaterialApp(home: AboutScreen()));
     await tester.tap(find.text('Open-source licences'));
     for (var i = 0; i < 30; i++) {
-      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 50)),
+      );
       await tester.pump();
     }
     expect(find.textContaining('IBM Plex Sans Thai'), findsWidgets);

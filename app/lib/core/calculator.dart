@@ -190,8 +190,13 @@ Estimate estimate(
   }
 
   // Neighbouring dilutions straddle the range: take the count closest to it.
+  // A TNTC count is only a lower bound, so it never counts as close; `below`
+  // is not empty here, so there is always a real count to use.
   int gap(PlateCount p) => p.count < lo ? lo - p.count : p.count - hi;
-  final p = usable.reduce((a, b) => gap(a) <= gap(b) ? a : b);
+  final p = [
+    for (final q in usable)
+      if (!q.tntc) q,
+  ].reduce((a, b) => gap(a) <= gap(b) ? a : b);
   final v = cfuPerMl(p.count, p.dilution, p.volumeMl) * sampleFactor;
   return Estimate(roundSig(v), Qualifier.estimated, rule, [
     p,

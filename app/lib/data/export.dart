@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:archive/archive.dart';
 
 import '../core/calculator.dart';
+import '../core/plate.dart';
 import '../core/spots.dart';
 import 'plate_record.dart';
 import 'plate_store.dart';
@@ -332,6 +333,9 @@ Future<RestoreSummary> restoreBackup(PlateStore store, Uint8List zip) async {
     for (final s in m['samples'] as List? ?? const [])
       SampleInfo.fromJson(s as Map<String, dynamic>),
   ];
+  // On a device with no plates yet (e.g. a new phone) the backup's settings
+  // come back too; otherwise keep the settings already chosen here.
+  final wasEmpty = store.records.isEmpty;
   final (added, skipped, samplesAdded) = await store.importAll(
     plates,
     samples,
@@ -340,5 +344,32 @@ Future<RestoreSummary> restoreBackup(PlateStore store, Uint8List zip) async {
       return f == null ? null : Uint8List.fromList(f.content as List<int>);
     },
   );
+  final settings = m['settings'];
+  if (wasEmpty && settings is Map<String, dynamic>) {
+    await _restoreSettings(store, settings);
+  }
   return RestoreSummary(added, skipped, samplesAdded);
+}
+
+Future<void> _restoreSettings(PlateStore store, Map<String, dynamic> s) async {
+  T? byName<T extends Enum>(List<T> values, Object? name) {
+    for (final v in values) {
+      if (v.name == name) return v;
+    }
+    return null;
+  }
+
+  final rule = byName(CountingRule.values, s['rule']);
+  if (rule != null) await store.setRule(rule);
+  final volume = s['volume_ml'];
+  if (volume is num && volume > 0) {
+    await store.setDefaultVolume(volume.toDouble());
+  }
+  final every = s['accuracy_every'];
+  await store.setDefaults(
+    operator: s['operator'] is String ? s['operator'] as String : null,
+    medium: s['medium'] is String ? s['medium'] as String : null,
+    format: byName(PlateFormat.values, s['format']),
+    accuracyCheckEvery: every is int && every >= 0 ? every : null,
+  );
 }

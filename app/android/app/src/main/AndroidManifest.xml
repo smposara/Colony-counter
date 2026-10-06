@@ -1,6 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.CAMERA" />
+    <!-- Photos can also be picked from the gallery, so devices without a camera
+         (some tablets and Chromebooks) can still install the app. -->
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
     <!-- Added by plugins and libraries but never used: the app takes photos only
          (no video or sound), saves them in its own folder, opens files through
          the system pickers and works offline. Removed so the Play Store listing

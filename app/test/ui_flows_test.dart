@@ -12,19 +12,20 @@ import 'package:flutter_test/flutter_test.dart';
 
 var _id = 0;
 
-PlateRecord _plate(String sample, int count, int dilutionExp, int replicate) => PlateRecord(
-  id: '${_id++}',
-  createdAt: DateTime(2026, 10, 4, 9, _id),
-  imagePath: 'p$_id.jpg',
-  imageWidth: 1000,
-  imageHeight: 1000,
-  plate: const Plate(500, 500, 420),
-  colonies: [for (var i = 0; i < count; i++) Colony(i.toDouble(), 0, 4)],
-  autoCount: count,
-  sampleId: sample,
-  dilutionExp: dilutionExp,
-  replicate: replicate,
-);
+PlateRecord _plate(String sample, int count, int dilutionExp, int replicate) =>
+    PlateRecord(
+      id: '${_id++}',
+      createdAt: DateTime(2026, 10, 4, 9, _id),
+      imagePath: 'p$_id.jpg',
+      imageWidth: 1000,
+      imageHeight: 1000,
+      plate: const Plate(500, 500, 420),
+      colonies: [for (var i = 0; i < count; i++) Colony(i.toDouble(), 0, 4)],
+      autoCount: count,
+      sampleId: sample,
+      dilutionExp: dilutionExp,
+      replicate: replicate,
+    );
 
 Future<PlateStore> _store(WidgetTester tester) async {
   final store = PlateStore(MemoryStorage());
@@ -45,8 +46,14 @@ void main() {
     final store = await _store(tester);
     await tester.pumpWidget(MaterialApp(home: SampleSetupScreen(store: store)));
 
-    await tester.enterText(find.widgetWithText(TextField, 'Sample ID'), 'Lake-A');
-    await tester.enterText(find.widgetWithText(TextField, 'Condition'), 'Control');
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Sample ID'),
+      'Lake-A',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Condition'),
+      'Control',
+    );
     final save = find.text('Save sample');
     await tester.tap(save);
     await tester.pumpAndSettle();
@@ -59,15 +66,23 @@ void main() {
     expect(info.slots.length, 9);
   });
 
-  testWidgets('sample detail shows replicate stats and the next plate', (tester) async {
+  testWidgets('sample detail shows replicate stats and the next plate', (
+    tester,
+  ) async {
     _phone(tester);
     final store = await _store(tester);
     await tester.runAsync(() async {
-      await store.upsertSample(SampleInfo(sampleId: 'S1', dilutions: [4, 5], replicates: 2));
+      await store.upsertSample(
+        SampleInfo(sampleId: 'S1', dilutions: [4, 5], replicates: 2),
+      );
       await store.upsert(_plate('S1', 120, 4, 1));
       await store.upsert(_plate('S1', 100, 4, 2));
     });
-    await tester.pumpWidget(MaterialApp(home: SampleDetailScreen(store: store, sampleId: 'S1')));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: SampleDetailScreen(store: store, sampleId: 'S1'),
+      ),
+    );
     await tester.pump();
 
     // R1 = 1.2e7, R2 = 1.0e7 → mean 1.1e7, n = 2.
@@ -79,7 +94,9 @@ void main() {
     expect(next, findsOneWidget);
   });
 
-  testWidgets('compare tab: log reduction vs control over time', (tester) async {
+  testWidgets('compare tab: log reduction vs control over time', (
+    tester,
+  ) async {
     _phone(tester);
     final store = await _store(tester);
     await tester.runAsync(() async {
@@ -90,7 +107,14 @@ void main() {
         ('T4', 'Treated', 4.0, 120, 2), // 1.2e5 vs 1.2e8 → 3 log
       ]) {
         await store.upsertSample(
-          SampleInfo(sampleId: id, experiment: 'Kill test', condition: cond, timeH: t, dilutions: [d], replicates: 1),
+          SampleInfo(
+            sampleId: id,
+            experiment: 'Kill test',
+            condition: cond,
+            timeH: t,
+            dilutions: [d],
+            replicates: 1,
+          ),
         );
         await store.upsert(_plate(id, count, d, 1));
       }

@@ -67,14 +67,18 @@ Future<PlateStore> _store(WidgetTester tester) async {
   final store = PlateStore(MemoryStorage());
   await tester.runAsync(() async {
     await store.load();
-    await store.upsertSample(SampleInfo(sampleId: 'S1', dilutions: const [4], replicates: 1));
+    await store.upsertSample(
+      SampleInfo(sampleId: 'S1', dilutions: const [4], replicates: 1),
+    );
     await store.upsert(_plate('S1'));
   });
   return store;
 }
 
 void main() {
-  testWidgets('sample setup: Save sample clears the navigation bar', (tester) async {
+  testWidgets('sample setup: Save sample clears the navigation bar', (
+    tester,
+  ) async {
     _edgeToEdgePhone(tester);
     final store = await _store(tester);
     await tester.pumpWidget(MaterialApp(home: SampleSetupScreen(store: store)));
@@ -91,7 +95,8 @@ void main() {
             onPressed: () => showModalBottomSheet<void>(
               context: context,
               isScrollControlled: true,
-              builder: (_) => SaveSheet(store: store, draft: store.records.single),
+              builder: (_) =>
+                  SaveSheet(store: store, draft: store.records.single),
             ),
             child: const Text('open'),
           ),
@@ -100,7 +105,10 @@ void main() {
     );
     await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
-    await _expectClearOfNavBar(tester, find.widgetWithText(FilledButton, 'Save'));
+    await _expectClearOfNavBar(
+      tester,
+      find.widgetWithText(FilledButton, 'Save'),
+    );
   });
 
   testWidgets('settings sheet ends above the navigation bar', (tester) async {
