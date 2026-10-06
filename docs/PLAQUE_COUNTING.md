@@ -1,6 +1,7 @@
 # Plaque counting (bacteriophage): idea and decision plan
 
 Status: **parked**. Not scheduled. Revisit after the 0.5.x closed test; earliest target 0.6.
+See also the [AST plan](AST.md): run one demand survey for both.
 
 ## Origin
 
