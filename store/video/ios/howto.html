@@ -1,0 +1,400 @@
+<!doctype html><meta charset="utf-8"><style>
+@font-face{font-family:R;src:url(Roboto-Regular.ttf)}@font-face{font-family:R;font-weight:700;src:url(Roboto-Bold.ttf)}@font-face{font-family:R;font-weight:500;src:url(Roboto-Medium.ttf)}
+@font-face{font-family:T;src:url(IBMPlexSansThai-Regular.ttf)}@font-face{font-family:T;font-weight:700;src:url(IBMPlexSansThai-Bold.ttf)}@font-face{font-family:T;font-weight:500;src:url(IBMPlexSansThai-Medium.ttf)}
+html,body{margin:0;background:#0D47A1}
+*{box-sizing:border-box}
+#v{width:1920px;height:1080px;position:relative;overflow:hidden;font-family:R,T,sans-serif;color:#fff;
+ background:radial-gradient(circle at 80% 15%,#1E88E5 0,transparent 55%),linear-gradient(135deg,#1976D2,#1565C0 45%,#0D47A1)}
+.abs{position:absolute}
+.ring{position:absolute;border-radius:50%;border:3px solid rgba(255,255,255,.08)}
+/* captions */
+#cap{left:1100px;width:760px;top:0;height:1080px}
+.capbox{position:absolute;left:0;width:760px}
+.kick{display:inline-block;background:#FF9800;color:#2B1700;font-weight:700;font-size:26px;padding:6px 18px;border-radius:30px;margin-bottom:24px}
+.h{font-size:64px;font-weight:700;line-height:1.15;margin:0 0 22px}
+.s{font-size:34px;line-height:1.45;color:#E3F2FD}
+.s b{color:#FFE0B2;font-weight:500}
+/* title cards */
+.card{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.card img{width:200px;height:200px;border-radius:46px;box-shadow:0 16px 40px rgba(0,0,0,.3)}
+.card .t1{font-size:92px;font-weight:700;margin:36px 0 12px}
+.card .t2{font-size:44px;font-weight:500;color:#FFE0B2;max-width:1400px}
+.card .t3{font-size:34px;color:#E3F2FD;margin-top:26px}
+.web{margin-top:36px;font-size:40px;font-weight:700;background:rgba(255,255,255,.12);padding:12px 34px;border-radius:40px}
+/* devices */
+.dev{position:absolute;background:#10141c;box-shadow:0 30px 80px rgba(0,0,0,.45)}
+#phone{width:430px;height:884px;border-radius:64px;left:430px;top:98px}
+#pad{width:1000px;height:706px;border-radius:44px;left:40px;top:187px}
+.scr{position:absolute;overflow:hidden;background:#000;color:#111;font-family:-apple-system,R,T,sans-serif;transform-origin:0 0}
+#phone .scr{left:20px;top:20px;width:390px;height:844px;border-radius:46px}
+#pad .scr{left:20px;top:20px;width:1180px;height:820px;border-radius:22px;transform:scale(.8136)}
+.L{position:absolute;inset:0}
+.sb{position:absolute;left:0;right:0;top:0;height:47px;display:flex;align-items:center;justify-content:space-between;padding:6px 34px 0;font:600 16px R;z-index:5}
+#pad .sb{height:26px;padding:2px 22px 0;font-size:13px}
+/* home screen */
+.wall{position:absolute;inset:0;background:linear-gradient(160deg,#5b7cfa,#9b5de5 55%,#f15bb5)}
+.grid{position:absolute;display:grid}
+.ic{display:flex;flex-direction:column;align-items:center;color:#fff;font:500 12px R;text-shadow:0 1px 2px rgba(0,0,0,.4)}
+.ic .sq{width:62px;height:62px;border-radius:15px;margin-bottom:6px;display:flex;align-items:center;justify-content:center;font:700 26px R;color:#fff;text-shadow:none}
+.ic img.sq{object-fit:cover}
+.dock{position:absolute;background:rgba(255,255,255,.28);border-radius:34px;display:flex;justify-content:space-around;align-items:center}
+.safari{background:#fff;position:relative}
+.safari::before{content:"";position:absolute;inset:6px;border-radius:50%;background:radial-gradient(circle,#4fc3f7,#1565c0)}
+.safari::after{content:"";position:absolute;left:50%;top:50%;width:6px;height:36px;margin:-18px 0 0 -3px;background:linear-gradient(#ff3b30 50%,#fff 50%);transform:rotate(45deg);border-radius:3px}
+/* safari */
+.page{position:absolute;left:0;right:0;background:#fff;overflow:hidden}
+.page img{position:absolute;left:0;top:0;width:100%}
+.start{padding:30px 22px;font:700 22px R;color:#111}
+.favs{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:16px}
+.favs div{height:68px;border-radius:14px;background:#e9e9ee}
+.tb{position:absolute;display:flex;align-items:center;gap:10px;z-index:4}
+.pill{flex:1;height:44px;border-radius:22px;background:rgba(255,255,255,.92);box-shadow:0 2px 12px rgba(0,0,0,.18);display:flex;align-items:center;justify-content:center;font:500 16px R;color:#111;overflow:hidden;white-space:nowrap}
+.btn{width:44px;height:44px;border-radius:22px;background:rgba(255,255,255,.92);box-shadow:0 2px 12px rgba(0,0,0,.18);display:flex;align-items:center;justify-content:center;font:700 18px R;color:#111}
+.caret{display:inline-block;width:2px;height:20px;background:#0a84ff;margin-left:1px}
+.kb{position:absolute;left:0;right:0;bottom:0;height:300px;background:#d1d4db;padding:10px 4px;z-index:6}
+.kr{display:flex;justify-content:center;gap:6px;margin:10px 0}
+.kr span{width:33px;height:44px;border-radius:6px;background:#fff;box-shadow:0 1px 0 #888;display:flex;align-items:center;justify-content:center;font:400 20px R;color:#111}
+.kr span.go{width:90px;background:#0a84ff;color:#fff;font-size:16px}
+.kr span.sp{width:180px}
+.load{position:absolute;left:0;top:0;height:3px;background:#0a84ff}
+/* menus and sheets */
+.menu{position:absolute;background:rgba(250,250,252,.97);border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,.3);overflow:hidden;z-index:7;font:400 17px R;color:#111}
+.menu > div:not(.shead):not(.list){padding:13px 18px;border-bottom:1px solid #e3e3e8;display:flex;justify-content:space-between}
+.menu > div.hl{background:#d9e6ff}
+.sheet{position:absolute;left:0;right:0;bottom:0;height:760px;background:#f2f2f7;border-radius:22px 22px 0 0;z-index:7;overflow:hidden;box-shadow:0 -6px 30px rgba(0,0,0,.25)}
+.shead{display:flex;align-items:center;gap:12px;padding:20px 18px;border-bottom:1px solid #ddd;background:#f2f2f7;position:relative;z-index:2}
+.shead img{width:46px;height:46px;border-radius:10px}
+.shead b{font:600 16px R;display:block}.shead span{font:400 14px R;color:#666}
+.sbody{position:absolute;left:0;right:0;top:88px}
+.circles{display:flex;gap:16px;padding:16px 18px}
+.circles i{width:62px;height:62px;border-radius:50%;background:#c7c7cc;display:block}
+.list{margin:10px 16px;background:#fff;border-radius:12px;overflow:hidden}
+.list div{padding:14px 16px;font:400 17px R;border-bottom:1px solid #e5e5ea;display:flex;justify-content:space-between;align-items:center}
+.list div.hl{background:#d9e6ff}
+.plus{width:22px;height:22px;border:2px solid #111;border-radius:5px;display:flex;align-items:center;justify-content:center;font:700 16px R}
+.dlg{position:absolute;background:#f2f2f7;z-index:8;overflow:hidden}
+.dtop{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;font:400 17px R}
+.dtop .a{color:#0a84ff}.dtop b{font-weight:600}.dtop .add{color:#0a84ff;font-weight:700;padding:4px 10px;border-radius:10px}
+.dcard{margin:14px 16px;background:#fff;border-radius:12px;display:flex;gap:14px;padding:14px;align-items:center}
+.dcard img{width:64px;height:64px;border-radius:14px}
+.dcard .nm{font:400 18px R;border-bottom:1px solid #e5e5ea;padding-bottom:8px;margin-bottom:8px}
+.dcard .u{font:400 14px R;color:#888}
+.tog{margin:14px 16px;background:#fff;border-radius:12px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;font:400 17px R}
+.sw{width:52px;height:32px;border-radius:16px;background:#34c759;position:relative}.sw::after{content:"";position:absolute;right:2px;top:2px;width:28px;height:28px;border-radius:50%;background:#fff}
+.note{margin:6px 30px;font:400 13px R;color:#777}
+.dim{position:absolute;inset:0;background:rgba(0,0,0,.3);z-index:6}
+/* finger */
+#tap{position:absolute;width:70px;height:70px;margin:-35px 0 0 -35px;border-radius:50%;background:rgba(255,255,255,.55);border:3px solid rgba(255,152,0,.95);z-index:20;pointer-events:none}
+#rip{position:absolute;width:70px;height:70px;margin:-35px 0 0 -35px;border-radius:50%;border:4px solid #FF9800;z-index:20}
+</style>
+<div id="v">
+ <div class="ring" id="r1" style="width:900px;height:900px"></div>
+ <div class="ring" id="r2" style="width:620px;height:620px"></div>
+ <div class="ring" id="r3" style="width:1300px;height:1300px"></div>
+ <div class="card" id="intro"><img src="icon.svg"><div class="t1">Colony Counter</div><div class="t2" id="i2"></div><div class="t3" id="i3"></div></div>
+ <div class="card" id="padcard"><div class="t1" id="p1"></div><div class="t2" id="p2"></div></div>
+ <div class="card" id="outro"><img src="icon.svg"><div class="t1">Colony Counter</div><div class="t2" id="o2"></div><div class="web">cc.amphur.in.th</div></div>
+ <div class="dev" id="phone"><div class="scr" id="ps"></div></div>
+ <div class="dev" id="pad"><div class="scr" id="as"></div></div>
+ <div class="abs" id="cap"></div>
+ <div id="tap"></div><div id="rip"></div>
+</div>
+<script>
+const LANG = new URLSearchParams(location.search).get('lang') || 'en';
+const URL_ = 'cc.amphur.in.th';
+const X = {
+ en: {
+  i2: 'Install it on iPhone and iPad', i3: 'No App Store needed: add it to your Home Screen from Safari',
+  p1: 'iPad', p2: 'Almost the same, but Share is at the top',
+  o2: 'Now it opens like any other app',
+  ui: { share: 'Share', addHome: 'Add to Home Screen', cancel: 'Cancel', add: 'Add', copy: 'Copy', reading: 'Add to Reading List', bookmark: 'Add Bookmark', fav: 'Add to Favorites', find: 'Find on Page', print: 'Print', webapp: 'Open as Web App', start: 'Favorites', newtab: 'New Tab', note: 'An icon will be added to your Home Screen.', search: 'Search or enter website' },
+  apps: ['Mail', 'Calendar', 'Photos', 'Camera', 'Maps', 'Clock', 'Weather', 'Notes', 'Music', 'Files', 'Settings', 'Books', 'Health', 'Wallet', 'Contacts', 'Podcasts'],
+  steps: [
+   ['Open Safari', 'Find <b>Safari</b> on your Home Screen and tap it.'],
+   ['Go to the website', 'Tap the address bar, type <b>cc.amphur.in.th</b> and tap <b>Go</b>.'],
+   ['Wait for it to load', 'The first visit takes a few seconds.'],
+   ['Tap ••• then Share', 'On older iOS, the <b>Share</b> button (a square with an arrow) is in the bottom bar.'],
+   ['Add to Home Screen', 'Scroll down the list if you can\'t see it. On some versions tap <b>View More</b> first.'],
+   ['Tap Add', 'Keep <b>Open as Web App</b> switched on, then tap <b>Add</b>.'],
+   ['Open it from the Home Screen', 'The Colony Counter icon is now with your other apps.'],
+   ['Done!', 'It opens full screen. Allow <b>camera</b> access the first time you count a plate.'],
+   ['Open the website in Safari', 'Go to <b>cc.amphur.in.th</b> as on the iPhone.'],
+   ['Share → Add to Home Screen', 'On iPad, <b>Share</b> is at the top right of the address bar.'],
+   ['Tap Add', 'Keep <b>Open as Web App</b> on.'],
+   ['Open it from the Home Screen', 'Your counts are saved on the device only.'],
+  ]},
+ th: {
+  i2: 'ติดตั้งบน iPhone และ iPad', i3: 'ไม่ต้องใช้ App Store เพิ่มไปยังหน้าจอโฮมจาก Safari ได้เลย',
+  p1: 'iPad', p2: 'ขั้นตอนเกือบเหมือนกัน แต่ปุ่มแชร์อยู่ด้านบน',
+  o2: 'เปิดใช้งานได้เหมือนแอปทั่วไป',
+  ui: { share: 'แชร์', addHome: 'เพิ่มไปยังหน้าจอโฮม', cancel: 'ยกเลิก', add: 'เพิ่ม', copy: 'คัดลอก', reading: 'เพิ่มไปยังรายการอ่าน', bookmark: 'เพิ่มที่คั่นหน้า', fav: 'เพิ่มไปยังรายการโปรด', find: 'ค้นหาบนหน้า', print: 'พิมพ์', webapp: 'เปิดเป็นเว็บแอป', start: 'รายการโปรด', newtab: 'แท็บใหม่', note: 'ไอคอนจะถูกเพิ่มไปยังหน้าจอโฮม', search: 'ค้นหาหรือป้อนเว็บไซต์' },
+  apps: ['เมล', 'ปฏิทิน', 'รูปภาพ', 'กล้อง', 'แผนที่', 'นาฬิกา', 'อากาศ', 'โน้ต', 'เพลง', 'ไฟล์', 'การตั้งค่า', 'หนังสือ', 'สุขภาพ', 'Wallet', 'รายชื่อ', 'พอดแคสต์'],
+  steps: [
+   ['เปิด Safari', 'หา <b>Safari</b> บนหน้าจอโฮม แล้วแตะเปิด'],
+   ['ไปที่เว็บไซต์', 'แตะแถบที่อยู่ พิมพ์ <b>cc.amphur.in.th</b> แล้วแตะ <b>ไป</b> (Go)'],
+   ['รอให้โหลดเสร็จ', 'ครั้งแรกใช้เวลาไม่กี่วินาที'],
+   ['แตะ ••• แล้วแตะแชร์', 'ใน iOS รุ่นเก่า ปุ่ม <b>แชร์</b> (สี่เหลี่ยมมีลูกศรชี้ขึ้น) อยู่ที่แถบด้านล่าง'],
+   ['เพิ่มไปยังหน้าจอโฮม', 'ถ้าไม่เห็น ให้เลื่อนรายการลง บางรุ่นต้องแตะ <b>ดูเพิ่มเติม</b> ก่อน'],
+   ['แตะเพิ่ม', 'เปิด <b>เปิดเป็นเว็บแอป</b> ไว้ แล้วแตะ <b>เพิ่ม</b>'],
+   ['เปิดจากหน้าจอโฮม', 'ไอคอน Colony Counter อยู่รวมกับแอปอื่นแล้ว'],
+   ['เสร็จแล้ว!', 'แอปเปิดเต็มจอ ให้ <b>อนุญาตกล้อง</b> เมื่อนับเพลตครั้งแรก'],
+   ['เปิดเว็บไซต์ใน Safari', 'ไปที่ <b>cc.amphur.in.th</b> เหมือนบน iPhone'],
+   ['แชร์ → เพิ่มไปยังหน้าจอโฮม', 'บน iPad ปุ่ม <b>แชร์</b> อยู่มุมขวาบนของแถบที่อยู่'],
+   ['แตะเพิ่ม', 'เปิด <b>เปิดเป็นเว็บแอป</b> ไว้'],
+   ['เปิดจากหน้าจอโฮม', 'ข้อมูลผลนับเก็บไว้ในเครื่องเท่านั้น'],
+  ]},
+}[LANG];
+const U = X.ui;
+const $ = id => document.getElementById(id);
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const ease = x => { x = clamp(x); return x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; };
+const easeOut = x => 1 - Math.pow(1 - clamp(x), 3);
+const COLORS = ['#3b82f6', '#ef4444', '#f59e0b', '#6b7280', '#10b981', '#111827', '#0ea5e9', '#eab308', '#ec4899', '#2563eb', '#64748b', '#f97316', '#e11d48', '#0f172a', '#78716c', '#8b5cf6'];
+
+// ---------- build the two screens ----------
+function homeHTML(dev, withIcon) {
+ const ph = dev === 'phone';
+ const cols = ph ? 4 : 8, n = ph ? 16 : 16;
+ let g = '';
+ for (let i = 0; i < n; i++) g += `<div class="ic"><div class="sq" style="background:${COLORS[i]}">${X.apps[i][0]}</div>${X.apps[i]}</div>`;
+ g += `<div class="ic newic" style="visibility:${withIcon ? 'visible' : 'hidden'}"><img class="sq" src="Icon-192.png">Colonies</div>`;
+ const grid = ph ? 'left:24px;right:24px;top:80px;grid-template-columns:repeat(4,1fr);row-gap:26px'
+  : 'left:110px;right:110px;top:70px;grid-template-columns:repeat(8,1fr);row-gap:40px';
+ const dock = ph ? 'left:14px;right:14px;bottom:18px;height:92px'
+  : 'left:330px;right:330px;bottom:16px;height:96px';
+ return `<div class="wall"></div><div class="grid" style="${grid}">${g}</div>
+  <div class="dock" style="${dock}"><div class="ic"><div class="sq" style="background:#22c55e">☏</div></div>
+  <div class="ic"><div class="sq safari"></div></div><div class="ic"><div class="sq" style="background:#22c55e">✉</div></div>
+  <div class="ic"><div class="sq" style="background:#f43f5e">♫</div></div></div>`;
+}
+function sb(dark) { return `<div class="sb" style="color:${dark ? '#fff' : '#111'}"><span>9:41</span><span>▂▄▆ ◔ ▮▮▮</span></div>`; }
+function kb() {
+ const r = s => `<div class="kr">${[...s].map(c => `<span>${c}</span>`).join('')}</div>`;
+ return `<div class="kb">${r('qwertyuiop')}${r('asdfghjkl')}${r('zxcvbnm')}<div class="kr"><span style="width:80px">123</span><span class="sp"></span><span>.</span><span class="go">go</span></div></div>`;
+}
+const listItems = () => `<div>${U.copy}<span>⧉</span></div><div>${U.reading}<span>◎</span></div><div>${U.bookmark}<span>▭</span></div><div>${U.fav}<span>☆</span></div><div>${U.find}<span>⌕</span></div><div class="ah">${U.addHome}<span class="plus">+</span></div><div>${U.print}<span>⎙</span></div>`;
+function dialogHTML() {
+ return `<div class="dtop"><span class="a">${U.cancel}</span><b>${U.addHome}</b><span class="add">${U.add}</span></div>
+  <div class="dcard"><img src="Icon-192.png"><div style="flex:1"><div class="nm">Colonies</div><div class="u">https://${URL_}/</div></div></div>
+  <div class="note">${U.note}</div><div class="tog">${U.webapp}<div class="sw"></div></div>`;
+}
+
+const ps = $('ps');
+ps.innerHTML = `
+ <div class="L" id="p_home">${homeHTML('phone', false)}</div>
+ <div class="L" id="p_home2">${homeHTML('phone', true)}</div>
+ <div class="L" id="p_saf" style="background:#fff">
+  <div class="page" style="top:0;bottom:0"><div class="start" id="p_start">${U.start}<div class="favs"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div></div>
+   <img id="p_site" src="iphone-${LANG}.png" style="top:47px;opacity:0"></div>
+  <div class="load" id="p_load" style="top:47px"></div>
+  <div class="tb" id="p_tb" style="left:14px;right:14px;bottom:30px"><div class="btn">‹</div><div class="pill" id="p_url"></div><div class="btn" id="p_more">•••</div></div>
+  <div class="dim" id="p_dim"></div>
+  <div class="menu" id="p_menu" style="right:14px;bottom:88px;width:240px"><div>${U.bookmark}<span>▭</span></div><div>${U.newtab}<span>+</span></div><div class="sh">${U.share}<span>⇪</span></div></div>
+  <div id="p_kb" style="position:absolute;inset:0;z-index:6">${kb()}</div>
+  <div class="sheet" id="p_sheet"><div class="shead"><img src="Icon-192.png"><div><b>Colony Counter</b><span>${URL_}</span></div></div>
+   <div class="sbody" id="p_sbody"><div class="circles"><i></i><i></i><i></i><i></i><i></i></div><div class="circles"><i style="background:#0a84ff"></i><i style="background:#34c759"></i><i style="background:#3b82f6"></i><i style="background:#f59e0b"></i><i></i></div><div class="list" id="p_list">${listItems()}</div></div></div>
+  <div class="dlg" id="p_dlg" style="left:0;right:0;bottom:0;top:60px;border-radius:22px 22px 0 0">${dialogHTML()}</div>
+ </div>
+ <div class="L" id="p_app" style="background:#fff"><img src="iphone-${LANG}.png" style="position:absolute;top:47px;left:0;width:390px"></div>
+ ${sb(false).replace('class="sb"', 'class="sb" id="p_sb"')}`;
+
+const as = $('as');
+as.innerHTML = `
+ <div class="L" id="a_home">${homeHTML('pad', false)}</div>
+ <div class="L" id="a_home2">${homeHTML('pad', true)}</div>
+ <div class="L" id="a_saf" style="background:#fff">
+  <div class="page" style="top:84px;bottom:0"><img src="ipad-${LANG}.png"></div>
+  <div class="tb" style="left:0;right:0;top:26px;height:58px;padding:0 18px;background:#f7f7f9;border-bottom:1px solid #ddd">
+   <div class="btn" style="box-shadow:none;background:none">▤</div><div class="btn" style="box-shadow:none;background:none">‹</div><div class="btn" style="box-shadow:none;background:none;color:#bbb">›</div>
+   <div style="flex:1"></div><div class="pill" style="flex:none;width:460px;height:38px;box-shadow:none;background:#e9e9ee">${URL_}</div><div style="flex:1"></div>
+   <div class="btn" id="a_share" style="box-shadow:none;background:none;color:#0a84ff;font-size:24px">⇪</div><div class="btn" style="box-shadow:none;background:none;color:#0a84ff;font-size:26px">+</div><div class="btn" style="box-shadow:none;background:none;color:#0a84ff">⧉</div>
+  </div>
+  <div class="menu" id="a_pop" style="right:70px;top:90px;width:370px;background:#f2f2f7;border-radius:18px">
+   <div class="shead" style="border:none;padding:16px"><img src="Icon-192.png"><div><b>Colony Counter</b><span>${URL_}</span></div></div>
+   <div class="list" style="margin:0 12px 12px;padding:0;border:none" id="a_list">${listItems()}</div></div>
+  <div class="dim" id="a_dim"></div>
+  <div class="dlg" id="a_dlg" style="left:320px;width:540px;top:150px;height:340px;border-radius:16px">${dialogHTML()}</div>
+ </div>
+ <div class="L" id="a_app" style="background:#fff"><img src="ipad-${LANG}.png" style="position:absolute;top:26px;left:0;width:1180px"></div>
+ <div class="sb" id="a_sb"><span>9:41</span><span>◔ ▮▮▮</span></div>`;
+document.querySelectorAll('.menu > div:last-child, .list > div:last-child').forEach(d => d.style.borderBottom = 'none');
+
+$('i2').textContent = X.i2; $('i3').textContent = X.i3; $('p1').textContent = X.p1; $('p2').textContent = X.p2; $('o2').textContent = X.o2;
+const cap = $('cap');
+const caps = X.steps.map((c, i) => {
+ const d = document.createElement('div'); d.className = 'capbox';
+ const n = i < 8 ? `iPhone · ${i + 1} / 8` : `iPad · ${i - 7} / 4`;
+ d.innerHTML = `<div class="kick">${n}</div><div class="h">${c[0]}</div><div class="s">${c[1]}</div>`;
+ cap.appendChild(d); return d;
+});
+
+// ---------- timeline ----------
+// kind: card | phone | pad. Each device step lists its taps as [time in step, x, y] in screen pixels.
+const STEPS = [
+ { kind: 'intro', d: 4.0 },
+ { kind: 'phone', d: 3.6, cap: 0, taps: [[2.2, 152, 780]] },
+ { kind: 'phone', d: 6.0, cap: 1, taps: [[0.8, 195, 791], [4.6, 341, 788]] },
+ { kind: 'phone', d: 3.2, cap: 2 },
+ { kind: 'phone', d: 4.2, cap: 3, taps: [[0.9, 354, 791], [2.6, 290, 790]] },
+ { kind: 'phone', d: 4.8, cap: 4, taps: [[3.4, 195, 0]] },
+ { kind: 'phone', d: 3.8, cap: 5, taps: [[2.4, 355, 85]] },
+ { kind: 'phone', d: 3.6, cap: 6, taps: [[2.4, 0, 0]] },
+ { kind: 'phone', d: 4.2, cap: 7 },
+ { kind: 'padcard', d: 3.0 },
+ { kind: 'pad', d: 3.4, cap: 8 },
+ { kind: 'pad', d: 4.6, cap: 9, taps: [[1.0, 1060, 55], [3.0, 0, 0]] },
+ { kind: 'pad', d: 3.6, cap: 10, taps: [[2.2, 818, 177]] },
+ { kind: 'pad', d: 4.2, cap: 11, taps: [[1.8, 0, 0]] },
+ { kind: 'outro', d: 5.0 },
+];
+let acc = 0; STEPS.forEach(s => { s.t0 = acc; acc += s.d; });
+const DURATION = acc;
+
+function show(prefix, layer, list) { list.forEach(l => { $(prefix + l).style.display = l === layer ? 'block' : 'none'; }); }
+const PL = ['home', 'home2', 'saf', 'app'], AL = ['home', 'home2', 'saf', 'app'];
+function rectIn(el, scr, scale) { // centre of an element in screen coordinates
+ const a = el.getBoundingClientRect(), b = scr.getBoundingClientRect();
+ return [(a.left + a.width / 2 - b.left) / scale, (a.top + a.height / 2 - b.top) / scale];
+}
+
+function renderPhone(i, u) {
+ // i: step index within STEPS, u: time in step
+ const set = (id, css) => Object.assign($(id).style, css);
+ set('p_dim', { display: 'none' }); set('p_menu', { display: 'none' }); set('p_kb', { display: 'none' });
+ set('p_sheet', { display: 'none' }); set('p_dlg', { display: 'none' }); set('p_load', { width: '0' });
+ set('p_site', { opacity: 0 }); set('p_start', { opacity: 1 });
+ document.querySelectorAll('#ps .hl').forEach(e => e.classList.remove('hl'));
+ $('p_sb').style.color = '#111';
+ const url = $('p_url');
+ const c = STEPS[i].cap;
+ if (c === 0) { show('p_', 'home', PL); $('p_sb').style.color = '#fff'; }
+ else if (c === 1) {
+  show('p_', 'saf', PL);
+  if (u < 0.9) url.innerHTML = `<span style="color:#888">${U.search}</span>`;
+  else {
+   set('p_kb', { display: 'block', transform: `translateY(${(1 - easeOut((u - 0.9) / 0.35)) * 300}px)` });
+   const n = Math.floor(clamp((u - 1.5) / 2.4) * URL_.length);
+   url.innerHTML = URL_.slice(0, n) + '<span class="caret"></span>';
+   set('p_tb', { bottom: '312px' });
+  }
+ } else if (c === 2) {
+  show('p_', 'saf', PL); set('p_tb', { bottom: '30px' }); url.textContent = URL_;
+  set('p_load', { width: (easeOut(u / 1.6) * 390) + 'px', opacity: u < 1.8 ? 1 : 0 });
+  set('p_start', { opacity: u < 1.3 ? 1 : 0 }); set('p_site', { opacity: clamp((u - 1.3) / 0.4) });
+ } else if (c === 3) {
+  show('p_', 'saf', PL); url.textContent = URL_; set('p_site', { opacity: 1 }); set('p_start', { opacity: 0 });
+  if (u > 1.0) set('p_menu', { display: 'block', opacity: clamp((u - 1.0) / 0.2), transform: `scale(${0.9 + 0.1 * easeOut((u - 1.0) / 0.25)})`, transformOrigin: '100% 100%' });
+  if (u > 2.6) document.querySelector('#p_menu .sh').classList.add('hl');
+  if (u > 2.8) { set('p_menu', { display: 'none' }); }
+  if (u > 2.85) { set('p_dim', { display: 'block', opacity: clamp((u - 2.85) / 0.3) }); set('p_sheet', { display: 'block', transform: `translateY(${(1 - easeOut((u - 2.85) / 0.5)) * 760}px)` }); set('p_sbody', { transform: 'none' }); }
+ } else if (c === 4) {
+  show('p_', 'saf', PL); url.textContent = URL_; set('p_site', { opacity: 1 }); set('p_start', { opacity: 0 });
+  set('p_dim', { display: 'block', opacity: 1 }); set('p_sheet', { display: 'block', transform: 'none' });
+  set('p_sbody', { transform: `translateY(${-ease((u - 0.8) / 1.4) * 150}px)` });
+  if (u > 3.4) document.querySelector('#p_list .ah').classList.add('hl');
+  if (u > 3.7) set('p_sheet', { opacity: 1 - clamp((u - 3.7) / 0.3) });
+  if (u > 3.8) set('p_dlg', { display: 'block', transform: `translateY(${(1 - easeOut((u - 3.8) / 0.5)) * 800}px)` });
+ } else if (c === 5) {
+  show('p_', 'saf', PL); url.textContent = URL_; set('p_site', { opacity: 1 }); set('p_start', { opacity: 0 });
+  set('p_dim', { display: 'block', opacity: 1 }); set('p_dlg', { display: 'block', transform: 'none' });
+  if (u > 2.4) document.querySelector('#p_dlg .add').style.background = '#d9e6ff'; else document.querySelector('#p_dlg .add').style.background = 'none';
+ } else if (c === 6) {
+  show('p_', 'home2', PL); $('p_sb').style.color = '#fff';
+  const s = easeOut((u - 0.3) / 0.6);
+  const ic = document.querySelector('#p_home2 .newic'); ic.style.transform = `scale(${0.3 + 0.7 * s + 0.08 * Math.sin(clamp((u - 0.9) / 0.4) * Math.PI)})`; ic.style.opacity = clamp((u - 0.3) / 0.3);
+ } else if (c === 7) { show('p_', 'app', PL); $('p_app').style.transform = `scale(${0.6 + 0.4 * easeOut(u / 0.5)})`; $('p_app').style.opacity = clamp(u / 0.3); }
+}
+
+function renderPad(i, u) {
+ const set = (id, css) => Object.assign($(id).style, css);
+ set('a_pop', { display: 'none' }); set('a_dim', { display: 'none' }); set('a_dlg', { display: 'none' });
+ document.querySelectorAll('#as .hl').forEach(e => e.classList.remove('hl'));
+ $('a_sb').style.color = '#111';
+ const c = STEPS[i].cap;
+ if (c === 8) show('a_', 'saf', AL);
+ else if (c === 9) {
+  show('a_', 'saf', AL);
+  if (u > 1.0) set('a_pop', { display: 'block', opacity: clamp((u - 1.0) / 0.2), transform: `scale(${0.92 + 0.08 * easeOut((u - 1.0) / 0.25)})`, transformOrigin: '90% 0' });
+  if (u > 3.0) document.querySelector('#a_list .ah').classList.add('hl');
+  if (u > 3.3) set('a_pop', { display: 'none' });
+  if (u > 3.3) { set('a_dim', { display: 'block', opacity: clamp((u - 3.3) / 0.3) }); set('a_dlg', { display: 'block', opacity: clamp((u - 3.3) / 0.3), transform: `scale(${0.9 + 0.1 * easeOut((u - 3.3) / 0.4)})` }); }
+ } else if (c === 10) {
+  show('a_', 'saf', AL); set('a_dim', { display: 'block', opacity: 1 }); set('a_dlg', { display: 'block', opacity: 1, transform: 'none' });
+  document.querySelector('#a_dlg .add').style.background = u > 2.2 ? '#d9e6ff' : 'none';
+ } else if (c === 11) {
+  if (u < 2.0) {
+   show('a_', 'home2', AL); $('a_sb').style.color = '#fff';
+   const s = easeOut((u - 0.2) / 0.6), ic = document.querySelector('#a_home2 .newic');
+   ic.style.transform = `scale(${0.3 + 0.7 * s})`; ic.style.opacity = clamp((u - 0.2) / 0.3);
+  } else { show('a_', 'app', AL); $('a_app').style.transform = `scale(${0.6 + 0.4 * easeOut((u - 2.0) / 0.5)})`; $('a_app').style.opacity = clamp((u - 2.0) / 0.3); }
+ }
+}
+
+// tap targets that depend on layout
+function tapPoint(st, k) {
+ const [, x, y] = st.taps[k];
+ if (st.kind === 'phone' && st.cap === 4) return rectIn(document.querySelector('#p_list .ah'), ps, 1);
+ if (st.kind === 'phone' && st.cap === 6) return rectIn(document.querySelector('#p_home2 .newic .sq'), ps, 1);
+ if (st.kind === 'phone' && st.cap === 0) return rectIn(document.querySelector('#p_home .safari'), ps, 1);
+ if (st.kind === 'phone' && st.cap === 3 && k === 1) return rectIn(document.querySelector('#p_menu .sh'), ps, 1);
+ if (st.kind === 'phone' && st.cap === 5) return rectIn(document.querySelector('#p_dlg .add'), ps, 1);
+ if (st.kind === 'pad' && st.cap === 9 && k === 0) return rectIn($('a_share'), as, 0.8136);
+ if (st.kind === 'pad' && st.cap === 9 && k === 1) return rectIn(document.querySelector('#a_list .ah'), as, 0.8136);
+ if (st.kind === 'pad' && st.cap === 10) return rectIn(document.querySelector('#a_dlg .add'), as, 0.8136);
+ if (st.kind === 'pad' && st.cap === 11) return rectIn(document.querySelector('#a_home2 .newic .sq'), as, 0.8136);
+ return [x, y];
+}
+
+window.render = function (t) {
+ const a = t * 0.08;
+ $('r1').style.left = (1350 + 60 * Math.cos(a)) + 'px'; $('r1').style.top = (-260 + 40 * Math.sin(a)) + 'px';
+ $('r2').style.left = (-200 + 50 * Math.sin(a)) + 'px'; $('r2').style.top = (640 + 40 * Math.cos(a)) + 'px';
+ $('r3').style.left = (1150 + 40 * Math.sin(a * .7)) + 'px'; $('r3').style.top = (-460 + 30 * Math.cos(a)) + 'px';
+ let i = STEPS.findIndex(s => t < s.t0 + s.d); if (i < 0) i = STEPS.length - 1;
+ const st = STEPS[i], u = t - st.t0;
+ // cards
+ for (const [id, kind] of [['intro', 'intro'], ['padcard', 'padcard'], ['outro', 'outro']]) {
+  const el = $(id), on = st.kind === kind;
+  el.style.display = on ? 'flex' : 'none';
+  if (on) { const fin = easeOut(u / 0.7), fout = kind === 'outro' ? 0 : ease((u - st.d + 0.5) / 0.5); el.style.opacity = Math.min(fin, 1 - fout); el.style.transform = `translateY(${(1 - fin) * 40 - fout * 50}px)`; }
+ }
+ // devices: rise in on the first step of each, drop away after the last
+ const first = k => STEPS.findIndex(s => s.kind === k), last = k => STEPS.length - 1 - [...STEPS].reverse().findIndex(s => s.kind === k);
+ for (const [k, id] of [['phone', 'phone'], ['pad', 'pad']]) {
+  const f = STEPS[first(k)], l = STEPS[last(k)];
+  const pin = easeOut((t - f.t0) / 0.8), pout = ease((t - (l.t0 + l.d - 0.6)) / 0.6);
+  const vis = t >= f.t0 && t < l.t0 + l.d;
+  $(id).style.display = vis ? 'block' : 'none';
+  $(id).style.transform = `translateY(${(1 - pin) * 1100 + pout * 1100}px)`;
+ }
+ if (st.kind === 'phone') renderPhone(i, u);
+ if (st.kind === 'pad') renderPad(i, u);
+ // captions
+ caps.forEach((d, k) => {
+  const s = STEPS.find(x => x.cap === k);
+  const fin = easeOut((t - s.t0 - 0.2) / 0.5), fout = ease((t - (s.t0 + s.d) + 0.3) / 0.3);
+  d.style.opacity = Math.min(fin, 1 - fout); d.style.transform = `translateY(${(1 - fin) * 40 - fout * 30}px)`;
+ });
+ // finger
+ const tap = $('tap'), rip = $('rip'); tap.style.display = rip.style.display = 'none';
+ if (st.taps) st.taps.forEach((tp, k) => {
+  const dt = u - tp[0];
+  if (dt < -0.6 || dt > 0.5) return;
+  const [x, y] = tapPoint(st, k);
+  const host = st.kind === 'phone' ? ps : as, b = host.getBoundingClientRect(), v = $('v').getBoundingClientRect();
+  const sc = st.kind === 'phone' ? 1 : 0.8136;
+  const X0 = b.left - v.left + x * sc, Y0 = b.top - v.top + y * sc;
+  tap.style.display = 'block'; tap.style.left = X0 + 'px'; tap.style.top = Y0 + 'px';
+  tap.style.opacity = dt < 0 ? clamp((dt + 0.6) / 0.3) : 1 - clamp(dt / 0.5);
+  tap.style.transform = `scale(${dt < 0 ? 1 : 0.8})`;
+  if (dt >= 0) { rip.style.display = 'block'; rip.style.left = X0 + 'px'; rip.style.top = Y0 + 'px'; rip.style.transform = `scale(${1 + dt * 3})`; rip.style.opacity = 1 - dt / 0.5; }
+ });
+};
+
+window.ready = (async () => {
+ await document.fonts.ready;
+ await Promise.all([...document.images].map(i => i.decode().catch(() => {})));
+ caps.forEach(d => { d.style.top = (540 - d.offsetHeight / 2) + 'px'; });
+ render(0); return DURATION;
+})();
+</script>
