@@ -51,14 +51,13 @@ Thai and English. Light and dark themes. Free and open source (GNU AGPL-3.0).
 Intended use: for research and teaching. Colony Counter is not a medical or diagnostic device. Always check the automatic count.
 ```
 
-## Release notes (What's new) (347/500 characters)
+## Release notes (What's new) (317/500 characters)
 
 ```
-First release on Google Play.
-• Automatic colony counting with tap-to-correct review
-• Dilution series and replicates (CFU/mL, CFU/g, CFU/100 mL)
-• Drop plates, colour classes, membrane filters, square plates
-• Several plates per photo and time-lapse
-• Accuracy tracking, QR labels, CSV export and backups
-• Thai and English, light and dark themes
+Version 0.5.1
+• More accurate result when one dilution is too numerous to count
+• Restoring a backup on a new phone now brings back your settings
+• Fixed duplicate plates and mixed-up photos in some backups
+• Works on devices without a camera (choose photos instead)
+• Link to the free 3D-printed photo stand in About
 ```
