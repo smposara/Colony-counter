@@ -1,6 +1,14 @@
 # Tester invitation – closed testing
 
-Messages to send to closed-test testers. Replace the parts in [brackets]:
+Messages to send to closed-test testers.
+
+**Easiest:** send one link, **https://cc.amphur.in.th/join.html**. The page (from
+`app/web/join.html`, published with the web version) walks testers through joining
+the Google Group, becoming a tester and installing, in Thai or English, and
+explains the "App not available" message. Use it as [OPT-IN LINK] below and delete
+the group step.
+
+Otherwise replace the parts in [brackets]:
 
 - **[OPT-IN LINK]**: Play Console → Test and release → Testing → Closed testing →
   Manage track → Testers → "How testers join your test" → Copy link. The link
