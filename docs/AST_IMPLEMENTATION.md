@@ -1,6 +1,7 @@
 # Inhibition zone measurement (AST Option A): implementation plan
 
-Status: **parked**, not scheduled. Context and the go/no-go gate are in [AST.md](AST.md).
+Status: **parked**, not scheduled; design decisions made (see the end). Context and the
+go/no-go gate are in [AST.md](AST.md).
 Target release: 0.6.0 (or later), only after the gate in AST.md passes.
 
 ## Scope
@@ -120,8 +121,8 @@ training export) never see zone plates.
 - **`zone_review_screen.dart`:** reuses the `InteractiveViewer` and gesture pattern from
   `review_screen.dart`.
   - Overlay: plate outline, disk dots, zone circles coloured by confidence, and a "23 mm" label
-    beside each one.
-  - Tap a disk to open a sheet with its label, diameter, −/+ 0.5 mm buttons, a "No zone"
+    beside each one, in whole mm.
+  - Tap a disk to open a sheet with its label, diameter, −/+ 1 mm buttons, a "No zone"
     switch, delete, and its flags in plain words.
   - Drag a zone circle's edge to resize it. Long-press to add a missed disk; the app then
     measures around it.
@@ -134,7 +135,8 @@ training export) never see zone plates.
 ## 5. Export
 
 - **`zones.csv`** (one row per zone): plate_id, date, experiment, organism, assay,
-  disk_or_well_mm, label, replicate, diameter_mm (0.1 mm), auto_diameter_mm, edited,
+  disk_or_well_mm, label, replicate, diameter_mm (0.1 mm), diameter_mm_rounded (whole mm,
+  as shown on screen), auto_diameter_mm, edited,
   confidence, flags, x_mm, y_mm, image.
 - **`zone_summary.csv`**: experiment, organism, label, n, mean_mm, sd_mm.
 - **Annotated image:** extend `annotate.dart` to draw zone circles and labels.
@@ -190,10 +192,12 @@ About **21 working days (4–5 weeks)** after the gate, in line with the AST.md 
 | Reflections from the lid | Capture tip: lid off, dark background |
 | Users reading results as clinical S/I/R | No S/I/R anywhere; disclaimer in app, listing and CSV header |
 
-## Decisions to make before M2
+## Decisions (made October 2026)
 
-1. **Entry point:** a new "Zones" tab (recommended), or a mode inside the Plates tab.
-2. **Wells in v1:** automatic detection, or manual placement only (cuts about 2 days).
-3. **Labels:** free text only, or saved panels from the start (recommended; about 1 day).
-4. **Display precision:** whole mm, as in EUCAST reading, with 0.1 mm kept in the CSV
-   (recommended), or 0.1 mm everywhere.
+1. **Entry point:** a new **Zones** tab on the home screen. The colony tabs are unchanged.
+2. **Wells in v1:** **automatic detection**, the same as disks (`find_wells` / `findWells`),
+   with long-press to add any the app misses. The 2 days are kept in the estimate.
+3. **Labels:** **saved panels** from the start, with free text still allowed per disk.
+4. **Display precision:** **whole mm on screen**, as in EUCAST reading. The CSV keeps
+   `diameter_mm` to 0.1 mm, plus `diameter_mm_rounded` as shown on screen. Summary means and
+   SDs are calculated from the unrounded values and shown to 0.1 mm.
