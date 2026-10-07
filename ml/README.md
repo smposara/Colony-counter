@@ -111,10 +111,12 @@ Corporation; this project is not made or endorsed by Neogen). Types: `ac` Aerobi
 `ec` E. coli/Coliform, `cc` Coliform Count, `eb` Enterobacteriaceae, `ym` Yeast & Mold.
 
 ```
-photo → printed 1 cm grid: angle (rotation that makes the row/column sums of a
-        black-top-hat line map most peaked), pitch (autocorrelation) → mm/px
-      → grid lines erased (known positions) and filled in (inpainting)
-      → growth area: circle of ~50.5 mm whose inside is most tinted vs. a ring outside
+photo (short side ≤ 1800 px) → printed 1 cm grid: line map (square-kernel black
+        top-hat, blobs removed); angle = rotation that makes its row/column sums most
+        peaked (coarse to fine); pitch (autocorrelation), phase and line width → mm/px
+      → grid lines replaced by the colour from across the line (no inpainting)
+      → growth area: chroma edges vote for a centre one radius (0.85–1.15 × 25 mm) in,
+        then the edge is refined along 90 rays
       → background per Lab channel; colonies where the gel gets darker / changes colour
       → per colony: blue (b* < −8) or red; gas = a bubble (thin rim brighter than inside
         and outside, all round, radii 0.28–0.9 mm) within one colony diameter;
@@ -138,8 +140,8 @@ python scripts/petrifilm_benchmark.py --n 8
 {"ecoli": 12, "coliform": 30}}`.
 
 **Synthetic benchmark** (`scripts/petrifilm_benchmark.py --n 8`, ±15° turns, 9–15 px/mm):
-mean error AC 0.0 %, EC 0.8 %, CC 4.4 %, EB 0.0 %, YM 2.8 %; within 10 %: 100 % for AC, EC
-and EB, 87.5 % for CC and YM. Crowded AC (≈600 colonies) estimated from 8 squares at +10 %:
+mean error AC 0.3 %, EC 0.8 %, CC 2.1 %, EB 0.8 %, YM 1.0 %; within 10 %: 100 % for every
+type. Crowded AC (≈600 colonies) estimated from 8 squares at +10 %:
 the synthetic films keep colonies 1.5 mm from the edge, so the inner squares are denser
 than the plate average.
 

@@ -24,7 +24,7 @@ import numpy as np
 from .classical import DetectParams, detect
 from .normalize import estimate_background
 from .plate import Plate
-from .zones import RING_SECTORS, _all_round, ring_taps
+from .zones import RING_SECTORS, ring_taps
 
 
 @dataclass(frozen=True)
@@ -54,6 +54,7 @@ TYPES: dict[str, FilmType] = {
 }
 
 NOMINAL_AREA_DIAMETER_MM = 50.5  # 20 cm²
+WORK_SHORT_SIDE = 1800  # photos are analysed at most this size (as in the app)
 GRID_PITCH_MM = 10.0
 
 
@@ -64,6 +65,7 @@ class Grid:
     ox: float  # line positions in the rotated frame: ox + k * pitch
     oy: float
     centre: tuple[float, float]  # rotation centre
+    line_half_px: float = 2.0  # erased on each side of a line's centre
 
     @property
     def mm_per_px(self) -> float:
@@ -128,60 +130,98 @@ class FilmResult:
 # ---------------------------------------------------------------------------
 # Grid
 
-def _line_map(gray: np.ndarray, k: int) -> np.ndarray:
-    """Thin dark lines (and other thin dark detail): black top-hat."""
-    kern = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k, k))
-    return cv2.morphologyEx(gray, cv2.MORPH_BLACKHAT, kern).astype(np.float32)
+def _line_map(gray: np.ndarray, k: int, line_px: int = 3) -> np.ndarray:
+    """Thin dark lines: black top-hat with a k×k square (thin dark detail),
+    minus its opening with a ``line_px`` square, which keeps only the blobs
+    (colonies) wider than a line. Square kernels are separable: cheap in the app."""
+    g = gray.astype(np.float32)
+    bth = cv2.morphologyEx(g, cv2.MORPH_CLOSE, np.ones((k, k), np.uint8),
+                           borderType=cv2.BORDER_REPLICATE) - g
+    blobs = cv2.morphologyEx(bth, cv2.MORPH_OPEN, np.ones((line_px, line_px), np.uint8),
+                             borderType=cv2.BORDER_REPLICATE)
+    return bth - blobs
 
 
-def _periodicity(profile: np.ndarray, min_period: float, max_period: float) -> tuple[float, float]:
-    """(strength, period) of the strongest repeat in a 1-D profile."""
-    p = profile - profile.mean()
-    n = len(p)
-    spec = np.abs(np.fft.rfft(p * np.hanning(n))) ** 2
-    f = np.arange(len(spec))
-    ok = (f >= n / max_period) & (f <= n / min_period)
-    if not ok.any():
-        return 0.0, 0.0
-    i = int(np.argmax(np.where(ok, spec, 0)))
-    return float(spec[i] / (spec[1:].sum() + 1e-9)), n / max(i, 1)
+def _rot(grid_angle_deg: float, centre):
+    """Coefficients of the rotation used everywhere (OpenCV's getRotationMatrix2D)."""
+    t = np.deg2rad(grid_angle_deg)
+    a, b = np.cos(t), np.sin(t)
+    cx, cy = centre
+    return a, b, (1 - a) * cx - b * cy, b * cx + (1 - a) * cy
 
 
-def _rotate(img: np.ndarray, centre, angle: float) -> np.ndarray:
-    m = cv2.getRotationMatrix2D(centre, angle, 1.0)
-    return cv2.warpAffine(img, m, (img.shape[1], img.shape[0]), flags=cv2.INTER_LINEAR)
+def projections(values: np.ndarray, angle: float, centre, mean: bool = False):
+    """Sums (or means) of ``values`` along the columns and rows of the image
+    turned by ``angle``, without resampling it: each pixel is added to the two
+    nearest bins of its turned x (and y) coordinate."""
+    h, w = values.shape
+    a, b, tx, ty = _rot(angle, centre)
+    yy, xx = np.mgrid[0:h, 0:w]
+    v = values.ravel().astype(np.float64)
+    out = []
+    for coord, n in ((a * xx + b * yy + tx, w), (-b * xx + a * yy + ty, h)):
+        c = coord.ravel()
+        i = np.floor(c).astype(np.int64)
+        f = c - i
+        ok = (i >= 0) & (i < n - 1)
+        acc = np.bincount(i[ok], v[ok] * (1 - f[ok]), n) + np.bincount(i[ok] + 1, v[ok] * f[ok], n)
+        if mean:
+            cnt = np.bincount(i[ok], 1 - f[ok], n) + np.bincount(i[ok] + 1, f[ok], n)
+            acc = np.where(cnt > 0.5, acc / np.maximum(cnt, 1e-9), 0.0)
+        out.append(acc)
+    return out[0], out[1]
 
 
 def find_grid(gray: np.ndarray) -> Grid:
     """Angle, pitch and line positions of the printed grid.
 
-    Angle: the rotation that makes the row and column sums of the line map most
-    peaked (largest variance), as in document skew detection. Pitch: the
-    autocorrelation peak of those sums.
+    On a black-top-hat line map (thin dark detail): the angle is the rotation
+    whose column and row sums are most peaked (largest variance), as in
+    document skew detection, coarse to fine (1°, 0.1°, 0.02°); then each line
+    is located in the full-resolution sums across the lines and a straight
+    line is fitted to their positions.
     """
     h, w = gray.shape
-    s = min(1.0, 700 / max(h, w))
-    small = cv2.resize(gray, (round(w * s), round(h * s)), interpolation=cv2.INTER_AREA)
-    lines_s = _line_map(small, 5)
-    lines_s -= lines_s.mean()
-    cs = (small.shape[1] / 2, small.shape[0] / 2)
+    angle, coarse = 0.0, 0.0
+    for size, span, step in ((350, 45.0, 1.0), (700, 1.5, 0.1), (700, 0.12, 0.02)):
+        s = min(1.0, size / max(h, w))
+        small = cv2.resize(gray, (round(w * s), round(h * s)), interpolation=cv2.INTER_AREA)
+        lines_s = _line_map(small, 5)
+        lines_s -= lines_s.mean()
+        cs = (small.shape[1] / 2, small.shape[0] / 2)
 
-    def score(a):
-        r = _rotate(lines_s, cs, a)
-        return float(r.sum(axis=0).var() + r.sum(axis=1).var())
+        def score(a):
+            px, py = projections(lines_s, a, cs)
+            return float(px.var() + py.var())
 
-    best = max(np.arange(-45, 45, 0.5), key=score)
-    angle = float(max(np.arange(best - 0.6, best + 0.6001, 0.05), key=score))
+        lo_a = angle - span if span < 45 else -45.0
+        angle = float(max(np.arange(lo_a, angle + span + 1e-9 if span < 45 else 45.0, step), key=score))
+    spx, spy = projections(lines_s, angle, cs, mean=True)
+    lo, hi = 12, min(small.shape) / 3
+    coarse = np.mean([_first_period(spx, lo, hi), _first_period(spy, lo, hi)]) / s
 
-    k = max(5, int(round(5 / s)) | 1)
-    lines = _line_map(gray, min(k, 15))
     centre = (w / 2, h / 2)
-    rot = _rotate(lines, centre, angle)
-    px, py = rot.sum(axis=0), rot.sum(axis=1)
-    lo, hi = 12 / s, min(h, w) / 3
-    pitch = float(np.mean([_refine_period(px, _first_period(px, lo, hi)),
-                           _refine_period(py, _first_period(py, lo, hi))]))
-    return Grid(pitch, angle, _phase(px, pitch), _phase(py, pitch), centre)
+    k = max(5, int(round(0.6 * coarse / GRID_PITCH_MM)) | 1)  # ~0.6 mm: wider than a line
+    lw = max(3, int(round(0.35 * coarse / GRID_PITCH_MM)) | 1)  # ~0.35 mm: wider than a line
+    px, py = projections(_line_map(gray, k, lw), angle, centre)
+    pitch = float(np.mean([_refine_period(px, coarse), _refine_period(py, coarse)]))
+    ox, oy = _phase(px, pitch), _phase(py, pitch)
+    half = np.mean([_line_half_width(px, pitch, ox), _line_half_width(py, pitch, oy)])
+    return Grid(pitch, angle, ox, oy, centre, float(half))
+
+
+def _line_half_width(profile: np.ndarray, pitch: float, offset: float) -> float:
+    """Half the width of an average line (where the folded profile falls to a
+    fifth of its height above the baseline), plus a pixel."""
+    n = len(profile)
+    d = np.arange(-pitch / 4, pitch / 4 + 1e-9, 0.25)
+    fold = np.array([np.interp(np.arange(offset + t, n - 1, pitch), np.arange(n), profile).mean() for t in d])
+    base = np.median(fold[np.abs(d) > pitch / 8])
+    top = fold[np.argmin(np.abs(d))] - base
+    if top <= 0:
+        return 2.0
+    above = np.abs(d)[fold - base >= 0.2 * top]
+    return float(np.clip(above.max() + 1.0, 1.5, pitch / 6))
 
 
 def _first_period(profile: np.ndarray, lo: float, hi: float) -> float:
@@ -226,43 +266,99 @@ def _phase(profile: np.ndarray, pitch: float) -> float:
     return best
 
 
-def grid_line_mask(shape, grid: Grid, half_width_px: float) -> np.ndarray:
-    h, w = shape[:2]
-    yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
+def fill_grid_lines(image: np.ndarray, grid: Grid, half: float, region: Plate) -> np.ndarray:
+    """Erase the printed lines inside ``region`` (with a margin): each line pixel
+    takes the colour just across the line, interpolated by position; where two
+    lines cross, the four diagonal neighbours outside both lines."""
+    img = image.astype(np.float32)
+    out = img.copy()
+    h, w = img.shape[:2]
+    m = region.radius * 1.1 + half + 2
+    x0, x1 = max(0, int(region.cx - m)), min(w, int(region.cx + m) + 1)
+    y0, y1 = max(0, int(region.cy - m)), min(h, int(region.cy + m) + 1)
+    yy, xx = np.mgrid[y0:y1, x0:x1].astype(np.float32)
     gx, gy = grid.to_grid(xx, yy)
-    dx = np.abs((gx - grid.ox + grid.pitch_px / 2) % grid.pitch_px - grid.pitch_px / 2)
-    dy = np.abs((gy - grid.oy + grid.pitch_px / 2) % grid.pitch_px - grid.pitch_px / 2)
-    return ((dx < half_width_px) | (dy < half_width_px)).astype(np.uint8) * 255
+    p = grid.pitch_px
+    dx = (gx - grid.ox + p / 2) % p - p / 2  # signed offset from the nearest line
+    dy = (gy - grid.oy + p / 2) % p - p / 2
+    inx, iny = np.abs(dx) < half, np.abs(dy) < half
+    e = half + 1.0
 
+    def sample(gxs, gys):
+        ix, iy = grid.to_image(gxs, gys)
+        n = ix.size
+        cols = 1024
+        rows = (n + cols - 1) // cols
+        mx = np.zeros(rows * cols, np.float32)
+        my = np.zeros(rows * cols, np.float32)
+        mx[:n] = ix.ravel()
+        my[:n] = iy.ravel()
+        out = cv2.remap(img, mx.reshape(rows, cols), my.reshape(rows, cols), cv2.INTER_LINEAR,
+                        borderMode=cv2.BORDER_REPLICATE)
+        return out.reshape(rows * cols, -1)[:n][None, :, :]
 
-# ---------------------------------------------------------------------------
-# Growth area
+    only_x = inx & ~iny
+    only_y = iny & ~inx
+    both = inx & iny
+    res = out[y0:y1, x0:x1]
+    if only_x.any():
+        g0, g1 = gx[only_x] - dx[only_x], gy[only_x]
+        left = sample((g0 - e)[None, :], g1[None, :])[0]
+        right = sample((g0 + e)[None, :], g1[None, :])[0]
+        t = ((dx[only_x] + e) / (2 * e))[:, None]
+        res[only_x] = left * (1 - t) + right * t
+    if only_y.any():
+        g0, g1 = gx[only_y], gy[only_y] - dy[only_y]
+        up = sample(g0[None, :], (g1 - e)[None, :])[0]
+        down = sample(g0[None, :], (g1 + e)[None, :])[0]
+        t = ((dy[only_y] + e) / (2 * e))[:, None]
+        res[only_y] = up * (1 - t) + down * t
+    if both.any():
+        cx_, cy_ = gx[both] - dx[both], gy[both] - dy[both]
+        acc = 0
+        for sx in (-e, e):
+            for sy in (-e, e):
+                acc = acc + sample((cx_ + sx)[None, :], (cy_ + sy)[None, :])[0]
+        res[both] = acc / 4
+    out[y0:y1, x0:x1] = res
+    return np.clip(out, 0, 255).astype(np.uint8)
+
 
 def find_growth_area(lab: np.ndarray, mm_per_px: float) -> Plate:
-    """The round gel: the circle of about the nominal size whose inside is most
-    tinted (chroma) relative to a ring just outside it. Colonies only add
-    chroma inside, so crowded plates do not upset it."""
+    """The round gel: edge points of the chroma image (gel is more tinted than
+    the film) vote for a centre one radius inwards, at sizes 0.85–1.15 × the
+    nominal 50.5 mm; the strongest vote wins. Colony edges vote in scattered
+    places, so crowded plates do not upset it."""
     a = lab[..., 1].astype(np.float32) - 128
     b = lab[..., 2].astype(np.float32) - 128
     chroma = np.hypot(a, b)
     r_nom = NOMINAL_AREA_DIAMETER_MM / 2 / mm_per_px
     s = min(1.0, 60.0 / r_nom)
     h, w = chroma.shape
-    small = cv2.resize(chroma, (max(1, round(w * s)), max(1, round(h * s))), interpolation=cv2.INTER_AREA)
-    best = (-np.inf, 0.0, 0.0, 0.0)
+    sw, sh = max(1, round(w * s)), max(1, round(h * s))
+    small = cv2.GaussianBlur(cv2.resize(chroma, (sw, sh), interpolation=cv2.INTER_AREA), (0, 0), 1.5)
+    gx = cv2.Sobel(small, cv2.CV_32F, 1, 0, ksize=3) / 8
+    gy = cv2.Sobel(small, cv2.CV_32F, 0, 1, ksize=3) / 8
+    mag = np.hypot(gx, gy)
+    thr = np.percentile(mag, 90)
+    ys, xs = np.nonzero(mag > thr)
+    wgt = mag[ys, xs]
+    ux, uy = gx[ys, xs] / wgt, gy[ys, xs] / wgt  # towards more chroma: inwards
+    best = (-1.0, 0.0, 0.0, 0.0)
     for f in np.arange(0.85, 1.151, 0.025):
         r = r_nom * s * f
-        k = int(np.ceil(r * 1.25)) + 1
-        yy, xx = np.mgrid[-k:k + 1, -k:k + 1]
-        d = np.hypot(xx, yy)
-        inside = (d <= r).astype(np.float32)
-        ring = ((d > r) & (d <= r * 1.2)).astype(np.float32)
-        kern = inside / inside.sum() - ring / ring.sum()
-        resp = cv2.filter2D(small, cv2.CV_32F, kern, borderType=cv2.BORDER_CONSTANT)
-        y, x = np.unravel_index(int(np.argmax(resp)), resp.shape)
-        if resp[y, x] > best[0]:
-            best = (float(resp[y, x]), x / s, y / s, r / s)
-    if not np.isfinite(best[0]) or best[0] <= 0:
+        cxs, cys = xs + ux * r, ys + uy * r
+        acc = np.zeros((sh, sw), np.float32)
+        ix, iy = np.round(cxs).astype(int), np.round(cys).astype(int)
+        ok = (ix >= 0) & (ix < sw) & (iy >= 0) & (iy < sh)
+        np.add.at(acc, (iy[ok], ix[ok]), wgt[ok])
+        acc = cv2.GaussianBlur(acc, (0, 0), 1.5)
+        # Normalise by circumference so larger circles do not win by size alone.
+        acc /= r
+        y, x = np.unravel_index(int(np.argmax(acc)), acc.shape)
+        if acc[y, x] > best[0]:
+            best = (float(acc[y, x]), x / s, y / s, r / s)
+    if best[0] <= 0:
         raise ValueError("No growth area found")
     _, cx, cy, r = best
     cx, cy, r = _refine_edge(chroma, cx, cy, r)
@@ -307,10 +403,15 @@ BUBBLE_MIN_SCORE = 8.0  # Lab L (8-bit) brighter rim than inside and outside
 BUBBLE_SECTOR_INDEX = 2
 
 
-def find_bubbles(L: np.ndarray, plate: Plate, mm_per_px: float) -> list[tuple[float, float, float]]:
-    """Gas bubbles: a thin rim brighter than both its inside and outside, all round."""
-    x0 = max(0, int(plate.cx - plate.radius)); x1 = min(L.shape[1], int(plate.cx + plate.radius) + 1)
-    y0 = max(0, int(plate.cy - plate.radius)); y1 = min(L.shape[0], int(plate.cy + plate.radius) + 1)
+def find_bubbles(L: np.ndarray, plate: Plate, mm_per_px: float, colonies) -> list[tuple[float, float, float]]:
+    """Gas bubbles: a thin rim brighter than both its inside and outside, all round.
+
+    Only searched near colonies (gas counts within one colony diameter), which
+    also keeps it fast."""
+    x0 = max(0, int(plate.cx - plate.radius))
+    x1 = min(L.shape[1], int(plate.cx + plate.radius) + 1)
+    y0 = max(0, int(plate.cy - plate.radius))
+    y1 = min(L.shape[0], int(plate.cy + plate.radius) + 1)
     roi = cv2.GaussianBlur(L[y0:y1, x0:x1].astype(np.float32), (0, 0), 0.8)
     best = np.zeros_like(roi)
     best_r = np.zeros_like(roi)
@@ -331,7 +432,11 @@ def find_bubbles(L: np.ndarray, plate: Plate, mm_per_px: float) -> list[tuple[fl
         best_r[upd] = r
     yy, xx = np.mgrid[y0:y1, x0:x1]
     inside = np.hypot(xx - plate.cx, yy - plate.cy) < plate.radius * 0.97
-    best[~inside] = 0
+    near = np.zeros_like(inside)
+    reach = BUBBLE_RADIUS_MM[1] / mm_per_px + 2
+    for c in colonies:
+        near |= np.hypot(xx - c.x, yy - c.y) <= 3 * c.radius_px + reach
+    best[~(inside & near)] = 0
     ys, xs = np.nonzero(best >= BUBBLE_MIN_SCORE)
     order = np.argsort(-best[ys, xs], kind="stable")
     out: list[tuple[float, float, float]] = []
@@ -354,16 +459,21 @@ YELLOW_MIN_DB = 10.0  # Lab b* rise in the zone around a colony
 def count_petrifilm(image: np.ndarray, type: str, plate: Plate | None = None,
                     grid: Grid | None = None) -> FilmResult:
     ft = TYPES[type]
+    h0, w0 = image.shape[:2]
+    scale = min(1.0, WORK_SHORT_SIDE / min(h0, w0))
+    if scale < 1:
+        image = cv2.resize(image, (round(w0 * scale), round(h0 * scale)), interpolation=cv2.INTER_AREA)
+        if plate is not None:
+            plate = Plate(plate.cx * scale, plate.cy * scale, plate.radius * scale, plate.diameter_mm)
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     grid = grid or find_grid(gray)
     mm = grid.mm_per_px
-    lines = grid_line_mask(gray.shape, grid, max(1.5, 0.22 / mm))
-    clean = cv2.inpaint(image, lines, 3, cv2.INPAINT_TELEA)
-    lab = cv2.cvtColor(clean, cv2.COLOR_BGR2LAB).astype(np.float32)
     flags: list[str] = []
     if plate is None:
-        plate = find_growth_area(lab, mm)
+        plate = find_growth_area(cv2.cvtColor(image, cv2.COLOR_BGR2LAB), mm)
     plate = Plate(plate.cx, plate.cy, plate.radius, 2 * plate.radius * mm)
+    clean = fill_grid_lines(image, grid, grid.line_half_px, plate)
+    lab = cv2.cvtColor(clean, cv2.COLOR_BGR2LAB).astype(np.float32)
     if abs(plate.diameter_mm / NOMINAL_AREA_DIAMETER_MM - 1) > 0.1:
         flags.append("area_size_unexpected")
 
@@ -384,7 +494,10 @@ def count_petrifilm(image: np.ndarray, type: str, plate: Plate | None = None,
     bubbles: list[tuple[float, float, float]] = []
     if type in ("ec", "cc", "eb"):
         # A bright ring centred on a colony is its yellow zone or edge, not gas.
-        bubbles = [b for b in find_bubbles(lab[..., 0], plate, mm)
+        # On the original image: erasing a grid line also erases the stretch of a
+        # bubble's bright rim it crosses, while the thin printed line only dims it.
+        raw_L = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)[..., 0].astype(np.float32)
+        bubbles = [b for b in find_bubbles(raw_L, plate, mm, det.colonies)
                    if not any(np.hypot(b[0] - c.x, b[1] - c.y) < c.radius_px + 0.5 * b[2]
                               for c in det.colonies)]
     marks = _clean_marks(det.colonies, bubbles, mm)
@@ -438,6 +551,14 @@ def count_petrifilm(image: np.ndarray, type: str, plate: Plate | None = None,
         flags.append("tntc")
     if det.spreaders:
         flags.append("spreader")
+    if scale < 1:
+        up = 1 / scale
+        plate = Plate(plate.cx * up, plate.cy * up, plate.radius * up, plate.diameter_mm)
+        grid = Grid(grid.pitch_px * up, grid.angle_deg, grid.ox * up, grid.oy * up,
+                    (grid.centre[0] * up, grid.centre[1] * up), grid.line_half_px * up)
+        colonies = [FilmColony(c.x * up, c.y * up, c.radius_px * up, c.kind, c.n, c.gas, c.yellow)
+                    for c in colonies]
+        bubbles = [(x * up, y * up, r * up) for x, y, r in bubbles]
     return FilmResult(type, plate, grid, colonies, bubbles, counts, estimates, used, flags)
 
 

@@ -386,12 +386,12 @@ def measure_zones(gray: np.ndarray, plate: Plate, disks: list[Disk], disk_mm: fl
     for r in rays:
         f = r["far"][sign * (r["far"] - mid) > 0]
         local_lawn.append(float(np.median(f)) if f.size >= 20 else lawn)
-    ratios = [r["near_level"] / max(l, 1e-6) for r, l in zip(rays, local_lawn)]
+    ratios = [r["near_level"] / max(lw, 1e-6) for r, lw in zip(rays, local_lawn)]
     clear_ratio = min(ratios) if sign > 0 else max(ratios)
 
     zones = []
-    for d, r, l in zip(disks, rays, local_lawn):
-        clear = clear_ratio * l
+    for d, r, lw in zip(disks, rays, local_lawn):
+        clear = clear_ratio * lw
         if sign > 0:
             lo = min(r["near_level"], max(clear, clearest - 0.1 * abs(lawn - clearest)))
         else:

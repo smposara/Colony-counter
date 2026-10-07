@@ -13,7 +13,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-import cv2
 import numpy as np
 
 # RGB colours per plate type.
