@@ -37,6 +37,22 @@ Same pattern as the colony pipeline: write and validate in Python (`ml/`), port 
 
 ## 1. Python reference (`ml/colonycounter/`)
 
+**Progress (October 2026):** the synthetic part of M1 is done: `zones.py`, `synth_zones.py`,
+`zone_metrics` / `match_zones`, CLI `zones` / `evaluate-zones` / `synth-zones`,
+`scripts/zone_benchmark.py`, and `tests/test_zones.py` (13 tests). Synthetic benchmark: mean
+error 0.13 mm, 98.5 % within 1 mm, 100 % within 2 mm. Changes from the design below:
+- **Scale from the disks**, not the plate: the plate finder locks onto the dish wall (~1.7 %
+  outside the agar), which made every zone read ~1.7 % small. Paper disks are made to 6.0 mm.
+  The plate scale is kept as a cross-check (`scale_mismatch`). Wells still use the plate scale.
+- **Disk detection** uses a signed ring score (radial brightness step + thin ring line), so
+  lawn grain cancels out; then a circle is fitted to the disk edge.
+- **Clear-agar level** comes from the clearest zone on the plate, as a fraction of the local
+  lawn, so small hazy zones are not over-read.
+- **Overlap** is flagged when two zone circles cross; ambiguous zones are `unmeasured`.
+
+Still to do in M1: run `evaluate-zones` on the SIRscan and 4TU datasets and our own plates,
+set `edge_level` from real readings, then apply the go/no-go gate.
+
 **`zones.py`** (new):
 - `find_disks(gray, plate, disk_mm=6.0)`: disks are small, bright, uniform circles of known
   size. Use template matching or a Hough search limited to radius `disk_mm / 2 / mm_per_px` ± 15 %,

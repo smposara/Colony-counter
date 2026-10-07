@@ -63,3 +63,42 @@ def match_points(pred, gt, radius: float) -> dict:
     recall = tp / (tp + fn) if tp + fn else 1.0
     f1 = 2 * precision * recall / (precision + recall) if precision + recall else 0.0
     return {"tp": tp, "fp": fp, "fn": fn, "precision": precision, "recall": recall, "f1": f1}
+
+
+def match_zones(pred_xy, true_xy, radius: float) -> list[tuple[int, int]]:
+    """One-to-one (pred, true) index pairs of disks within ``radius`` px of each other."""
+    pred = np.asarray(pred_xy, float).reshape(-1, 2)
+    true = np.asarray(true_xy, float).reshape(-1, 2)
+    if len(pred) == 0 or len(true) == 0:
+        return []
+    d = np.linalg.norm(pred[:, None, :] - true[None, :, :], axis=2)
+    cost = np.where(d <= radius, d, 1e9)
+    rows, cols = linear_sum_assignment(cost)
+    return [(int(r), int(c)) for r, c in zip(rows, cols) if cost[r, c] <= radius]
+
+
+def zone_metrics(pred_mm, true_mm) -> dict:
+    """Zone diameter agreement in mm, and the AST go/no-go gate
+    (mean error ≤ 1 mm and ≥ 95 % within ±2 mm; see docs/AST.md)."""
+    p = np.asarray(pred_mm, float)
+    t = np.asarray(true_mm, float)
+    if p.size == 0:
+        return {"n_zones": 0}
+    err = p - t
+    a = np.abs(err)
+    ba = bland_altman(p, t)
+    mae = float(a.mean())
+    within_2 = float(np.mean(a <= 2.0))
+    return {
+        "n_zones": int(p.size),
+        "mae_mm": mae,
+        "bias_mm": ba["bias"],
+        "loa_low_mm": ba["loa_low"],
+        "loa_high_mm": ba["loa_high"],
+        "max_abs_error_mm": float(a.max()),
+        "within_0_5mm": float(np.mean(a <= 0.5)),
+        "within_1mm": float(np.mean(a <= 1.0)),
+        "within_2mm": within_2,
+        "rounded_exact": float(np.mean(np.floor(p + 0.5) == np.floor(t + 0.5))),
+        "gate_pass": bool(mae <= 1.0 and within_2 >= 0.95),
+    }
