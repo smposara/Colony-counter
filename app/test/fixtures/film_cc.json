@@ -1,0 +1,302 @@
+{
+ "type": "cc",
+ "px_per_mm": 12.0,
+ "angle_deg": 2,
+ "area": {
+  "cx": 599.34,
+  "cy": 591.09,
+  "radius": 303.0
+ },
+ "true": {
+  "coliform": 15
+ },
+ "python": {
+  "counts": {
+   "coliform": 15
+  },
+  "estimates": null,
+  "squares_used": 0,
+  "flags": [],
+  "pitch_px": 120.006,
+  "angle_deg": 2.0,
+  "line_half_px": 2.5,
+  "area": {
+   "cx": 599.3151979195733,
+   "cy": 591.0606982377416,
+   "radius": 302.41840981856603
+  },
+  "bubbles": 15,
+  "colonies": [
+   {
+    "x": 789.6,
+    "y": 650.6,
+    "r": 10.22,
+    "kind": "red",
+    "n": 1,
+    "gas": false,
+    "yellow": false
+   },
+   {
+    "x": 487.0,
+    "y": 674.6,
+    "r": 10.19,
+    "kind": "red",
+    "n": 1,
+    "gas": false,
+    "yellow": false
+   },
+   {
+    "x": 729.3,
+    "y": 774.1,
+    "r": 9.85,
+    "kind": "red",
+    "n": 1,
+    "gas": false,
+    "yellow": false
+   },
+   {
+    "x": 567.3,
+    "y": 738.2,
+    "r": 9.76,
+    "kind": "red",
+    "n": 1,
+    "gas": true,
+    "yellow": false
+   },
+   {
+    "x": 616.2,
+    "y": 404.9,
+    "r": 9.72,
+    "kind": "red",
+    "n": 1,
+    "gas": false,
+    "yellow": false
+   },
+   {
+    "x": 862.9,
+    "y": 605.5,
+    "r": 9.62,
+    "kind": "red",
+    "n": 1,
+    "gas": false,
+    "yellow": false
+   },
+   {
+    "x": 415.9,
+    "y": 468.1,
+    "r": 9.49,
+    "kind": "red",
+    "n": 1,
+    "gas": false,
+    "yellow": false
+   },
+   {
+    "x": 407.2,
+    "y": 540.9,
+    "r": 9.44,
+    "kind": "red",
+    "n": 1,
+    "gas": false,
+    "yellow": false
+   },
+   {
+    "x": 576.8,
+    "y": 670.0,
+    "r": 9.41,
+    "kind": "red",
+    "n": 1,
+    "gas": true,
+    "yellow": false
+   },
+   {
+    "x": 520.0,
+    "y": 380.5,
+    "r": 9.13,
+    "kind": "red",
+    "n": 1,
+    "gas": true,
+    "yellow": false
+   },
+   {
+    "x": 636.5,
+    "y": 603.4,
+    "r": 9.1,
+    "kind": "red",
+    "n": 1,
+    "gas": false,
+    "yellow": false
+   },
+   {
+    "x": 790.5,
+    "y": 530.1,
+    "r": 8.9,
+    "kind": "red",
+    "n": 1,
+    "gas": true,
+    "yellow": false
+   },
+   {
+    "x": 629.0,
+    "y": 836.2,
+    "r": 8.37,
+    "kind": "red",
+    "n": 1,
+    "gas": true,
+    "yellow": false
+   },
+   {
+    "x": 722.5,
+    "y": 535.5,
+    "r": 8.23,
+    "kind": "red",
+    "n": 1,
+    "gas": false,
+    "yellow": false
+   },
+   {
+    "x": 372.5,
+    "y": 651.3,
+    "r": 8.14,
+    "kind": "red",
+    "n": 1,
+    "gas": false,
+    "yellow": false
+   },
+   {
+    "x": 610.3,
+    "y": 490.6,
+    "r": 7.82,
+    "kind": "red",
+    "n": 1,
+    "gas": true,
+    "yellow": false
+   },
+   {
+    "x": 651.8,
+    "y": 664.1,
+    "r": 7.74,
+    "kind": "red",
+    "n": 1,
+    "gas": true,
+    "yellow": false
+   },
+   {
+    "x": 486.1,
+    "y": 766.1,
+    "r": 7.72,
+    "kind": "red",
+    "n": 1,
+    "gas": false,
+    "yellow": false
+   },
+   {
+    "x": 508.2,
+    "y": 554.4,
+    "r": 7.29,
+    "kind": "red",
+    "n": 1,
+    "gas": true,
+    "yellow": false
+   },
+   {
+    "x": 777.0,
+    "y": 718.5,
+    "r": 7.2,
+    "kind": "red",
+    "n": 1,
+    "gas": true,
+    "yellow": false
+   },
+   {
+    "x": 645.3,
+    "y": 766.7,
+    "r": 7.07,
+    "kind": "red",
+    "n": 1,
+    "gas": false,
+    "yellow": false
+   },
+   {
+    "x": 693.2,
+    "y": 715.6,
+    "r": 7.0,
+    "kind": "red",
+    "n": 1,
+    "gas": true,
+    "yellow": false
+   },
+   {
+    "x": 539.1,
+    "y": 451.9,
+    "r": 6.75,
+    "kind": "red",
+    "n": 1,
+    "gas": false,
+    "yellow": false
+   },
+   {
+    "x": 418.6,
+    "y": 719.6,
+    "r": 6.68,
+    "kind": "red",
+    "n": 1,
+    "gas": true,
+    "yellow": false
+   },
+   {
+    "x": 585.0,
+    "y": 332.3,
+    "r": 6.65,
+    "kind": "red",
+    "n": 1,
+    "gas": true,
+    "yellow": false
+   },
+   {
+    "x": 671.1,
+    "y": 368.8,
+    "r": 6.43,
+    "kind": "red",
+    "n": 1,
+    "gas": true,
+    "yellow": false
+   },
+   {
+    "x": 371.4,
+    "y": 594.6,
+    "r": 5.7,
+    "kind": "red",
+    "n": 1,
+    "gas": true,
+    "yellow": false
+   },
+   {
+    "x": 437.1,
+    "y": 388.2,
+    "r": 5.67,
+    "kind": "red",
+    "n": 1,
+    "gas": false,
+    "yellow": false
+   },
+   {
+    "x": 776.1,
+    "y": 437.9,
+    "r": 5.53,
+    "kind": "red",
+    "n": 1,
+    "gas": false,
+    "yellow": false
+   },
+   {
+    "x": 711.1,
+    "y": 434.4,
+    "r": 4.98,
+    "kind": "red",
+    "n": 1,
+    "gas": true,
+    "yellow": false
+   }
+  ]
+ }
+}

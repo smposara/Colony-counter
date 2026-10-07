@@ -327,8 +327,8 @@ List<Disk> findDisks(
   // Coarse: best of several sizes, so a wrong plate format or a tilted photo
   // still finds the disks (and the scale check then reports it).
   final sg = small.gaussianBlur(1.0);
-  final (sgx, sgy) = _sobel(sg);
-  final coarseTaps = [for (final f in kDiskSizeFactors) _RingTaps(rs * f)];
+  final (sgx, sgy) = sobel3(sg);
+  final coarseTaps = [for (final f in kDiskSizeFactors) RingTaps(rs * f)];
   final coarse = Float32List(small.width * small.height);
   final sizeOf = Uint8List(coarse.length);
   final pcx = plate.cx * s, pcy = plate.cy * s, lim2 = limit * s;
@@ -361,8 +361,8 @@ List<Disk> findDisks(
   );
 
   // Fine: full resolution in a small window around each candidate.
-  final (gx, gy) = _sobel(g);
-  final fineTaps = [for (final f in kDiskSizeFactors) _RingTaps(r0 * f)];
+  final (gx, gy) = sobel3(g);
+  final fineTaps = [for (final f in kDiskSizeFactors) RingTaps(r0 * f)];
   final win = (1 / s).ceil() + 1;
   final fine = <(double, int, int, int)>[];
   for (final (cx, cy) in cands) {
@@ -431,8 +431,8 @@ List<(int, int)> _greedyPeaks(
 
 /// Sample points of the ring score around a centre at the origin (see
 /// ring_taps in zones.py). Weights average within each sector.
-class _RingTaps {
-  factory _RingTaps(double r0) {
+class RingTaps {
+  factory RingTaps(double r0) {
     final k = (r0 + kRidgeGapPx + 2).ceil();
     final n = 2 * k + 1;
     final sector = Int32List(n * n);
@@ -485,7 +485,7 @@ class _RingTaps {
         }
       }
     }
-    return _RingTaps._(
+    return RingTaps._(
       k,
       Int32List.fromList(sdx),
       Int32List.fromList(sdy),
@@ -499,7 +499,7 @@ class _RingTaps {
     );
   }
 
-  _RingTaps._(
+  RingTaps._(
     this.k,
     this.sdx,
     this.sdy,
@@ -538,6 +538,22 @@ class _RingTaps {
     }
     return 3 * _allRound(_st) + _allRound(_rd);
   }
+
+  /// Ridge score of each sector at (x, y), sorted ascending into [out]: a
+  /// thin ring brighter (+) or darker (−) than just inside and outside it.
+  void ridgeSectorsAt(GrayImage g, int x, int y, Float64List out) {
+    final w = g.width, h = g.height;
+    out.fillRange(0, kRingSectors, 0);
+    final inside = x - k >= 0 && x + k < w && y - k >= 0 && y + k < h;
+    final base = y * w + x;
+    for (var t = 0; t < rdx.length; t++) {
+      final i = inside
+          ? base + rdy[t] * w + rdx[t]
+          : (y + rdy[t]).clamp(0, h - 1) * w + (x + rdx[t]).clamp(0, w - 1);
+      out[rsec[t]] += g.data[i] * rw[t];
+    }
+    out.sort();
+  }
 }
 
 /// Second-weakest sector in the dominant direction (0 if the sectors disagree).
@@ -547,7 +563,7 @@ double _allRound(Float64List v) {
 }
 
 /// 3x3 Sobel derivatives divided by 8 (brightness change per pixel).
-(Float32List, Float32List) _sobel(GrayImage g) {
+(Float32List, Float32List) sobel3(GrayImage g) {
   final w = g.width, h = g.height, d = g.data;
   final gx = Float32List(w * h), gy = Float32List(w * h);
   for (var y = 0; y < h; y++) {
@@ -565,7 +581,7 @@ double _allRound(Float64List v) {
 }
 
 /// Bilinear sample with the border replicated.
-double _sample(GrayImage g, double x, double y) {
+double sampleBilinear(GrayImage g, double x, double y) {
   final w = g.width, h = g.height;
   final fx = x.clamp(0.0, w - 1.0), fy = y.clamp(0.0, h - 1.0);
   final x0 = fx.floor(), y0 = fy.floor();
@@ -599,11 +615,11 @@ double _hypot(num a, num b) => math.sqrt(a * a + b * b);
     for (var i = 0; i < n; i++) {
       final a = 2 * math.pi * i / n;
       final ca = math.cos(a), sa = math.sin(a);
-      var prev = _sample(g, cx + ca * ts[0], cy + sa * ts[0]);
+      var prev = sampleBilinear(g, cx + ca * ts[0], cy + sa * ts[0]);
       var bestD = -1.0;
       var bestK = 0;
       for (var k = 1; k < ts.length; k++) {
-        final v = _sample(g, cx + ca * ts[k], cy + sa * ts[k]);
+        final v = sampleBilinear(g, cx + ca * ts[k], cy + sa * ts[k]);
         final dd = (v - prev).abs();
         if (dd > bestD) {
           bestD = dd;
@@ -619,7 +635,7 @@ double _hypot(num a, num b) => math.sqrt(a * a + b * b);
     var count = n;
     (double, double, double) fit = (0, 0, 0);
     for (var it = 0; it < 3; it++) {
-      fit = _fitCircle(ex, ey, keep);
+      fit = fitCircle(ex, ey, keep);
       final res = Float64List(n);
       final kept = <double>[];
       for (var i = 0; i < n; i++) {
@@ -632,7 +648,7 @@ double _hypot(num a, num b) => math.sqrt(a * a + b * b);
       if (count < 24) break;
     }
     if (count < 24) break;
-    final (fx, fy, fr) = _fitCircle(ex, ey, keep);
+    final (fx, fy, fr) = fitCircle(ex, ey, keep);
     if (!(fr.isFinite &&
         fr >= 0.7 * r0 &&
         fr <= 1.4 * r0 &&
@@ -645,7 +661,7 @@ double _hypot(num a, num b) => math.sqrt(a * a + b * b);
 }
 
 /// Algebraic least-squares circle (Kåsa) through the points with [keep] set.
-(double, double, double) _fitCircle(
+(double, double, double) fitCircle(
   List<double> x,
   List<double> y,
   List<bool> keep,
@@ -865,7 +881,7 @@ _Rays _cast(
     }
     final p = Float64List(len);
     for (var k = 0; k < len; k++) {
-      p[k] = _sample(sm, disk.x + ux * t[k], disk.y + uy * t[k]);
+      p[k] = sampleBilinear(sm, disk.x + ux * t[k], disk.y + uy * t[k]);
     }
     prof.add(p);
     lengths[i] = len;
@@ -1005,14 +1021,14 @@ Zone _measureOne(
   var rad = sumIn / nIn;
   int countOf(List<bool> b) => b.where((v) => v).length;
   if (countOf(inl) >= 12) {
-    var (fx, fy, fr) = _fitCircle(ex, ey, inl);
+    var (fx, fy, fr) = fitCircle(ex, ey, inl);
     if (_hypot(fx - disk.x, fy - disk.y) < 1.0 / mm) {
       inl = [
         for (var i = 0; i < ex.length; i++)
           (_hypot(ex[i] - fx, ey[i] - fy) - fr).abs() < tol,
       ];
       if (countOf(inl) >= 12) {
-        (fx, fy, fr) = _fitCircle(ex, ey, inl);
+        (fx, fy, fr) = fitCircle(ex, ey, inl);
         if (_hypot(fx - disk.x, fy - disk.y) < 1.0 / mm) {
           (cx, cy, rad) = (fx, fy, fr);
         }

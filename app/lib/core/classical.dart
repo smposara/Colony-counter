@@ -162,7 +162,7 @@ Detection detect(
   ];
   if (keep.isEmpty) return Detection([], thr, sigma, 0, 0);
 
-  final dist = _edt(binary, w, h);
+  final dist = edt(binary, w, h);
   final radii = <double>[
     for (final c in keep)
       if (c.solidity > 0.9) math.sqrt(c.area / math.pi),
@@ -398,7 +398,7 @@ double _solidity(_Component c) {
 
 /// Exact Euclidean distance from each foreground pixel to the nearest background
 /// pixel (Felzenszwalb & Huttenlocher). Pixels outside the image count as background.
-Float32List _edt(Uint8List b, int w, int h) {
+Float32List edt(Uint8List b, int w, int h) {
   const inf = 1e20;
   final f = Float64List(w * h);
   for (var i = 0; i < f.length; i++) {

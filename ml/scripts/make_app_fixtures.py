@@ -3,6 +3,7 @@
 Each fixture is a synthetic JPEG plus a JSON label with the true colony positions
 and the Python pipeline's count on that same JPEG, so the Dart port can be checked
 against both. Run from the repo root:  python ml/scripts/make_app_fixtures.py
+(add --zones or --petrifilm for the zone plates or dry films only).
 """
 
 import json
@@ -12,7 +13,9 @@ import cv2
 import numpy as np
 
 from colonycounter import count_colonies
+from colonycounter.petrifilm import count_petrifilm
 from colonycounter.synth import make_plate
+from colonycounter.synth_petrifilm import make_film
 from colonycounter.synth_zones import make_zone_plate
 from colonycounter.zones import measure_plate
 
@@ -142,9 +145,56 @@ def make_zone_fixtures() -> None:
               res.flags)
 
 
+PETRIFILM_CASES = [  # name, make_film arguments
+    ("film_ac", dict(type="ac", n=60, seed=41, angle_deg=4)),
+    ("film_ec", dict(type="ec", n=40, seed=42, angle_deg=-5)),
+    ("film_cc", dict(type="cc", n=30, seed=43, angle_deg=2)),
+    ("film_eb", dict(type="eb", n=40, seed=44, angle_deg=-3)),
+    ("film_ym", dict(type="ym", n=40, seed=45, angle_deg=6)),
+    ("film_ac_crowded", dict(type="ac", n=700, seed=46, angle_deg=3)),
+]
+
+
+def make_petrifilm_fixtures() -> None:
+    """Dry films for the Dart port: true counts plus the Python result on the same JPEG."""
+    OUT.mkdir(parents=True, exist_ok=True)
+    for name, kw in PETRIFILM_CASES:
+        s = make_film(**kw)
+        path = OUT / f"{name}.jpg"
+        cv2.imwrite(str(path), s.image, [cv2.IMWRITE_JPEG_QUALITY, 90])
+        res = count_petrifilm(cv2.imread(str(path)), s.type)
+        label = {
+            "type": s.type,
+            "px_per_mm": s.px_per_mm,
+            "angle_deg": s.angle_deg,
+            "area": {"cx": round(float(s.centre[0]), 2), "cy": round(float(s.centre[1]), 2),
+                     "radius": round(float(s.radius_px), 2)},
+            "true": s.truth(),
+            "python": {
+                "counts": res.counts,
+                "estimates": None if res.estimates is None
+                else {k: round(v, 1) for k, v in res.estimates.items()},
+                "squares_used": res.squares_used,
+                "flags": res.flags,
+                "pitch_px": round(res.grid.pitch_px, 3),
+                "angle_deg": round(res.grid.angle_deg, 3),
+                "line_half_px": round(res.grid.line_half_px, 2),
+                "area": _plate(res.plate),
+                "bubbles": len(res.bubbles),
+                "colonies": [{"x": round(c.x, 1), "y": round(c.y, 1), "r": round(c.radius_px, 2),
+                              "kind": c.kind, "n": c.n, "gas": c.gas, "yellow": c.yellow}
+                             for c in res.colonies],
+            },
+        }
+        (OUT / f"{name}.json").write_text(json.dumps(label, indent=1))
+        print(name, s.image.shape[:2], "true", s.truth(), "python", res.counts, res.estimates, res.flags)
+
+
 if __name__ == "__main__":
     import sys
     if sys.argv[1:] == ["--zones"]:
         make_zone_fixtures()
+    elif sys.argv[1:] == ["--petrifilm"]:
+        make_petrifilm_fixtures()
     else:
         main()
