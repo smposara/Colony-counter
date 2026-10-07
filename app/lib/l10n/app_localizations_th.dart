@@ -630,6 +630,16 @@ class AppLocalizationsTh extends AppLocalizations {
   String get reviewUndo => 'เลิกทำ';
 
   @override
+  String get reviewHideMarks => 'ซ่อนเครื่องหมาย';
+
+  @override
+  String get reviewShowMarks => 'แสดงเครื่องหมาย';
+
+  @override
+  String get reviewHintMarksHidden =>
+      'ซ่อนเครื่องหมายอยู่ เพื่อดูภาพรวมของเพลต แตะรูปตาเพื่อแสดงอีกครั้งและแก้ไข';
+
+  @override
   String get reviewSensitivity => 'ความไวในการตรวจจับ';
 
   @override

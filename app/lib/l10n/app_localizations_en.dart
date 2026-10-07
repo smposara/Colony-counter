@@ -661,6 +661,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reviewUndo => 'Undo';
 
   @override
+  String get reviewHideMarks => 'Hide marks';
+
+  @override
+  String get reviewShowMarks => 'Show marks';
+
+  @override
+  String get reviewHintMarksHidden =>
+      'Marks are hidden, so you can look over the plate. Tap the eye to show them again and edit.';
+
+  @override
   String get reviewSensitivity => 'Detection sensitivity';
 
   @override

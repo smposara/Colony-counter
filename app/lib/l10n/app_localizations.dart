@@ -1148,6 +1148,24 @@ abstract class AppLocalizations {
   /// **'Undo'**
   String get reviewUndo;
 
+  /// No description provided for @reviewHideMarks.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide marks'**
+  String get reviewHideMarks;
+
+  /// No description provided for @reviewShowMarks.
+  ///
+  /// In en, this message translates to:
+  /// **'Show marks'**
+  String get reviewShowMarks;
+
+  /// No description provided for @reviewHintMarksHidden.
+  ///
+  /// In en, this message translates to:
+  /// **'Marks are hidden, so you can look over the plate. Tap the eye to show them again and edit.'**
+  String get reviewHintMarksHidden;
+
   /// No description provided for @reviewSensitivity.
   ///
   /// In en, this message translates to:

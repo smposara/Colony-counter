@@ -72,6 +72,9 @@ class _ReviewScreenState extends State<ReviewScreen> {
   String? _error;
   _Mode _mode = _Mode.edit;
 
+  /// Marks drawn over the photo; off for an unmarked look at the plate.
+  bool _showMarks = true;
+
   int _imageW = 0, _imageH = 0;
   Plate? _plate;
   List<Colony> _colonies = [];
@@ -358,7 +361,17 @@ class _ReviewScreenState extends State<ReviewScreen> {
     _dirty = true;
   }
 
+  /// Taps that would change marks nobody can see do nothing; say why.
+  bool _editingHidden() {
+    if (_showMarks || _mode == _Mode.zoom || _mode == _Mode.plate) return false;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(tr.reviewHintMarksHidden)));
+    return true;
+  }
+
   void _onTap(Offset p) {
+    if (_editingHidden()) return;
     if (_mode == _Mode.spots) {
       final i = _hitSpot(p);
       if (i != null) {
@@ -402,7 +415,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
   }
 
   Future<void> _onLongPress(Offset p) async {
-    if (_mode != _Mode.edit) return;
+    if (_mode != _Mode.edit || _editingHidden()) return;
     final i = _hit(p);
     if (i == null) return;
     final n = await showDialog<int>(
@@ -427,7 +440,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
   }
 
   void _panStart(Offset p) {
-    if (_mode != _Mode.spots) return;
+    if (_mode != _Mode.spots || !_showMarks) return;
     _dragSpot = _hitSpot(p);
     if (_dragSpot != null) _push();
   }
@@ -723,6 +736,13 @@ class _ReviewScreenState extends State<ReviewScreen> {
           title: Text(tr.reviewTitle),
           actions: [
             IconButton(
+              tooltip: _showMarks ? tr.reviewHideMarks : tr.reviewShowMarks,
+              isSelected: !_showMarks,
+              onPressed: () => setState(() => _showMarks = !_showMarks),
+              icon: const Icon(Icons.visibility_outlined),
+              selectedIcon: const Icon(Icons.visibility_off_outlined),
+            ),
+            IconButton(
               tooltip: tr.reviewUndo,
               onPressed: _undo.isEmpty ? null : _undoLast,
               icon: const Icon(Icons.undo),
@@ -883,6 +903,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                                   plateMode: plateMode,
                                   spots: _drop ? _spots : const [],
                                   colourMode: _colourMode,
+                                  showMarks: _showMarks,
                                 ),
                               ),
                             ],
@@ -1011,6 +1032,9 @@ class _ReviewScreenState extends State<ReviewScreen> {
                     ),
                     const SizedBox(height: 6),
                     Text(switch (_mode) {
+                      _Mode.edit ||
+                      _Mode.spots ||
+                      _Mode.colour when !_showMarks => tr.reviewHintMarksHidden,
                       _Mode.zoom => tr.reviewHintZoom,
                       _Mode.edit => tr.reviewHintEdit,
                       _Mode.plate =>
@@ -1226,8 +1250,11 @@ class _OverlayPainter extends CustomPainter {
     required this.plateMode,
     required this.spots,
     required this.colourMode,
+    this.showMarks = true,
   });
 
+  /// Off: only the plate outline while moving it, nothing else.
+  final bool showMarks;
   final List<Spot> spots;
   final ColourMode colourMode;
   final Plate? plate;
@@ -1241,7 +1268,7 @@ class _OverlayPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final px = 1 / scale;
     final pl = plate;
-    if (pl != null) {
+    if (pl != null && (showMarks || plateMode)) {
       void outline(double rim, Paint paint) {
         if (!pl.isSquare) {
           canvas.drawCircle(Offset(pl.cx, pl.cy), pl.radius * rim, paint);
@@ -1273,6 +1300,7 @@ class _OverlayPainter extends CustomPainter {
         );
       }
     }
+    if (!showMarks) return;
     for (var i = 0; i < spots.length; i++) {
       final sp = spots[i];
       canvas.drawCircle(
@@ -1353,7 +1381,8 @@ class _OverlayPainter extends CustomPainter {
       old.scale != scale ||
       old.plateMode != plateMode ||
       old.spots != spots ||
-      old.colourMode != colourMode;
+      old.colourMode != colourMode ||
+      old.showMarks != showMarks;
 }
 
 class _ClusterDialog extends StatefulWidget {

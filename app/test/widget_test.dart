@@ -134,4 +134,70 @@ void main() {
     );
     expect(saved, isNotNull);
   });
+
+  testWidgets('marks can be hidden for an unmarked look, without edits', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1080, 2340);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+    final store = (await tester.runAsync(_tempStore))!;
+    final label = jsonDecode(
+      File('test/fixtures/sparse.json').readAsStringSync(),
+    );
+    final p = (label['points'] as List).first as List;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: ReviewScreen(
+          store: store,
+          photo: File('test/fixtures/sparse.jpg').readAsBytesSync(),
+          guided: true,
+        ),
+      ),
+    );
+    await _settleReal(
+      tester,
+      () => find.byType(CircularProgressIndicator).evaluate().isEmpty,
+    );
+    final auto = int.parse(
+      (tester.widget<Text>(find.textContaining(RegExp(r'^\d+$')).first)).data!,
+    );
+    bool marksDrawn() => tester
+        .widgetList<CustomPaint>(find.byType(CustomPaint))
+        .map((w) => w.painter)
+        .whereType<CustomPainter>()
+        .any(
+          (pt) =>
+              pt.runtimeType.toString() == '_OverlayPainter' &&
+              (pt as dynamic).showMarks as bool,
+        );
+    expect(marksDrawn(), isTrue);
+
+    await tester.tap(find.byTooltip('Hide marks'));
+    await tester.pump();
+    expect(marksDrawn(), isFalse);
+    expect(find.byTooltip('Show marks'), findsOneWidget);
+    expect(find.textContaining('Marks are hidden'), findsOneWidget);
+
+    // A tap on the photo changes nothing while the marks cannot be seen.
+    final rect = tester.getRect(find.byType(Image));
+    final at =
+        rect.topLeft +
+        Offset((p[0] as num).toDouble(), (p[1] as num).toDouble()) *
+            (rect.width / 1000);
+    await tester.tapAt(at);
+    await tester.pump();
+    expect(find.text('$auto'), findsOneWidget);
+    expect(find.textContaining('removed'), findsNothing);
+    expect(find.byType(SnackBar), findsOneWidget);
+
+    // Shown again, the same tap edits as usual.
+    await tester.tap(find.byTooltip('Show marks'));
+    await tester.pump();
+    expect(marksDrawn(), isTrue);
+    await tester.tapAt(at);
+    await tester.pump();
+    expect(find.text('$auto'), findsNothing);
+  });
 }
