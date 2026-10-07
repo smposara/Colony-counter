@@ -1,6 +1,7 @@
 # Inhibition zone measurement (AST Option A): implementation plan
 
-Status: **parked**, not scheduled; design decisions made (see the end). Context and the
+Status: **next feature** (target 0.6.0), starting after the 0.5.x closed test; design
+decisions made (see the end). Context and the
 go/no-go gate are in [AST.md](AST.md).
 Target release: 0.6.0 (or later), only after the gate in AST.md passes.
 
@@ -170,7 +171,7 @@ training export) never see zone plates.
 
 | # | Milestone | Days | Output |
 |---|---|---|---|
-| M0 | Collect 30–50 real plates with calliper readings | Runs alongside M1 | Labelled test set |
+| M0 | Download the open datasets ([AST.md](AST.md#open-data-and-tools-for-testing)) and collect 10–20 own plates with calliper readings | Runs alongside M1 | Labelled test set |
 | M1 | Python detector, synthetic generator, CLI, evaluation | 5 | `zones.py`, metrics on real photos |
 | — | **Gate** (AST.md) | — | Go / semi-automatic / shelve |
 | M2 | Dart port + fixtures | 3 | `zones.dart`, matches Python |

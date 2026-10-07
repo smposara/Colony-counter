@@ -1,7 +1,8 @@
 # Antibiotic susceptibility testing (AST): research and decision plan
 
-Status: **parked**. Not scheduled. Revisit after the 0.5.x closed test, together with
-[plaque counting](PLAQUE_COUNTING.md). Research done October 2026.
+Status: **chosen as the next feature** (October 2026). Starts after the 0.5.x closed test;
+target 0.6.0. [Plaque counting](PLAQUE_COUNTING.md) is deferred to the version after.
+Research done October 2026.
 Implementation plan for Option A: [AST_IMPLEMENTATION.md](AST_IMPLEMENTATION.md).
 
 ## Summary
@@ -85,7 +86,7 @@ This is a larger build than plaque counting: a new detector and a new review scr
 
 **Step 0: check demand (no coding, 1–2 weeks).** Ask testers and the Facebook audience: do you
 measure zones and how often? Disks or wells? Research, teaching or clinical? CLSI or EUCAST?
-What do you use now? Run this survey together with the plaque-counting questions.
+What do you use now?
 
 **Step 1: collect data.** 30–50 plate photos with calliper readings: disk plates, well plates,
 and the hard cases.
@@ -114,8 +115,31 @@ permission.
 - **Compared with plaque counting:** plaques are cheaper (mostly settings); AST measurement
   probably has the larger audience.
 
-**Recommendation when revisited:** one demand survey for both AST and plaques, then build
-whichever shows more demand. Keep AST to measurement only; leave clinical S/I/R to Antibiogo.
+**Decision (October 2026):** build AST zone measurement (Option A) next, and defer plaque
+counting to the following version. Keep AST to measurement only; leave clinical S/I/R to
+Antibiogo.
+
+## Open data and tools for testing
+
+No public dataset pairs phone photos with calliper readings, so 10–20 of our own plates are
+still needed (mainly to test lighting and the camera), and agar-well plates must come from
+Thai research labs. Keep downloaded images in a local test folder that is not committed;
+check each licence before any other use.
+
+| Source | Contents | Use |
+|---|---|---|
+| [SIRscan disk diffusion image dataset (Dryad, 2024)](https://datadryad.org/dataset/doi:10.5061/dryad.5dv41nsfj) | 225 Gram-negative isolates, EUCAST method; original images (37 MB), measured images (318 MB), tables of zone diameters read by the SIRscan instrument | **Ground truth** for zone measurement. Scanner images, not phone photos. Dryad is usually CC0; confirm |
+| [AI Antibiotic Zone Measurement dataset (4TU.ResearchData)](https://data.4tu.nl/datasets/6836caa1-2c19-4e62-b30a-0c15488dd33a) | High-resolution photographs of disk diffusion plates, labelled with antibiotic and strain | Closest to real app photos. Check whether diameters are included, and the licence |
+| [AST dataset (Roboflow Universe)](https://universe.roboflow.com/ast-apoji/ast-estoa) | Community-annotated AST images | Extra variety for disk detection; size and licence unknown |
+| [Kirby-Bauer object detection study (Hue University, 291 images)](https://www.sciencedirect.com/org/science/article/pii/S1875036225000056) | Plates, disks and zones annotated | Data possibly on request; email the authors |
+
+Tools to compare against:
+- [AST-image-processing](https://zenodo.org/records/4421398): Antibiogo's image library (C++/Python), focused on fuzzy zone edges.
+- [diskImageR](https://rdrr.io/cran/diskImageR) (R, GPL-3): brightness along lines every 5° from each disk, close to our planned method.
+- [AntibiogramJ](https://www.unirioja.es/cu/joheras/papers/antibiogramj.pdf): free ImageJ-based zone measurement.
+
+Suggested order: SIRscan to score measurement accuracy, then 4TU for phone-photo realism,
+then our own plates.
 
 ## Sources
 

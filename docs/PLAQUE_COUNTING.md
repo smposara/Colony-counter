@@ -1,7 +1,7 @@
 # Plaque counting (bacteriophage): idea and decision plan
 
-Status: **parked**. Not scheduled. Revisit after the 0.5.x closed test; earliest target 0.6.
-See also the [AST plan](AST.md): run one demand survey for both.
+Status: **deferred to the version after AST** (decided October 2026). The [AST zone
+measurement](AST.md) is built first, in 0.6.0.
 
 ## Origin
 
@@ -96,3 +96,14 @@ tests on reference images, as already exist for colonies.
 - **Risk control:** a separate sample type means colony users see no change.
 
 **Recommendation when revisited:** do Steps 0 and 1 first (cheap), then decide on the numbers.
+
+## Open data and tools for testing
+
+| Source | Contents | Use |
+|---|---|---|
+| OnePetri dataset ([paper](https://www.biorxiv.org/content/10.1101/2021.09.27.460959.full.pdf), [Roboflow blog](https://blog.roboflow.com/using-computer-vision-microbiology/)) | Phage plaques on bacterial lawns in Petri dishes, from HHMI SEA-PHAGES photos; 4,875 annotated plaques; CC BY 4.0 on Roboflow Universe | **Main test set**: exactly our case, including tiny plaques |
+| [VACVPlaque (Scientific Data, 2025)](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12043936/) | 211 photos of vaccinia virus plaques in 6-well plates, with masks; CC BY 4.0 | Stress test only (animal virus on cells, not phage on bacteria) |
+| [plaque-size-tool](https://pypi.org/project/plaque-size-tool/), [PyPlaque](https://www.biorxiv.org/content/10.1101/2024.08.07.603274v1.full.pdf) | Open-source plaque measurement tools | Methods to compare against |
+
+Keep downloaded images in a local test folder that is not committed; check each licence before
+any other use.
