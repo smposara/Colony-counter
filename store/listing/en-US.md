@@ -51,13 +51,10 @@ Thai and English. Light and dark themes. Free and open source (GNU AGPL-3.0).
 Intended use: for research and teaching. Colony Counter is not a medical or diagnostic device. Always check the automatic count.
 ```
 
-## Release notes (What's new) (317/500 characters)
+## Release notes (What's new) (234/500 characters)
 
 ```
-Version 0.5.1
-• More accurate result when one dilution is too numerous to count
-• Restoring a backup on a new phone now brings back your settings
-• Fixed duplicate plates and mixed-up photos in some backups
-• Works on devices without a camera (choose photos instead)
-• Link to the free 3D-printed photo stand in About
+Version 0.5.2
+• New eye button on the photo: hide the colony marks to look over the plate unmarked, then show them again to compare and find areas that need a closer look
+• The Review count title is no longer cut off on smaller phones
 ```

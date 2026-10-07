@@ -733,15 +733,10 @@ class _ReviewScreenState extends State<ReviewScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
+          // Room for the full title beside three actions on a 360 dp phone.
+          titleSpacing: 0,
           title: Text(tr.reviewTitle),
           actions: [
-            IconButton(
-              tooltip: _showMarks ? tr.reviewHideMarks : tr.reviewShowMarks,
-              isSelected: !_showMarks,
-              onPressed: () => setState(() => _showMarks = !_showMarks),
-              icon: const Icon(Icons.visibility_outlined),
-              selectedIcon: const Icon(Icons.visibility_off_outlined),
-            ),
             IconButton(
               tooltip: tr.reviewUndo,
               onPressed: _undo.isEmpty ? null : _undoLast,
@@ -915,6 +910,18 @@ class _ReviewScreenState extends State<ReviewScreen> {
                 ),
               ),
             ),
+            if (_plate != null)
+              Positioned(
+                top: 8,
+                right: 8,
+                child: IconButton.filledTonal(
+                  tooltip: _showMarks ? tr.reviewHideMarks : tr.reviewShowMarks,
+                  isSelected: !_showMarks,
+                  onPressed: () => setState(() => _showMarks = !_showMarks),
+                  icon: const Icon(Icons.visibility_outlined),
+                  selectedIcon: const Icon(Icons.visibility_off_outlined),
+                ),
+              ),
             if (_busy)
               const Positioned.fill(
                 child: ColoredBox(
