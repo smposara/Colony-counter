@@ -21,6 +21,16 @@ from .plate import Plate, find_plate
 
 WORK_SHORT_SIDE = 1800
 N_RAYS = 180
+# Disk radius in the downscaled copy used for candidates. Wells need more detail:
+# their cut edge is a thin line that vanishes when scaled down further.
+COARSE_RADIUS_PX = {"disk": 12.0, "well": 20.0}
+MAX_CANDIDATES = 40
+SIZE_FACTORS = (0.8, 1.0, 1.25)
+# Grey levels. Synthetic plates: real disks/wells ≥ 10, lawn and zone edges ≤ 6.2.
+# To be re-checked on real photos.
+MIN_DISK_SCORE = 8.0
+RIDGE_GAP_PX = 2.0
+RING_SECTORS = 8
 MIN_AGREEING = 0.15  # below this fraction of rays agreeing, leave the zone to the user
 
 
@@ -109,7 +119,7 @@ def measure_plate(
     wplate = Plate(plate.cx * s, plate.cy * s, plate.radius * s, plate.diameter_mm)
 
     if disks is None:
-        wdisks = find_disks(gray, wplate, disk_mm)
+        wdisks = find_disks(gray, wplate, disk_mm, assay)
     else:
         wdisks = [Disk(d.x * s, d.y * s, d.radius_px * s, d.score, d.measured) for d in disks]
 
@@ -141,61 +151,167 @@ def measure_plate(
     return ZoneResult(plate, assay, zones, polarity, ratio, flags)
 
 
-def find_disks(gray: np.ndarray, plate: Plate, disk_mm: float = 6.0,
-               min_relative_score: float = 0.2) -> list[Disk]:
+def find_disks(gray: np.ndarray, plate: Plate, disk_mm: float = 6.0, assay: str = "disk",
+               min_relative_score: float = 0.1) -> list[Disk]:
     """Disks and wells: circles of the known size, darker or lighter all round.
 
-    Two signed ring averages, so lawn grain (random direction) cancels out while a
-    real edge adds up all the way round:
+    Scores a candidate centre with two signed ring averages, so lawn grain
+    (random direction) cancels out while a real edge adds up all the way round:
     - the brightness step across the ring, measured along the radius (a paper
       disk or the floor of a well against the agar);
     - a thin line on the ring (the cut edge of a well).
-    Straight or large curved edges (zones, the dish rim) touch the ring in only
-    a few places and score low.
+    The ring is split into sectors and the second-weakest sector counts, so a
+    zone edge or the dish rim grazing one side of the ring scores low.
+
+    Two stages keep it fast (the app runs the same steps): candidates from a copy
+    scaled so the disk radius is ``COARSE_RADIUS_PX[assay]``, then each candidate is
+    re-scored at full resolution in a small window and finally fitted to the
+    disk edge.
     """
     r0 = disk_mm / 2 / plate.mm_per_px
     g = cv2.GaussianBlur(gray, (0, 0), 1.0)
-    gx = cv2.Sobel(g, cv2.CV_32F, 1, 0, ksize=3) / 8
-    gy = cv2.Sobel(g, cv2.CV_32F, 0, 1, ksize=3) / 8
+    hh, ww = gray.shape
+    s = min(1.0, COARSE_RADIUS_PX[assay] / r0)
+    small = cv2.resize(gray, (max(1, round(ww * s)), max(1, round(hh * s))),
+                       interpolation=cv2.INTER_AREA) if s < 1 else gray
+    rs = r0 * s
+    # Several sizes, so a wrong plate format or a tilted photo still finds the
+    # disks (and the scale check then reports it).
+    maps = np.stack([ring_score(small, rs * f) for f in SIZE_FACTORS])
+    coarse = maps.max(axis=0)
+    size_of = maps.argmax(axis=0)
+    sh, sw = small.shape
+    py, px = np.mgrid[0:sh, 0:sw]
+    limit = plate.radius * 0.97 - r0 * 1.5
+    allowed = np.hypot(px - plate.cx * s, py - plate.cy * s) < limit * s
+    coarse[~allowed] = 0
+    if coarse.max() <= 0:
+        return []
+    cands = _greedy_peaks(coarse, 1.5 * rs, MAX_CANDIDATES, 0.05 * float(coarse.max()))
 
-    k = int(np.ceil(r0 + 6))
-    yy, xx = np.mgrid[-k:k + 1, -k:k + 1].astype(np.float32)
+    gs = g if s < 1 else cv2.GaussianBlur(gray, (0, 0), 1.0)
+    gx = cv2.Sobel(gs, cv2.CV_32F, 1, 0, ksize=3) / 8
+    gy = cv2.Sobel(gs, cv2.CV_32F, 0, 1, ksize=3) / 8
+    taps = {f: ring_taps(r0 * f) for f in SIZE_FACTORS}
+    win = int(np.ceil(1 / s)) + 1
+    fine = []
+    for cx, cy in cands:
+        f = SIZE_FACTORS[int(size_of[cy, cx])]
+        fx0, fy0 = round(cx / s), round(cy / s)
+        best = (-1.0, fx0, fy0, f)
+        for yy in range(fy0 - win, fy0 + win + 1):
+            for xx in range(fx0 - win, fx0 + win + 1):
+                if np.hypot(xx - plate.cx, yy - plate.cy) >= limit:
+                    continue
+                sc = ring_score_at(gs, gx, gy, xx, yy, taps[f])
+                if sc > best[0]:
+                    best = (sc, xx, yy, f)
+        if best[0] > 0:
+            fine.append(best)
+    if not fine:
+        return []
+    top = max(f[0] for f in fine)
+    fine.sort(key=lambda f: -f[0])
+    disks: list[Disk] = []
+    for sc, x, y, f in fine:
+        if sc < max(min_relative_score * top, MIN_DISK_SCORE):
+            break
+        if any(np.hypot(x - d.x, y - d.y) < 3 * r0 * f for d in disks):
+            continue
+        fx, fy, r, ok = _refine_disk(g, float(x), float(y), r0 * f)
+        disks.append(Disk(fx, fy, r, float(sc), ok))
+    return disks
+
+
+def _greedy_peaks(score: np.ndarray, min_dist: float, limit: int, floor: float):
+    """Strongest pixels first, at least ``min_dist`` apart, up to ``limit``."""
+    ys, xs = np.nonzero(score > floor)
+    order = np.argsort(-score[ys, xs], kind="stable")
+    out: list[tuple[int, int]] = []
+    for i in order:
+        x, y = int(xs[i]), int(ys[i])
+        if any((x - ox) ** 2 + (y - oy) ** 2 < min_dist ** 2 for ox, oy in out):
+            continue
+        out.append((x, y))
+        if len(out) >= limit:
+            break
+    return out
+
+
+def ring_taps(r0: float):
+    """Sample points of the ring score around a centre at the origin.
+
+    Returns (step, ridge): ``step`` rows are (dx, dy, cos, sin, sector, weight)
+    applied to the gradient; ``ridge`` rows are (dx, dy, sector, weight) applied
+    to the brightness. Weights average within each sector.
+    """
+    k = int(np.ceil(r0 + RIDGE_GAP_PX + 2))
+    yy, xx = np.mgrid[-k:k + 1, -k:k + 1]
+    yy, xx = yy.ravel().astype(float), xx.ravel().astype(float)
     d = np.hypot(xx, yy)
     theta = np.arctan2(yy, xx)
+    sector = np.floor((theta + np.pi) / (2 * np.pi) * RING_SECTORS).astype(int) % RING_SECTORS
 
     def ring(r):
-        m = (np.abs(d - r) <= 1.0).astype(np.float32)
-        return m / m.sum()
+        m = np.abs(d - r) <= 1.0
+        w = np.zeros_like(d)
+        for sec in range(RING_SECTORS):
+            sel = m & (sector == sec)
+            if sel.any():
+                w[sel] = 1.0 / sel.sum()
+        return w
 
-    rk = ring(r0)
-    step = (cv2.filter2D(gx, cv2.CV_32F, rk * np.cos(theta), borderType=cv2.BORDER_REPLICATE)
-            + cv2.filter2D(gy, cv2.CV_32F, rk * np.sin(theta), borderType=cv2.BORDER_REPLICATE))
-    ridge = cv2.filter2D(g, cv2.CV_32F, rk - 0.5 * ring(r0 - 3) - 0.5 * ring(r0 + 3),
-                         borderType=cv2.BORDER_REPLICATE)
-    score = 3 * np.abs(step) + np.abs(ridge)
+    w0 = ring(r0)
+    on = w0 > 0
+    step = np.column_stack([xx[on], yy[on], np.cos(theta[on]), np.sin(theta[on]), sector[on], w0[on]])
+    wr = w0 - 0.5 * ring(r0 - RIDGE_GAP_PX) - 0.5 * ring(r0 + RIDGE_GAP_PX)
+    onr = wr != 0
+    ridge = np.column_stack([xx[onr], yy[onr], sector[onr], wr[onr]])
+    return step, ridge
 
-    hh, ww = gray.shape
-    py, px = np.mgrid[0:hh, 0:ww]
-    allowed = np.hypot(px - plate.cx, py - plate.cy) < plate.radius * 0.97 - r0 * 1.5
-    score[~allowed] = 0
-    best = float(score.max())
-    if best <= 0:
-        return []
-    sep = int(r0 * 3) | 1
-    peaks = (score == cv2.dilate(score, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (sep, sep))))
-    vals = score[allowed]
-    floor = float(np.median(vals) + 15 * np.median(np.abs(vals - np.median(vals))) + 1e-6)
-    ys, xs = np.nonzero(peaks & (score >= max(min_relative_score * best, floor)))
-    order = np.argsort(-score[ys, xs])
-    disks: list[Disk] = []
-    for i in order:
-        x, y = float(xs[i]), float(ys[i])
-        if any(np.hypot(x - o.x, y - o.y) < r0 * 3 for o in disks):
-            continue
-        x, y = _subpixel(score, int(xs[i]), int(ys[i]))
-        x, y, r, ok = _refine_disk(g, x, y, r0)
-        disks.append(Disk(x, y, r, float(score[ys[i], xs[i]]), ok))
-    return disks
+
+def ring_score_at(g, gx, gy, x: int, y: int, taps) -> float:
+    step, ridge = taps
+    h, w = g.shape
+    sx = np.clip(x + step[:, 0].astype(int), 0, w - 1)
+    sy = np.clip(y + step[:, 1].astype(int), 0, h - 1)
+    v = (gx[sy, sx] * step[:, 2] + gy[sy, sx] * step[:, 3]) * step[:, 5]
+    st = np.bincount(step[:, 4].astype(int), weights=v, minlength=RING_SECTORS)
+    rx = np.clip(x + ridge[:, 0].astype(int), 0, w - 1)
+    ry = np.clip(y + ridge[:, 1].astype(int), 0, h - 1)
+    rd = np.bincount(ridge[:, 2].astype(int), weights=g[ry, rx] * ridge[:, 3], minlength=RING_SECTORS)
+    return float(3 * _all_round(st[:, None])[0] + _all_round(rd[:, None])[0])
+
+
+def ring_score(gray: np.ndarray, r0: float) -> np.ndarray:
+    """``ring_score_at`` for every pixel (Gaussian blur σ=1 first, as find_disks)."""
+    g = cv2.GaussianBlur(gray, (0, 0), 1.0)
+    gx = cv2.Sobel(g, cv2.CV_32F, 1, 0, ksize=3) / 8
+    gy = cv2.Sobel(g, cv2.CV_32F, 0, 1, ksize=3) / 8
+    step, ridge = ring_taps(r0)
+    k = int(np.ceil(r0 + RIDGE_GAP_PX + 2))
+    steps, ridges = [], []
+    for sec in range(RING_SECTORS):
+        kx = np.zeros((2 * k + 1, 2 * k + 1), np.float32)
+        ky = np.zeros_like(kx)
+        kr = np.zeros_like(kx)
+        for dx, dy, c, sn, sc, w in step[step[:, 4] == sec]:
+            kx[int(dy) + k, int(dx) + k] += c * w
+            ky[int(dy) + k, int(dx) + k] += sn * w
+        for dx, dy, sc, w in ridge[ridge[:, 2] == sec]:
+            kr[int(dy) + k, int(dx) + k] += w
+        steps.append(cv2.filter2D(gx, cv2.CV_32F, kx, borderType=cv2.BORDER_REPLICATE)
+                     + cv2.filter2D(gy, cv2.CV_32F, ky, borderType=cv2.BORDER_REPLICATE))
+        ridges.append(cv2.filter2D(g, cv2.CV_32F, kr, borderType=cv2.BORDER_REPLICATE))
+    return 3 * _all_round(np.stack(steps)) + _all_round(np.stack(ridges))
+
+
+def _all_round(v: np.ndarray) -> np.ndarray:
+    """Second-weakest sector in the dominant direction (0 if the sectors disagree)."""
+    srt = np.sort(v, axis=0)
+    pos = np.maximum(srt[1], 0)
+    neg = np.maximum(-srt[-2], 0)
+    return np.maximum(pos, neg)
 
 
 def _subpixel(score: np.ndarray, x: int, y: int) -> tuple[float, float]:

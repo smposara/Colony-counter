@@ -95,6 +95,16 @@ error ≤ 1 mm and ≥ 95 % within ±2 mm.
 
 ## 2. Dart port (`app/lib/core/`)
 
+**Progress (October 2026):** done. `app/lib/core/zones.dart` (`measureZonesInPhoto` for
+`compute`, `measureZones`, `findDisks`, `Zone` with JSON) and 5 golden plates with
+`app/test/zones_core_test.dart` (8 tests). Dart matches Python within 0.01 mm on disk
+plates and 0.16 mm on wells (whose scale comes from the slightly different plate finders),
+with identical flags. Speed on a 2400 px photo in the test VM: 3.7–4.8 s, faster than
+counting colonies on the same photo (6 s). To make it practical in Dart, disk search
+now runs in two stages (coarse candidates on a downscaled copy at three sizes, then full
+resolution), and the shared `GrayImage.gaussianBlur` is ~2× faster with bit-identical
+output.
+
 - **`zones.dart`**: `findDisks`, `findWells`, `measureZone` and `measurePlate`, mirroring
   `zones.py`. Reuse `GrayImage`, `background.dart`, `normalize.dart` and the plate finder. Like
   the colony pipeline, it works on a copy scaled to `kWorkShortSide`, runs in an isolate

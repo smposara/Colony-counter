@@ -48,8 +48,11 @@ colonies are split).
 Measures zone diameters in mm; it does **not** interpret S/I/R.
 
 ```
-photo → find_plate → find disks / wells (signed ring score at the known size,
-        then a circle fitted to the disk edge)
+photo → find_plate → find disks / wells: signed ring score at the known size,
+        split into 8 sectors (the second-weakest counts, so only edges all
+        round score); candidates on a downscaled copy at 0.8/1/1.25× the
+        expected size, re-scored at full resolution, then a circle fitted to
+        the disk edge
       → scale from the 6 mm paper disks (wells: from the plate), checked against the plate
       → 180 rays per disk: edge where brightness passes half-way from clear agar
         to lawn and stays there for 1.5 mm (ignores colonies inside the zone)
@@ -83,8 +86,15 @@ centres in the original image, used to pair readings with disks. The summary inc
 `gate_pass`: mean error ≤ 1 mm and ≥ 95 % within ±2 mm (the go/no-go gate in `docs/AST.md`).
 
 **Synthetic benchmark** (`scripts/zone_benchmark.py --n 60`, 271 zones): mean error
-0.13 mm, 98.5 % within 1 mm, 100 % within 2 mm, no disks missed or invented. The only
-misses over 1 mm are zones reaching < 0.6 mm past the disk, read as "no zone".
+0.13 mm, 98.5 % within 1 mm, 100 % within 2 mm; 2 of 271 disks/wells missed and 2
+invented (all wells). The only misses over 1 mm are zones reaching < 0.6 mm past the
+disk, read as "no zone". Synthetic wells are a guess at how real wells look: their
+detection (`COARSE_RADIUS_PX["well"]`, `MIN_DISK_SCORE`) must be checked on real photos.
+
+**App port:** `app/lib/core/zones.dart` mirrors this module step for step. Golden
+plates for it come from `python scripts/make_app_fixtures.py --zones`
+(`app/test/fixtures/zones_*`, checked by `app/test/zones_core_test.dart`). Change
+both sides together and regenerate the fixtures.
 Synthetic edges are defined at half growth, so this checks the method, not the
 reading convention: real plates (EUCAST reads at complete inhibition) will set
 `ZoneParams.edge_level`.

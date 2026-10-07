@@ -78,27 +78,47 @@ class GrayImage {
     for (var i = 0; i < k.length; i++) {
       k[i] /= s;
     }
-    final tmp = GrayImage(width, height);
+    final tmp = Float32List(width * height);
     final out = GrayImage(width, height);
+    final src = data, dst = out.data;
+    final n = 2 * r + 1;
+    // Same sums as clamping every tap to the border, without the clamp away
+    // from the edges.
     for (var y = 0; y < height; y++) {
       final row = y * width;
       for (var x = 0; x < width; x++) {
         var acc = 0.0;
-        for (var i = -r; i <= r; i++) {
-          final xx = (x + i).clamp(0, width - 1);
-          acc += data[row + xx] * k[i + r];
+        if (x >= r && x < width - r) {
+          final base = row + x - r;
+          for (var i = 0; i < n; i++) {
+            acc += src[base + i] * k[i];
+          }
+        } else {
+          for (var i = -r; i <= r; i++) {
+            final xx = x + i < 0 ? 0 : (x + i >= width ? width - 1 : x + i);
+            acc += src[row + xx] * k[i + r];
+          }
         }
-        tmp.data[row + x] = acc;
+        tmp[row + x] = acc;
       }
     }
     for (var y = 0; y < height; y++) {
+      final inner = y >= r && y < height - r;
       for (var x = 0; x < width; x++) {
         var acc = 0.0;
-        for (var i = -r; i <= r; i++) {
-          final yy = (y + i).clamp(0, height - 1);
-          acc += tmp.data[yy * width + x] * k[i + r];
+        if (inner) {
+          var idx = (y - r) * width + x;
+          for (var i = 0; i < n; i++) {
+            acc += tmp[idx] * k[i];
+            idx += width;
+          }
+        } else {
+          for (var i = -r; i <= r; i++) {
+            final yy = y + i < 0 ? 0 : (y + i >= height ? height - 1 : y + i);
+            acc += tmp[yy * width + x] * k[i + r];
+          }
         }
-        out.data[y * width + x] = acc;
+        dst[y * width + x] = acc;
       }
     }
     return out;

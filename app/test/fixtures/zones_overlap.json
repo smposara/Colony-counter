@@ -1,0 +1,61 @@
+{
+ "assay": "disk",
+ "disk_mm": 6.0,
+ "plate_mm": 90.0,
+ "plate": {
+  "cx": 600.0,
+  "cy": 600.0,
+  "radius": 504.0
+ },
+ "true": [
+  {
+   "x": 476.8,
+   "y": 600.0,
+   "diameter_mm": 28.0
+  },
+  {
+   "x": 723.2,
+   "y": 600.0,
+   "diameter_mm": 26.0
+  },
+  {
+   "x": 600.0,
+   "y": 891.2,
+   "diameter_mm": 14.0
+  }
+ ],
+ "python": {
+  "polarity": "dark_zone",
+  "flags": [],
+  "disk_scale_ratio": 0.9907,
+  "plate": {
+   "cx": 597.375,
+   "cy": 595.125,
+   "radius": 507.75
+  },
+  "zones": [
+   {
+    "x": 476.79,
+    "y": 599.94,
+    "diameter_mm": 28.056,
+    "flags": [
+     "overlap"
+    ]
+   },
+   {
+    "x": 723.41,
+    "y": 599.9,
+    "diameter_mm": 26.053,
+    "flags": [
+     "overlap"
+    ]
+   },
+   {
+    "x": 600.34,
+    "y": 891.56,
+    "diameter_mm": 14.063,
+    "flags": []
+   }
+  ]
+ }
+}

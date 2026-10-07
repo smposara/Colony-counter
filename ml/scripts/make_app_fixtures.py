@@ -13,6 +13,8 @@ import numpy as np
 
 from colonycounter import count_colonies
 from colonycounter.synth import make_plate
+from colonycounter.synth_zones import make_zone_plate
+from colonycounter.zones import measure_plate
 
 OUT = Path(__file__).resolve().parents[2] / "app" / "test" / "fixtures"
 CASES = [  # name, colonies, seed, polarity
@@ -91,5 +93,58 @@ def main() -> None:
     print(f"drops: true {sum(d['count'] for d in drops)}, python {res.count}")
 
 
+    make_zone_fixtures()
+
+
+def _zone_cases():
+    """Inhibition zone plates: name, make_zone_plate arguments."""
+    base = make_zone_plate(n_disks=1, size=1200)
+    c, mm = base.plate.cx, base.plate.mm_per_px
+    return [
+        ("zones_reflected", dict(seed=31, colonies_in_zones=4)),
+        ("zones_backlit_hazy", dict(seed=32, lighting="backlit", edge_mm=(0.6, 1.0))),
+        ("zones_wells", dict(seed=33, assay="well", disk_mm=8.0, zone_mm=(12.0, 24.0))),
+        ("zones_nozone", dict(seed=34, zone_mm=[6, 20, 6, 24, 6, 18])),
+        ("zones_overlap", dict(seed=35, positions=[(c - 11 / mm, c), (c + 11 / mm, c), (c, c + 26 / mm)],
+                               zone_mm=[28.0, 26.0, 14.0])),
+    ]
+
+
+def make_zone_fixtures() -> None:
+    """Zone plates for the Dart port: true diameters plus the Python result on the same JPEG."""
+    OUT.mkdir(parents=True, exist_ok=True)
+    for name, kw in _zone_cases():
+        s = make_zone_plate(size=1200, **kw)
+        path = OUT / f"{name}.jpg"
+        cv2.imwrite(str(path), s.image, [cv2.IMWRITE_JPEG_QUALITY, 92])
+        res = measure_plate(cv2.imread(str(path)), plate_diameter_mm=s.plate.diameter_mm,
+                            assay=s.assay, disk_mm=s.disk_mm)
+        label = {
+            "assay": s.assay,
+            "disk_mm": s.disk_mm,
+            "plate_mm": s.plate.diameter_mm,
+            "plate": _plate(s.plate),
+            "true": [{"x": round(z.x, 2), "y": round(z.y, 2), "diameter_mm": round(z.diameter_mm, 3)}
+                     for z in s.zones],
+            "python": {
+                "polarity": res.polarity,
+                "flags": res.flags,
+                "disk_scale_ratio": round(float(res.disk_scale_ratio), 4),
+                "plate": _plate(res.plate),
+                "zones": [{"x": round(float(z.x), 2), "y": round(float(z.y), 2),
+                           "diameter_mm": None if z.diameter_rounded is None else round(float(z.diameter_mm), 3),
+                           "flags": z.flags} for z in res.zones],
+            },
+        }
+        (OUT / f"{name}.json").write_text(json.dumps(label, indent=1))
+        print(name, [round(z.diameter_mm, 1) for z in s.zones], "python",
+              [None if z.diameter_rounded is None else round(float(z.diameter_mm), 1) for z in res.zones],
+              res.flags)
+
+
 if __name__ == "__main__":
-    main()
+    import sys
+    if sys.argv[1:] == ["--zones"]:
+        make_zone_fixtures()
+    else:
+        main()

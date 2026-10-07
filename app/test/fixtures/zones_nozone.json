@@ -1,0 +1,96 @@
+{
+ "assay": "disk",
+ "disk_mm": 6.0,
+ "plate_mm": 90.0,
+ "plate": {
+  "cx": 600.0,
+  "cy": 600.0,
+  "radius": 504.0
+ },
+ "true": [
+  {
+   "x": 878.14,
+   "y": 636.23,
+   "diameter_mm": 6.0
+  },
+  {
+   "x": 745.1,
+   "y": 863.98,
+   "diameter_mm": 20.0
+  },
+  {
+   "x": 445.15,
+   "y": 850.03,
+   "diameter_mm": 6.0
+  },
+  {
+   "x": 311.55,
+   "y": 594.79,
+   "diameter_mm": 24.0
+  },
+  {
+   "x": 453.47,
+   "y": 350.11,
+   "diameter_mm": 6.0
+  },
+  {
+   "x": 758.01,
+   "y": 349.3,
+   "diameter_mm": 18.0
+  }
+ ],
+ "python": {
+  "polarity": "dark_zone",
+  "flags": [],
+  "disk_scale_ratio": 0.9821,
+  "plate": {
+   "cx": 599.625,
+   "cy": 599.625,
+   "radius": 512.699951171875
+  },
+  "zones": [
+   {
+    "x": 745.23,
+    "y": 864.16,
+    "diameter_mm": 20.02,
+    "flags": []
+   },
+   {
+    "x": 758.17,
+    "y": 349.25,
+    "diameter_mm": 18.013,
+    "flags": []
+   },
+   {
+    "x": 311.78,
+    "y": 594.85,
+    "diameter_mm": 24.047,
+    "flags": []
+   },
+   {
+    "x": 445.15,
+    "y": 850.05,
+    "diameter_mm": 6.0,
+    "flags": [
+     "no_zone"
+    ]
+   },
+   {
+    "x": 453.34,
+    "y": 350.08,
+    "diameter_mm": 6.0,
+    "flags": [
+     "no_zone"
+    ]
+   },
+   {
+    "x": 878.1,
+    "y": 636.23,
+    "diameter_mm": 6.0,
+    "flags": [
+     "no_zone"
+    ]
+   }
+  ]
+ }
+}
