@@ -2,6 +2,7 @@
 
 Status: **parked**. Not scheduled. Revisit after the 0.5.x closed test, together with
 [plaque counting](PLAQUE_COUNTING.md). Research done October 2026.
+Implementation plan for Option A: [AST_IMPLEMENTATION.md](AST_IMPLEMENTATION.md).
 
 ## Summary
 
