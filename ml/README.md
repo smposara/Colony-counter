@@ -137,6 +137,12 @@ python scripts/petrifilm_benchmark.py --n 8
 **Labels for `evaluate-petrifilm`:** `<stem>.json` with `{"type": "ec", "counts":
 {"ecoli": 12, "coliform": 30}}`.
 
+**Synthetic benchmark** (`scripts/petrifilm_benchmark.py --n 8`, ±15° turns, 9–15 px/mm):
+mean error AC 0.0 %, EC 0.8 %, CC 4.4 %, EB 0.0 %, YM 2.8 %; within 10 %: 100 % for AC, EC
+and EB, 87.5 % for CC and YM. Crowded AC (≈600 colonies) estimated from 8 squares at +10 %:
+the synthetic films keep colonies 1.5 mm from the edge, so the inner squares are denser
+than the plate average.
+
 Synthetic colours are approximations of the guides: they test the method, not the
 thresholds. Blue/red, yellow-zone, bubble and mold thresholds must be set from real photos.
 

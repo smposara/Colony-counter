@@ -65,6 +65,27 @@ enum PetrifilmType {
 
 ## 2. Python reference (`ml/colonycounter/`)
 
+**Progress (October 2026):** the Python reference for **all Option B types** (AC, EC, CC, EB,
+YM) is done, with automatic gas detection: `petrifilm.py`, `synth_petrifilm.py`, CLI
+(`petrifilm`, `evaluate-petrifilm`, `synth-petrifilm`), `scripts/petrifilm_benchmark.py`
+and 12 tests. Synthetic benchmark: mean error AC 0.0 %, EC 0.8 %, CC 4.4 %, EB 0.0 %,
+YM 2.8 %; crowded AC estimate +10 % (a synthetic artefact, see `ml/README.md`). Changes from
+the design below:
+- **Grid angle** from the rotation that makes the line map's row/column sums most peaked
+  (skew detection); a spectrum-peak search was unreliable.
+- **Grid removal** by erasing the lines at their known positions and inpainting, instead of
+  the membrane-filter opening.
+- **Growth area** by a matched filter on chroma (inside vs. a ring outside) at the grid's
+  scale; thresholding failed on crowded plates.
+- **Gas bubbles** are found with the zone detector's sector ring score (bright rim only),
+  radii every 0.75 px, two of eight sectors may fail; rings centred on colonies (yellow
+  zones) are ignored, and specks on a bubble's dark outline are dropped.
+- **Yeast/mold** uses each mark's own size (distance transform), merges molds split in two,
+  and looks for yeasts merged into a mold's diffuse edge.
+
+Next: Dart port (§3) checked against these films, then data and UI (§4–5); thresholds for
+colours, bubbles and molds must then be set from real photos.
+
 **`petrifilm.py`:**
 - `find_growth_area(image)`: find the round growth area, about 50 mm across. Use a circle
   search tuned for that size (the foam ring on EC, the gel edge on AC). Fall back to the
