@@ -6,6 +6,9 @@
     colonycounter zones photos/*.jpg --assay disk --overlay out/
     colonycounter evaluate-zones data/zones_labelled/
     colonycounter synth-zones out/ --n 20
+    colonycounter petrifilm photos/*.jpg --type ec --overlay out/
+    colonycounter evaluate-petrifilm data/petrifilm_labelled/
+    colonycounter synth-petrifilm out/ --type ec --n 10
 """
 
 from __future__ import annotations
@@ -21,6 +24,8 @@ import numpy as np
 from .metrics import count_metrics, match_points, match_zones, zone_metrics
 from .pipeline import count_colonies, draw_overlay
 from .synth import make_plate
+from .petrifilm import TYPES as FILM_TYPES, count_petrifilm, draw_film
+from .synth_petrifilm import make_film
 from .synth_zones import make_zone_plate
 from .zones import draw_zones, measure_plate
 
@@ -186,6 +191,65 @@ def cmd_synth_zones(args) -> int:
     return 0
 
 
+def cmd_petrifilm(args) -> int:
+    rows = []
+    for path in map(Path, args.images):
+        img = _read(path)
+        res = count_petrifilm(img, args.type)
+        rows.append({"image": str(path), **res.to_dict()})
+        if args.overlay:
+            out = Path(args.overlay)
+            out.mkdir(parents=True, exist_ok=True)
+            cv2.imwrite(str(out / f"{path.stem}_film.jpg"), draw_film(img, res))
+        if not args.json:
+            vals = ", ".join(f"{k} {v:g}{' (est.)' if res.estimates else ''}" for k, v in res.values.items())
+            flags = f"  [{', '.join(res.flags)}]" if res.flags else ""
+            print(f"{path.name}: {vals}{flags}")
+    if args.json:
+        json.dump(rows, sys.stdout, indent=2)
+        print()
+    return 0
+
+
+def cmd_evaluate_petrifilm(args) -> int:
+    """Each image needs ``<stem>.json``: {"type": "ec", "counts": {"ecoli": 12, "coliform": 30}}."""
+    folder = Path(args.folder)
+    per: dict[str, tuple[list, list]] = {}
+    for path in sorted(p for p in folder.iterdir() if p.suffix.lower() in IMAGE_EXTS):
+        label_path = path.with_suffix(".json")
+        if not label_path.exists():
+            continue
+        label = json.loads(label_path.read_text())
+        res = count_petrifilm(_read(path), label.get("type", args.type))
+        line = []
+        for k, v in label["counts"].items():
+            got = res.values.get(k)
+            if got is None:
+                continue
+            pred, true = per.setdefault(k, ([], []))
+            pred.append(got)
+            true.append(v)
+            line.append(f"{k} {got:g}/{v}")
+        print(f"{path.name}: {', '.join(line)}")
+    if not per:
+        raise SystemExit(f"No labelled films in {folder}")
+    print(json.dumps({k: count_metrics(p, t) for k, (p, t) in per.items()}, indent=2))
+    return 0
+
+
+def cmd_synth_petrifilm(args) -> int:
+    out = Path(args.out)
+    out.mkdir(parents=True, exist_ok=True)
+    rng = np.random.default_rng(args.seed)
+    for i in range(args.n):
+        s = make_film(args.type, n=int(rng.integers(20, 120)), seed=args.seed + i,
+                      angle_deg=float(rng.uniform(-12, 12)))
+        cv2.imwrite(str(out / f"film_{args.type}_{i:03d}.jpg"), s.image, [cv2.IMWRITE_JPEG_QUALITY, 92])
+        (out / f"film_{args.type}_{i:03d}.json").write_text(json.dumps({"type": args.type, "counts": s.truth()}))
+    print(f"Wrote {args.n} {args.type} films to {out}")
+    return 0
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="colonycounter")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -239,6 +303,26 @@ def main(argv=None) -> int:
     p.add_argument("--seed", type=int, default=0)
     zone_common(p)
     p.set_defaults(func=cmd_synth_zones)
+
+    types = sorted(FILM_TYPES)
+    p = sub.add_parser("petrifilm", help="count Petrifilm-style dry-film plates")
+    p.add_argument("images", nargs="+")
+    p.add_argument("--type", choices=types, required=True)
+    p.add_argument("--overlay", help="folder for annotated images")
+    p.add_argument("--json", action="store_true", help="print full results as JSON")
+    p.set_defaults(func=cmd_petrifilm)
+
+    p = sub.add_parser("evaluate-petrifilm", help="compare film counts with labels in a folder")
+    p.add_argument("folder")
+    p.add_argument("--type", choices=types, default="ac", help="when a label has no type")
+    p.set_defaults(func=cmd_evaluate_petrifilm)
+
+    p = sub.add_parser("synth-petrifilm", help="write synthetic labelled films")
+    p.add_argument("out")
+    p.add_argument("--type", choices=types, default="ac")
+    p.add_argument("--n", type=int, default=10)
+    p.add_argument("--seed", type=int, default=0)
+    p.set_defaults(func=cmd_synth_petrifilm)
 
     args = ap.parse_args(argv)
     return args.func(args)

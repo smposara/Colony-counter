@@ -23,7 +23,9 @@ photo → find_plate (Hough circle, 90 mm gives the mm/px scale)
 | `synth.py` | Synthetic labelled plates for tests and demos |
 | `zones.py` | Inhibition zone diameters on disk / agar-well diffusion plates (`measure_plate`) |
 | `synth_zones.py` | Synthetic disk and well diffusion plates with known zone diameters |
-| `cli.py` | `colonycounter count / evaluate / synth / zones / evaluate-zones / synth-zones` |
+| `petrifilm.py` | Petrifilm-style dry films: grid scale, grid removal, colonies, gas, yellow zones, yeast/mold (`count_petrifilm`) |
+| `synth_petrifilm.py` | Synthetic AC / EC / CC / EB / YM films with known colonies, gas and halos |
+| `cli.py` | `colonycounter count / evaluate / synth / zones / evaluate-zones / synth-zones / petrifilm / evaluate-petrifilm / synth-petrifilm` |
 
 ```python
 import cv2
@@ -101,4 +103,40 @@ reading convention: real plates (EUCAST reads at complete inhibition) will set
 
 **Tuning:** `ZoneParams` in `zones.py`: `edge_level`, `persist_mm`, `min_contrast`,
 `hazy_width_mm`, `scale_tolerance`.
+
+## Petrifilm-style dry films (in development, see `docs/PETRIFILM_IMPLEMENTATION.md`)
+
+Counts Neogen® Petrifilm® plates (Petrifilm and Neogen are trademarks of Neogen
+Corporation; this project is not made or endorsed by Neogen). Types: `ac` Aerobic Count,
+`ec` E. coli/Coliform, `cc` Coliform Count, `eb` Enterobacteriaceae, `ym` Yeast & Mold.
+
+```
+photo → printed 1 cm grid: angle (rotation that makes the row/column sums of a
+        black-top-hat line map most peaked), pitch (autocorrelation) → mm/px
+      → grid lines erased (known positions) and filled in (inpainting)
+      → growth area: circle of ~50.5 mm whose inside is most tinted vs. a ring outside
+      → background per Lab channel; colonies where the gel gets darker / changes colour
+      → per colony: blue (b* < −8) or red; gas = a bubble (thin rim brighter than inside
+        and outside, all round, radii 0.28–0.9 mm) within one colony diameter;
+        yellow zone = b* rise around the colony; mold = own radius ≥ 1 mm
+      → results per the interpretation guide; above the counting range,
+        mean per complete 1 cm square × growth area (flag `estimated`)
+```
+
+Results: `ac` aerobic · `ec` ecoli (blue, with or without gas), coliform (blue + red with
+gas) · `cc` coliform (with gas) · `eb` enterobacteriaceae (red with yellow zone and/or gas)
+· `ym` yeast, mold. Plate-type values live in `TYPES`; those with `confirmed=False` must be
+checked against the current interpretation guide.
+
+```
+colonycounter petrifilm photos/*.jpg --type ec --overlay out/
+colonycounter synth-petrifilm synth/ --type ec --n 10 && colonycounter evaluate-petrifilm synth/
+python scripts/petrifilm_benchmark.py --n 8
+```
+
+**Labels for `evaluate-petrifilm`:** `<stem>.json` with `{"type": "ec", "counts":
+{"ecoli": 12, "coliform": 30}}`.
+
+Synthetic colours are approximations of the guides: they test the method, not the
+thresholds. Blue/red, yellow-zone, bubble and mold thresholds must be set from real photos.
 
