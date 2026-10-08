@@ -1921,6 +1921,8 @@ class _OverlayPainter extends CustomPainter {
             color: Colors.black,
             backgroundColor: colour,
             fontSize: 13 * px,
+            fontFamily: 'Roboto',
+            fontFamilyFallback: const ['ColonySymbols'],
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -1967,6 +1969,8 @@ class _OverlayPainter extends CustomPainter {
             style: TextStyle(
               color: Colors.orangeAccent,
               fontSize: 13 * px,
+              fontFamily: 'Roboto',
+              fontFamilyFallback: const ['ColonySymbols'],
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -2022,6 +2026,8 @@ class _OverlayPainter extends CustomPainter {
             style: TextStyle(
               color: Colors.orangeAccent,
               fontSize: 13 * px,
+              fontFamily: 'Roboto',
+              fontFamilyFallback: const ['ColonySymbols'],
               fontWeight: FontWeight.bold,
             ),
           ),

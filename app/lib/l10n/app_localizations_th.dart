@@ -223,7 +223,7 @@ class AppLocalizationsTh extends AppLocalizations {
   String get dropTableTitle => 'หยดในแต่ละระดับการเจือจาง';
 
   @override
-  String dropRowMean(Object mean) {
+  String dropRowMean(String mean) {
     return 'เฉลี่ย $mean';
   }
 
@@ -243,12 +243,12 @@ class AppLocalizationsTh extends AppLocalizations {
   }
 
   @override
-  String dropCi(Object high, Object low) {
+  String dropCi(String low, String high) {
     return 'ช่วงความเชื่อมั่น 95 % $low–$high';
   }
 
   @override
-  String dropRuleLine(Object mode, Object range) {
+  String dropRuleLine(String mode, String range) {
     return '$mode · $range โคโลนีต่อหยด แต่ละซ้ำคำนวณจากตารางหยดของตนเอง log₁₀ คือค่าเฉลี่ย ± SD ของค่า log ของทุกซ้ำ';
   }
 

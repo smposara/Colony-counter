@@ -480,7 +480,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'mean {mean}'**
-  String dropRowMean(Object mean);
+  String dropRowMean(String mean);
 
   /// No description provided for @dropRowLeftOut.
   ///
@@ -491,26 +491,26 @@ abstract class AppLocalizations {
   /// No description provided for @dropUsedPooled.
   ///
   /// In en, this message translates to:
-  /// **'Pooled from {dilutions} ({n} drops)'**
+  /// **'Pooled from {dilutions} ({n, plural, =1{1 drop} other{{n} drops}})'**
   String dropUsedPooled(String dilutions, int n);
 
   /// No description provided for @dropUsedFirst.
   ///
   /// In en, this message translates to:
-  /// **'From {dilution}, the first countable dilution ({n} drops)'**
+  /// **'From {dilution}, the first countable dilution ({n, plural, =1{1 drop} other{{n} drops}})'**
   String dropUsedFirst(String dilution, int n);
 
   /// No description provided for @dropCi.
   ///
   /// In en, this message translates to:
   /// **'95 % CI {low}–{high}'**
-  String dropCi(Object high, Object low);
+  String dropCi(String low, String high);
 
   /// No description provided for @dropRuleLine.
   ///
   /// In en, this message translates to:
   /// **'{mode} · {range} colonies per drop. Each replicate goes through its drop table; log₁₀ is the mean ± SD of the replicates\' log values.'**
-  String dropRuleLine(Object mode, Object range);
+  String dropRuleLine(String mode, String range);
 
   /// No description provided for @dropWarnOverdispersed.
   ///
@@ -1955,7 +1955,7 @@ abstract class AppLocalizations {
   /// No description provided for @reviewDropTitle.
   ///
   /// In en, this message translates to:
-  /// **'Drop {index} · {n} colonies'**
+  /// **'Drop {index} · {n, plural, =1{1 colony} other{{n} colonies}}'**
   String reviewDropTitle(int index, int n);
 
   /// No description provided for @reviewDilution.

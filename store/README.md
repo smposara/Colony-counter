@@ -7,7 +7,7 @@ answer to each form. Work through the checklist from top to bottom.
 |---|---|
 | App name | Colony Counter – CFU counting (en) · Colony Counter: นับโคโลนี (th) |
 | Package name | `th.in.amphur.colonycounter` (permanent) |
-| Version | 0.6.2 (version code 10) |
+| Version | 0.7.0 (version code 11) |
 | Default language | English (United States) – en-US, plus Thai – th-TH |
 | App or game | App |
 | Free or paid | Free |
@@ -32,6 +32,12 @@ plates in one photo. They come from the web build with demo data and look the sa
 as the Android app (same Flutter interface).
 
 Tablet screenshots are optional; without them the listing is shown as a phone app.
+
+`screenshots/release-0.7.0/` shows the 0.7.0 feature, drop plates with a layout, in English
+and Thai: sample setup with rows of drops and the counting window, a 4 × 3 rows plate with
+confluent (TNTC) and empty drops and its drop table, an 8-drop ring, leaving a drop out, and
+the sample's result with the drop table and 95 % interval, plus one overview image per
+language for testers.
 
 `screenshots/release-0.6.0/` shows the 0.6.0 feature, Petrifilm dry films, in English and
 Thai: film setup, an EC film in Gas mode, a yeast & mold film, a crowded film estimated from

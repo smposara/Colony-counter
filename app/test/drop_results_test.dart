@@ -269,7 +269,9 @@ void main() {
       find.textContaining('Pooled from 10⁻⁵, 10⁻⁶ (4 drops)'),
       findsOneWidget,
     );
-    expect(find.textContaining('95 % CI'), findsOneWidget);
+    // The interval reads low–high: 20 + 25 + 15 + 3 = 63 colonies.
+    final ci = tester.widget<Text>(find.textContaining('95 % CI')).data!;
+    expect(ci, '95 % CI 1.6 × 10⁸–2.6 × 10⁸');
     expect(
       find.textContaining('Pooled · 3–30 colonies per drop'),
       findsOneWidget,

@@ -87,7 +87,7 @@
   "reviewSensitivityHelp": {"en": "Higher finds fainter and smaller colonies but may count debris. Default: 6.5.", "th": "ค่าสูงจะพบโคโลนีที่จางและเล็กกว่า แต่อาจนับเศษสิ่งปนเปื้อนด้วย ค่าเริ่มต้น: 6.5"},
   "reviewLow": {"en": "Low", "th": "ต่ำ"},
   "reviewHigh": {"en": "High", "th": "สูง"},
-  "reviewDropTitle": {"en": "Drop {index} · {n} colonies", "th": "หยดที่ {index} · {n} โคโลนี", "placeholders": {"index": {"type": "int"}, "n": {"type": "int"}}},
+  "reviewDropTitle": {"en": "Drop {index} · {n, plural, =1{1 colony} other{{n} colonies}}", "th": "หยดที่ {index} · {n} โคโลนี", "placeholders": {"index": {"type": "int"}, "n": {"type": "int"}}},
   "reviewDilution": {"en": "Dilution", "th": "ระดับการเจือจาง"},
   "reviewReplicate": {"en": "Replicate", "th": "ซ้ำที่"},
   "reviewTntc": {"en": "Too numerous to count", "th": "มากเกินนับ (TNTC)"},

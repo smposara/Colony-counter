@@ -1,6 +1,6 @@
-Version 0.6.2
-• Petrifilm: tap grid squares to leave them out of an estimate (a bubble, a fold, a spreader)
-• Colonies with and without gas are listed for each colour, on screen, on the shared photo and in the CSV
-• A warning when the printed grid is not found (glare, blur, or not a Petrifilm plate)
-• No estimate from a grid that was not found
-• Fixes for film dilutions after Membrane, volumes and the samples list
+Version 0.7.0
+• Drop plates (Miles–Misra): choose a ring or rows of drops, and every planned drop is found, empty and confluent ones too
+• A drop table per dilution: mean ± SD, a Poisson check that drops agree, outlier and tenfold checks
+• CFU/mL pooled or from the first countable dilution, with a 95 % interval and your own counting window
+• Leave a drop out with a reason; new drops.csv export
+• Fixes for drop labels and spreaders

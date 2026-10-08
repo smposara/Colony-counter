@@ -223,7 +223,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dropTableTitle => 'Drops per dilution';
 
   @override
-  String dropRowMean(Object mean) {
+  String dropRowMean(String mean) {
     return 'mean $mean';
   }
 
@@ -234,21 +234,33 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String dropUsedPooled(String dilutions, int n) {
-    return 'Pooled from $dilutions ($n drops)';
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n drops',
+      one: '1 drop',
+    );
+    return 'Pooled from $dilutions ($_temp0)';
   }
 
   @override
   String dropUsedFirst(String dilution, int n) {
-    return 'From $dilution, the first countable dilution ($n drops)';
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n drops',
+      one: '1 drop',
+    );
+    return 'From $dilution, the first countable dilution ($_temp0)';
   }
 
   @override
-  String dropCi(Object high, Object low) {
+  String dropCi(String low, String high) {
     return '95 % CI $low–$high';
   }
 
   @override
-  String dropRuleLine(Object mode, Object range) {
+  String dropRuleLine(String mode, String range) {
     return '$mode · $range colonies per drop. Each replicate goes through its drop table; log₁₀ is the mean ± SD of the replicates\' log values.';
   }
 
@@ -1154,7 +1166,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String reviewDropTitle(int index, int n) {
-    return 'Drop $index · $n colonies';
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n colonies',
+      one: '1 colony',
+    );
+    return 'Drop $index · $_temp0';
   }
 
   @override

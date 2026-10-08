@@ -149,7 +149,12 @@
  },
  "dropRowMean": {
   "en": "mean {mean}",
-  "th": "เฉลี่ย {mean}"
+  "th": "เฉลี่ย {mean}",
+  "placeholders": {
+   "mean": {
+    "type": "String"
+   }
+  }
  },
  "dropRowLeftOut": {
   "en": "{n} left out",
@@ -161,7 +166,7 @@
   }
  },
  "dropUsedPooled": {
-  "en": "Pooled from {dilutions} ({n} drops)",
+  "en": "Pooled from {dilutions} ({n, plural, =1{1 drop} other{{n} drops}})",
   "th": "รวมจาก {dilutions} ({n} หยด)",
   "placeholders": {
    "dilutions": {
@@ -173,7 +178,7 @@
   }
  },
  "dropUsedFirst": {
-  "en": "From {dilution}, the first countable dilution ({n} drops)",
+  "en": "From {dilution}, the first countable dilution ({n, plural, =1{1 drop} other{{n} drops}})",
   "th": "จาก {dilution} ระดับการเจือจางแรกที่นับได้ ({n} หยด)",
   "placeholders": {
    "dilution": {
@@ -186,11 +191,27 @@
  },
  "dropCi": {
   "en": "95 % CI {low}–{high}",
-  "th": "ช่วงความเชื่อมั่น 95 % {low}–{high}"
+  "th": "ช่วงความเชื่อมั่น 95 % {low}–{high}",
+  "placeholders": {
+   "low": {
+    "type": "String"
+   },
+   "high": {
+    "type": "String"
+   }
+  }
  },
  "dropRuleLine": {
   "en": "{mode} · {range} colonies per drop. Each replicate goes through its drop table; log₁₀ is the mean ± SD of the replicates' log values.",
-  "th": "{mode} · {range} โคโลนีต่อหยด แต่ละซ้ำคำนวณจากตารางหยดของตนเอง log₁₀ คือค่าเฉลี่ย ± SD ของค่า log ของทุกซ้ำ"
+  "th": "{mode} · {range} โคโลนีต่อหยด แต่ละซ้ำคำนวณจากตารางหยดของตนเอง log₁₀ คือค่าเฉลี่ย ± SD ของค่า log ของทุกซ้ำ",
+  "placeholders": {
+   "mode": {
+    "type": "String"
+   },
+   "range": {
+    "type": "String"
+   }
+  }
  },
  "dropWarnOverdispersed": {
   "en": "Drops of a dilution disagree more than chance allows: check mixing and pipetting.",

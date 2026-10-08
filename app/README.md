@@ -45,11 +45,22 @@ _Screenshots from the web build in Chromium on synthetic plates and demo data._
     replicate pools its countable plates as ΣC / Σ(V·d). Counting rules: FDA BAM
     25–250, ISO 7218 10–300, or 30–300.
   - "New sample like this" copies a plan, e.g. for the next time point.
-- **Drop plates (Miles–Misra)**:
-  - Drops are found automatically by grouping nearby colonies. Tap a drop to set its
-    dilution, replicate or TNTC, tap empty agar to add one, and drag to move it.
-  - Two layouts: one dilution per plate (drops are replicates), or all dilutions on
-    one plate. Drops are counted with the 3–30 colony range and the drop volume.
+- **Drop plates (Miles–Misra)** (see `docs/DROP_PLATE_IMPLEMENTATION.md`):
+  - Two plans: one dilution per plate (drops are replicates), or all dilutions on
+    one plate (with several drops of each).
+  - Where the drops are: a **ring** (clockwise from the top), **rows** (a row per
+    dilution), or **free**. With a ring or rows, the layout is fitted to the photo
+    (`core/drop_layout.dart`), so every planned drop is found, empty and confluent
+    (TNTC) ones too; crowded drops are also counted by area. Free drops are found by
+    grouping nearby colonies, as before.
+  - Tap a drop to set its dilution, replicate or TNTC, or to leave it out with a
+    reason; tap empty agar to add one; drag a drop, or the agar to move them all.
+    "Turn labels by one drop" fixes a ring started elsewhere.
+  - A drop table per dilution (counts, mean ± SD, VMR) with a Poisson check that the
+    drops agree, outlier and tenfold checks (`core/drop_stats.dart`). CFU/mL is pooled
+    over the drops in the counting window (3–30 by default, set per sample) or taken
+    from the first countable dilution, with a Poisson 95 % interval and a "<"
+    detection limit.
 - **Colony colours**: *Blue / white* (X-gal screening) or *Two colours* (chromogenic
   agar). Each colony's colour is classified automatically, the app shows counts per
   class and the percentage, and you tap a colony to switch its class.
@@ -110,11 +121,12 @@ _Screenshots from the web build in Chromium on synthetic plates and demo data._
   (kept and added marks, cluster sizes, and the automatic marks you removed as
   negative examples) and YOLO labels. `ml/colonycounter/app_export.py` reads it.
 - **Export and backup**:
-  - *Export CSV* shares three files: one row per plate (including drops, colour
-    classes and median colony diameter), one row per sample with mean, SD, CV, log₁₀
-    and the experiment details, and one row per colony (position in mm from the
-    plate centre, diameter in mm, colour class and Lab colour, drop).
-  - *Back up all data* makes one zip with every plate, plan, photo and all three CSVs.
+  - *Export CSV* shares four files: one row per plate (including drops, colour
+    classes and median colony diameter), one row per sample with mean, SD, CV, log₁₀,
+    the drop table's result and the experiment details, one row per colony (position
+    in mm from the plate centre, diameter in mm, colour class and Lab colour, drop),
+    and one row per drop (label, count, TNTC, left out and why, position).
+  - *Back up all data* makes one zip with every plate, plan, photo and all four CSVs.
   - *Restore from backup* merges a zip back in; plates already present are kept.
     Use this to move data between phones and browsers, or to protect the web
     version's data.

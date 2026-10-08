@@ -1,6 +1,6 @@
 # Drop plates (Options A + B): implementation plan
 
-Status: **M1–M5 done** (Python reference, Dart port, data model, Drops mode, drop table and exports; October 2026; see Progress below). M6 (screenshots, release) to do. Study and options: [DROP_PLATE.md](DROP_PLATE.md). Same
+Status: **done, released in 0.7.0** (October 2026; see Progress below). Still open: Step 0, real drop-plate photos with hand counts to set the confluent and crowded limits. Study and options: [DROP_PLATE.md](DROP_PLATE.md). Same
 approach as Petrifilm and AST: Python reference first, Dart port checked against golden
 fixtures, then data, UI and export.
 
@@ -321,6 +321,14 @@ camera outline; per-drop accuracy (plate level only).
 - **Tests:** `drop_results_test.dart` (mode and window round-trip, pooled vs first, a custom
   window, left-out and spreader drops, summary interval and warnings, a plate alone, the
   three CSVs, the sample card) and the setup test sets 5–50 and First countable.
+
+**M6 (release 0.7.0, version code 11), done:** What's new and the drop-plate line of the
+full description in English and Thai (`store/listing/`), screenshots in both languages
+under `store/screenshots/release-0.7.0/`, and the app README. The screenshots caught two
+bugs, fixed here: the 95 % interval was printed high–low (the string tool sorts inferred
+placeholders alphabetically, so `dropCi` now declares them), and the drop labels on the
+photo used no font (bundled Roboto now); "1 drops" and "1 colonies" are now plural forms,
+and the setup diagram names each dilution once beside its drops.
 
 The decisions below were built with the plan's defaults (pooled by default with `first` as
 an option; 3–30 for every volume; sectors and grids; confluent detection on).

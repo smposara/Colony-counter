@@ -410,7 +410,7 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
         Semantics(
           label: tr.setupDropLayoutPreview,
           child: SizedBox(
-            height: 180,
+            height: 220,
             child: CustomPaint(
               painter: _DropLayoutPreview(
                 _draftDrops,
@@ -954,6 +954,8 @@ class _DropLayoutPreview extends CustomPainter {
       canvas.drawCircle(c, half, rim);
     }
     final r = dropDiameterMm(info.dropVolumeUl) / 2 * k;
+    final ring = info.dropTemplate is SectorTemplate;
+    final labelled = <int>{};
     for (var i = 0; i < drops.length; i++) {
       final d = drops[i];
       final p = c + Offset(d.x * k, d.y * k);
@@ -963,19 +965,33 @@ class _DropLayoutPreview extends CustomPainter {
         Paint()
           ..style = i == 0 ? PaintingStyle.fill : PaintingStyle.stroke
           ..strokeWidth = 1.5
-          ..color = i == 0 ? colours.primaryContainer : colours.primary,
+          ..color = colours.primary,
       );
+      // Each dilution is named once, beside its first drop: left of a row,
+      // or outside the ring.
+      if (!labelled.add(d.dilutionExp)) continue;
       final label = TextPainter(
         text: TextSpan(
           text: dilutionLabel(d.dilutionExp),
           style: TextStyle(
-            fontSize: math.max(8, math.min(11, r * 0.75)),
+            fontSize: 11,
             color: colours.onSurface,
+            fontFamily: 'Roboto',
+            fontFamilyFallback: const ['ColonySymbols'],
           ),
         ),
         textDirection: TextDirection.ltr,
       )..layout();
-      label.paint(canvas, p - Offset(label.width / 2, label.height / 2));
+      final Offset at;
+      if (ring) {
+        final len = math.max(1e-6, math.sqrt(d.x * d.x + d.y * d.y));
+        final u = Offset(d.x / len, d.y / len);
+        final reach = r + 4 + math.max(label.width, label.height) / 2;
+        at = p + u * reach - Offset(label.width / 2, label.height / 2);
+      } else {
+        at = p - Offset(r + 4 + label.width, label.height / 2);
+      }
+      label.paint(canvas, at);
     }
   }
 

@@ -9,13 +9,15 @@ RESULTS YOU CAN USE
 • CFU/mL from a dilution series, with the FDA BAM (25–250), ISO 7218 (10–300) or 30–300 counting rules.
 • Replicates: mean ± SD, CV and log10 CFU/mL ± SD.
 • Solid samples in CFU/g (e.g. 25 g in 225 mL) and membrane filters in CFU/100 mL.
-• Drop plates (Miles–Misra), blue/white and two-colour colony counts.
+• Drop plates (Miles–Misra) in a ring or rows: empty and confluent drops are found, with a drop table, Poisson checks and a 95 % interval.
+• Blue/white and two-colour colony counts.
 • Compare conditions: log reduction, % kill and time-kill or growth charts.
 
 MORE PLATE TYPES
 • 60, 90, 100 and 150 mm dishes, square plates and 47 mm gridded membrane filters.
 • Several plates in one photo.
 • Time-lapse: photograph the same plate over time to see when colonies appear and how fast they grow.
+• Petrifilm® dry films: AC, EC (E. coli and coliforms), CC, EB and YM, with gas bubbles, yellow zones and estimates from the grid squares.
 
 TRUST THE COUNT
 • "Check this count" warnings for crowded plates, touching or faint colonies.
@@ -30,5 +32,7 @@ PRIVATE AND OFFLINE
 Counting runs on your phone. No account, no ads, no tracking, and no internet access. Your photos and results stay on your device unless you export them.
 
 Thai and English. Light and dark themes. Free and open source (GNU AGPL-3.0).
+
+Reads Neogen® Petrifilm® plates. Petrifilm and Neogen are trademarks of Neogen Corporation; this app is not made or endorsed by Neogen.
 
 Intended use: for research and teaching. Colony Counter is not a medical or diagnostic device. Always check the automatic count.

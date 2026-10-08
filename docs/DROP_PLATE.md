@@ -1,6 +1,6 @@
 # Counting drop plates (Miles–Misra): study
 
-Status: **study only** (October 2026). Not scheduled. Implementation plan:
+Status: **Options A and B implemented in 0.7.0** (October 2026); Step 0 (real photos) still open. Implementation plan:
 [DROP_PLATE_IMPLEMENTATION.md](DROP_PLATE_IMPLEMENTATION.md). Related:
 [plaque counting](PLAQUE_COUNTING.md) (phage spot titration reuses drops).
 

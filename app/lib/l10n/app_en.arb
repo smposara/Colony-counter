@@ -103,7 +103,9 @@
   "dropRowMean": "mean {mean}",
   "@dropRowMean": {
     "placeholders": {
-      "mean": {}
+      "mean": {
+        "type": "String"
+      }
     }
   },
   "dropRowLeftOut": "{n} left out",
@@ -114,7 +116,7 @@
       }
     }
   },
-  "dropUsedPooled": "Pooled from {dilutions} ({n} drops)",
+  "dropUsedPooled": "Pooled from {dilutions} ({n, plural, =1{1 drop} other{{n} drops}})",
   "@dropUsedPooled": {
     "placeholders": {
       "dilutions": {
@@ -125,7 +127,7 @@
       }
     }
   },
-  "dropUsedFirst": "From {dilution}, the first countable dilution ({n} drops)",
+  "dropUsedFirst": "From {dilution}, the first countable dilution ({n, plural, =1{1 drop} other{{n} drops}})",
   "@dropUsedFirst": {
     "placeholders": {
       "dilution": {
@@ -139,15 +141,23 @@
   "dropCi": "95 % CI {low}–{high}",
   "@dropCi": {
     "placeholders": {
-      "high": {},
-      "low": {}
+      "low": {
+        "type": "String"
+      },
+      "high": {
+        "type": "String"
+      }
     }
   },
   "dropRuleLine": "{mode} · {range} colonies per drop. Each replicate goes through its drop table; log₁₀ is the mean ± SD of the replicates' log values.",
   "@dropRuleLine": {
     "placeholders": {
-      "mode": {},
-      "range": {}
+      "mode": {
+        "type": "String"
+      },
+      "range": {
+        "type": "String"
+      }
     }
   },
   "dropWarnOverdispersed": "Drops of a dilution disagree more than chance allows: check mixing and pipetting.",
@@ -793,7 +803,7 @@
   "reviewSensitivityHelp": "Higher finds fainter and smaller colonies but may count debris. Default: 6.5.",
   "reviewLow": "Low",
   "reviewHigh": "High",
-  "reviewDropTitle": "Drop {index} · {n} colonies",
+  "reviewDropTitle": "Drop {index} · {n, plural, =1{1 colony} other{{n} colonies}}",
   "@reviewDropTitle": {
     "placeholders": {
       "index": {

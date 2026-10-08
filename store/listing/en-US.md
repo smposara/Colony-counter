@@ -12,7 +12,7 @@ Colony Counter – CFU counting
 Count bacterial colonies (CFU) on agar plates with your phone camera.
 ```
 
-## Full description (2350/4000 characters)
+## Full description (2462/4000 characters)
 
 ```
 Colony Counter counts bacterial and fungal colonies on agar plates from a photo, and turns plate counts into CFU/mL, CFU/g or CFU/100 mL. Built for microbiology research and teaching labs.
@@ -26,7 +26,8 @@ RESULTS YOU CAN USE
 • CFU/mL from a dilution series, with the FDA BAM (25–250), ISO 7218 (10–300) or 30–300 counting rules.
 • Replicates: mean ± SD, CV and log10 CFU/mL ± SD.
 • Solid samples in CFU/g (e.g. 25 g in 225 mL) and membrane filters in CFU/100 mL.
-• Drop plates (Miles–Misra), blue/white and two-colour colony counts.
+• Drop plates (Miles–Misra) in a ring or rows: empty and confluent drops are found, with a drop table, Poisson checks and a 95 % interval.
+• Blue/white and two-colour colony counts.
 • Compare conditions: log reduction, % kill and time-kill or growth charts.
 
 MORE PLATE TYPES
@@ -54,13 +55,13 @@ Reads Neogen® Petrifilm® plates. Petrifilm and Neogen are trademarks of Neogen
 Intended use: for research and teaching. Colony Counter is not a medical or diagnostic device. Always check the automatic count.
 ```
 
-## Release notes (What's new) (417/500 characters)
+## Release notes (What's new) (434/500 characters)
 
 ```
-Version 0.6.2
-• Petrifilm: tap grid squares to leave them out of an estimate (a bubble, a fold, a spreader)
-• Colonies with and without gas are listed for each colour, on screen, on the shared photo and in the CSV
-• A warning when the printed grid is not found (glare, blur, or not a Petrifilm plate)
-• No estimate from a grid that was not found
-• Fixes for film dilutions after Membrane, volumes and the samples list
+Version 0.7.0
+• Drop plates (Miles–Misra): choose a ring or rows of drops, and every planned drop is found, empty and confluent ones too
+• A drop table per dilution: mean ± SD, a Poisson check that drops agree, outlier and tenfold checks
+• CFU/mL pooled or from the first countable dilution, with a 95 % interval and your own counting window
+• Leave a drop out with a reason; new drops.csv export
+• Fixes for drop labels and spreaders
 ```
