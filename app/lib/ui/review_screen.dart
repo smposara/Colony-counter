@@ -8,15 +8,18 @@ import '../core/background.dart';
 import '../core/classical.dart';
 import '../core/colour.dart';
 import '../core/drop_layout.dart';
+import '../core/drop_stats.dart';
 import '../core/petrifilm.dart';
 import '../core/pipeline.dart';
 import '../core/plate.dart';
 import '../core/spots.dart';
+import '../data/drop_results.dart';
 import '../data/plate_record.dart';
 import '../data/plate_store.dart';
 import '../data/sample_info.dart';
 import '../l10n/l10n.dart';
 import '../l10n/labels.dart';
+import 'drop_table.dart';
 import 'format.dart';
 import 'insets.dart';
 import 'photo_flow.dart';
@@ -320,16 +323,15 @@ class _ReviewScreenState extends State<ReviewScreen> {
 
   /// Dilution and replicate for the [i]-th drop, from the sample plan.
   Spot _labelSpot(Spot s, int i) {
-    final preset = widget.preset;
-    final info = preset?.info;
-    if (info == null || !info.isDrop) {
+    final info = _dropPlan;
+    if (info == null) {
       return s.copyWith(
         dilutionExp: widget.record?.dilutionExp ?? 0,
         replicate: i + 1,
       );
     }
     // Drops beyond the plan are flagged rather than wrapped round.
-    final l = info.dropLabel(preset!.slot, i);
+    final l = info.dropLabel(_dropSlot, i);
     return s.copyWith(
       dilutionExp: l.dilutionExp,
       replicate: l.replicate,
@@ -348,10 +350,32 @@ class _ReviewScreenState extends State<ReviewScreen> {
     return [for (var i = 0; i < found.length; i++) _labelSpot(found[i], i)];
   }
 
-  /// The sample's drop plan, when this plate belongs to one.
+  /// The sample's drop plan, when this plate belongs to one (from the plan
+  /// being photographed, or the saved plate's sample).
   SampleInfo? get _dropPlan {
-    final info = widget.preset?.info;
+    final r = widget.record;
+    final info =
+        widget.preset?.info ??
+        (r != null && widget.store.hasPlan(r.sampleId)
+            ? widget.store.sampleInfo(r.sampleId)
+            : null);
     return info != null && info.isDrop ? info : null;
+  }
+
+  /// Which plate of the plan this is.
+  Slot get _dropSlot {
+    final preset = widget.preset;
+    if (preset != null) return preset.slot;
+    final r = widget.record;
+    final plan = _dropPlan;
+    if (r == null || plan == null) return const Slot();
+    return plan.dropLayout == DropLayout.replicates
+        ? Slot(
+            dilutionExp: r.spots.isEmpty
+                ? r.dilutionExp
+                : r.spots.first.dilutionExp,
+          )
+        : Slot(replicate: r.replicate);
   }
 
   DropTemplate get _dropTemplate =>
@@ -361,7 +385,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
   /// drop is found, empty and confluent ones included.
   Future<void> _countWithLayout(Plate? plate) async {
     final info = _dropPlan!;
-    final slot = widget.preset!.slot;
+    final slot = _dropSlot;
     final res = await countDropPlateInBackground((
       _photo!,
       _dropTemplate,
@@ -872,6 +896,42 @@ class _ReviewScreenState extends State<ReviewScreen> {
     await _recount();
   }
 
+  /// The drop table and CFU/mL for the banner, in ASCII: three dilutions
+  /// to a line ("1e-5: 12 15 9 (mean 12.0) | 1e-6: 1 2 0 (mean 1.0)").
+  List<String> _dropBannerLines() {
+    if (_spots.isEmpty) return const [];
+    final plan = _dropPlan;
+    final mode = plan?.dropMode ?? DropMode.pooled;
+    final window = plan?.dropWindow ?? kDropWindow;
+    final rows = dilutionTable(dropCountsFromSpots(_spots, _colonies));
+    final e = estimateDrops(
+      rows,
+      plan?.dropVolumeUl ?? (widget.record?.volumeMl ?? 0.01) * 1000,
+      mode: mode,
+      window: window,
+    );
+    final cells = [
+      for (final r in rows)
+        '1e-${r.dilutionExp}: ${[...r.counts.map((c) => '$c'), for (var i = 0; i < r.tntc; i++) 'TNTC'].join(' ')}'
+            '${r.counts.isEmpty ? '' : ' (mean ${fixed(r.mean, 1)})'}',
+    ];
+    final q = switch (e.qualifier) {
+      'exact' => '',
+      '<' => '< ',
+      '>' => '> ',
+      _ => 'est. ',
+    };
+    return [
+      for (var i = 0; i < cells.length; i += 3)
+        cells.sublist(i, math.min(i + 3, cells.length)).join(' | '),
+      if (e.cfuPerMl.isFinite)
+        '$q${sciValue(e.cfuPerMl)} CFU/mL, '
+            '${mode == DropMode.first ? 'first countable' : 'pooled'} '
+            '${window.$1}-${window.$2}'
+            '${e.dilutionsUsed.isEmpty ? '' : ' from ${e.dilutionsUsed.map((d) => '1e-$d').join(', ')}'}',
+    ];
+  }
+
   /// Banner lines for the annotated photo: what the plate is and its count.
   ///
   /// Stays in English on purpose: the banner is drawn onto the JPEG with an
@@ -941,6 +1001,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
       '${sample.isEmpty ? 'Unlabelled' : sample} · $what',
       count,
       if (gas.isNotEmpty) gas,
+      if (_drop) ..._dropBannerLines(),
       [
         shortDate(r?.createdAt ?? DateTime.now()),
         if (_flags.isNotEmpty) _flags.map(flag).join(', '),
@@ -1639,7 +1700,13 @@ class _ReviewScreenState extends State<ReviewScreen> {
     if (_spots.isEmpty) {
       return Text(tr.reviewNoDrops, style: t.bodySmall);
     }
-    return Padding(
+    final plan = _dropPlan;
+    final volumeUl =
+        plan?.dropVolumeUl ?? (widget.record?.volumeMl ?? 0.01) * 1000;
+    final mode = plan?.dropMode ?? DropMode.pooled;
+    final window = plan?.dropWindow ?? kDropWindow;
+    final rows = dilutionTable(dropCountsFromSpots(_spots, _colonies));
+    final chips = Padding(
       padding: const EdgeInsets.only(bottom: 4),
       child: Wrap(
         spacing: 6,
@@ -1663,6 +1730,27 @@ class _ReviewScreenState extends State<ReviewScreen> {
             ),
         ],
       ),
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        chips,
+        if (rows.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 4, bottom: 8),
+            child: DropTableView(
+              rows: rows,
+              estimate: estimateDrops(
+                rows,
+                volumeUl,
+                mode: mode,
+                window: window,
+              ),
+              mode: mode,
+              window: window,
+            ),
+          ),
+      ],
     );
   }
 }

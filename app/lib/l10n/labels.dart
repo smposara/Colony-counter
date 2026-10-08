@@ -1,5 +1,6 @@
 import '../core/calculator.dart';
 import '../core/colour.dart';
+import '../core/drop_stats.dart';
 import '../core/plate.dart';
 import '../core/spots.dart';
 import '../data/sample_info.dart';
@@ -30,6 +31,13 @@ extension DropArrangementText on DropArrangement {
     DropArrangement.free => tr.dropArrangementFree,
     DropArrangement.sectors => tr.dropArrangementSectors,
     DropArrangement.grid => tr.dropArrangementGrid,
+  };
+}
+
+extension DropModeText on DropMode {
+  String get text => switch (this) {
+    DropMode.pooled => tr.dropModePooled,
+    DropMode.first => tr.dropModeFirst,
   };
 }
 
@@ -116,7 +124,7 @@ extension TrainingSelectionText on TrainingSelection {
 
 /// The calculator's note about how an estimate was made.
 String estimateNote(Estimate e) {
-  final range = '${e.rule.min}–${e.rule.max}';
+  final range = '${e.rangeMin}–${e.rangeMax}';
   final n = e.note;
   if (n.isEmpty) return '';
   if (n.startsWith('all plates')) return tr.noteAllSpreaders;

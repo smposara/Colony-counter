@@ -5,9 +5,11 @@ import 'dart:typed_data';
 import 'package:archive/archive.dart';
 
 import '../core/calculator.dart';
+import '../core/drop_stats.dart';
 import '../core/petrifilm.dart';
 import '../core/plate.dart';
 import '../core/spots.dart';
+import 'drop_results.dart';
 import 'plate_record.dart';
 import 'plate_store.dart';
 import 'sample_info.dart';
@@ -61,6 +63,13 @@ String platesCsv(PlateStore store) {
       'film_squares',
       'film_gas',
       'film_squares_left_out',
+      'drop_layout',
+      'drop_mode',
+      'drop_window',
+      'drops_planned',
+      'drops_found',
+      'drops_excluded',
+      'drop_flags',
     ],
   ];
   String pairs(Map<String, num> m) =>
@@ -70,6 +79,8 @@ String platesCsv(PlateStore store) {
     final est = r.estimateAlone(
       store.rule,
       membraneRule: info?.membraneRule ?? CountingRule.membrane80,
+      dropMode: info?.dropMode ?? DropMode.pooled,
+      dropWindow: info?.dropWindow ?? kDropWindow,
     );
     final classes = r.classCounts;
     rows.add([
@@ -146,9 +157,26 @@ String platesCsv(PlateStore store) {
         '',
         '',
       ],
+      ..._dropPlateColumns(r, info),
     ]);
   }
   return _csv(rows);
+}
+
+/// Drop layout, calculation and drop counts of a drop plate; blanks otherwise.
+List<Object?> _dropPlateColumns(PlateRecord r, SampleInfo? info) {
+  if (!r.isDropPlate) return List.filled(7, '');
+  final drop = info != null && info.isDrop ? info : null;
+  final w = drop?.dropWindow ?? kDropWindow;
+  return [
+    drop?.dropArrangement.name ?? '',
+    (drop?.dropMode ?? DropMode.pooled).name,
+    '${w.$1}-${w.$2}',
+    drop?.dropsPerPlate ?? '',
+    r.spots.length,
+    r.spots.where((s) => s.isExcluded).length,
+    {for (final s in r.spots) ...s.flags}.join(';'),
+  ];
 }
 
 /// One row per sample: per-replicate CFU/mL summarised as mean ± SD and log₁₀.
@@ -186,6 +214,18 @@ String samplesCsv(PlateStore store) {
       'replicate_values',
       'notes',
       'result',
+      'drop_mode',
+      'drop_window',
+      'drop_cfu_per_ml',
+      'drop_qualifier',
+      'drop_dilution_used',
+      'drop_mean',
+      'drop_sd',
+      'drop_vmr',
+      'drop_chi2_p',
+      'cfu_ci_low',
+      'cfu_ci_high',
+      'drop_warnings',
     ],
   ];
   for (final info in store.allSamples()) {
@@ -232,6 +272,79 @@ String samplesCsv(PlateStore store) {
         ].join('; '),
         info.notes,
         result,
+        ..._dropSampleColumns(info, plates),
+      ]);
+    }
+  }
+  return _csv(rows);
+}
+
+/// The sample's drop table over all its drops: CFU/mL with its 95 %
+/// interval (CFU/mL), and the first dilution used's mean, SD, VMR and χ²
+/// p-value; blanks for other methods.
+List<Object?> _dropSampleColumns(SampleInfo info, List<PlateRecord> plates) {
+  if (!info.isDrop) return List.filled(12, '');
+  final d = dropSummary(info, plates);
+  final e = d.estimate;
+  final used = e.dilutionsUsed.isEmpty
+      ? null
+      : d.rows.firstWhere((r) => r.dilutionExp == e.dilutionsUsed.first);
+  return [
+    d.mode.name,
+    '${d.window.$1}-${d.window.$2}',
+    e.cfuPerMl,
+    e.qualifier,
+    [for (final x in e.dilutionsUsed) '1e-$x'].join(';'),
+    used?.mean,
+    used != null && used.counts.length > 1 ? used.sd : null,
+    used != null && used.counts.length > 1 ? used.vmr : null,
+    used != null && used.counts.length > 1 ? used.p : null,
+    e.low,
+    e.high,
+    d.warnings.join(';'),
+  ];
+}
+
+/// One row per drop of every drop plate: label, count and position.
+String dropsCsv(PlateStore store) {
+  double r2(double v) => (v * 100).round() / 100;
+  final rows = <List<Object?>>[
+    [
+      'plate_id',
+      'sample_id',
+      'drop',
+      'position',
+      'dilution',
+      'replicate',
+      'count',
+      'tntc',
+      'excluded',
+      'exclusion_reason',
+      'flags',
+      'x_mm',
+      'y_mm',
+      'diameter_mm',
+    ],
+  ];
+  for (final r in store.records) {
+    final mm = r.plate.mmPerPx;
+    for (var i = 0; i < r.spots.length; i++) {
+      final s = r.spots[i];
+      rows.add([
+        r.id,
+        r.sampleId,
+        i + 1,
+        s.position,
+        '1e-${s.dilutionExp}',
+        s.replicate,
+        countInSpot(s, r.colonies),
+        s.tntc,
+        s.isExcluded,
+        s.excluded?.name ?? '',
+        s.flags.join(';'),
+        r2((s.cx - r.plate.cx) * mm),
+        r2((s.cy - r.plate.cy) * mm),
+        r2(2 * s.radius * mm),
       ]);
     }
   }
@@ -348,6 +461,7 @@ Future<Uint8List> buildBackup(PlateStore store) async {
     ('plates.csv', platesCsv(store)),
     ('samples.csv', samplesCsv(store)),
     ('colonies.csv', coloniesCsv(store)),
+    ('drops.csv', dropsCsv(store)),
   ]) {
     final bytes = utf8.encode(csv);
     archive.addFile(ArchiveFile(name, bytes.length, bytes));

@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import '../core/calculator.dart';
 import '../core/colour.dart';
 import '../core/drop_layout.dart';
+import '../core/drop_stats.dart';
 import '../core/petrifilm.dart';
 import '../core/plate.dart';
 import '../data/plate_store.dart';
@@ -105,6 +106,23 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
   late DropArrangement _arrangement =
       _base?.dropArrangement ?? DropArrangement.sectors;
   late int _perDilution = _base?.dropsPerDilution ?? 1;
+  late DropMode _dropMode = _base?.dropMode ?? DropMode.pooled;
+  late final _windowLo = TextEditingController(
+    text: '${(_base?.dropWindow ?? kDropWindow).$1}',
+  );
+  late final _windowHi = TextEditingController(
+    text: '${(_base?.dropWindow ?? kDropWindow).$2}',
+  );
+
+  /// The window as typed, or the default when it does not make sense.
+  (int, int) get _dropWindow {
+    final lo = int.tryParse(_windowLo.text.trim());
+    final hi = int.tryParse(_windowHi.text.trim());
+    return lo != null && hi != null && lo >= 0 && hi > lo
+        ? (lo, hi)
+        : kDropWindow;
+  }
+
   late final _pitch = TextEditingController(
     text: fixed(
       _base?.dropPitchMm ?? 11,
@@ -232,6 +250,8 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
       dropArrangement: _arrangement,
       dropsPerDilution: _perDilution,
       dropPitchMm: _num(_pitch) ?? 11,
+      dropMode: _dropMode,
+      dropWindow: _dropWindow,
       colourMode: _method == PlatingMethod.film ? ColourMode.none : _colour,
       notes: _notes.text.trim(),
       strain: _strain.text.trim(),
@@ -271,6 +291,8 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
       _volume,
       _dropVolume,
       _pitch,
+      _windowLo,
+      _windowHi,
       _weight,
       _diluent,
       _notes,
@@ -399,6 +421,51 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
           ),
         ),
       ],
+      const SizedBox(height: 16),
+      Text(tr.setupDropWindow, style: t.titleSmall),
+      const SizedBox(height: 8),
+      Row(
+        children: [
+          for (final (c, label) in [
+            (_windowLo, tr.setupDropWindowFrom),
+            (_windowHi, tr.setupDropWindowTo),
+          ]) ...[
+            Expanded(
+              child: TextField(
+                controller: c,
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                decoration: InputDecoration(
+                  labelText: label,
+                  border: const OutlineInputBorder(),
+                ),
+              ),
+            ),
+            if (c == _windowLo) const SizedBox(width: 12),
+          ],
+        ],
+      ),
+      const SizedBox(height: 4),
+      Text(tr.setupDropWindowHelp, style: t.bodySmall),
+      const SizedBox(height: 16),
+      Text(tr.setupDropMode, style: t.titleSmall),
+      const SizedBox(height: 8),
+      SegmentedButton<DropMode>(
+        showSelectedIcon: false,
+        segments: [
+          for (final m in DropMode.values)
+            ButtonSegment(value: m, label: Text(m.text)),
+        ],
+        selected: {_dropMode},
+        onSelectionChanged: (v) => setState(() => _dropMode = v.first),
+      ),
+      const SizedBox(height: 4),
+      Text(
+        _dropMode == DropMode.pooled
+            ? tr.setupDropPooledHelp
+            : tr.setupDropFirstHelp,
+        style: t.bodySmall,
+      ),
     ];
   }
 

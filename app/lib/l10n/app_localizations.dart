@@ -416,6 +416,132 @@ abstract class AppLocalizations {
   /// **'Drop layout uncertain: check the drops'**
   String get flagLayoutUncertain;
 
+  /// No description provided for @setupDropWindow.
+  ///
+  /// In en, this message translates to:
+  /// **'Counting window (colonies per drop)'**
+  String get setupDropWindow;
+
+  /// No description provided for @setupDropWindowFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get setupDropWindowFrom;
+
+  /// No description provided for @setupDropWindowTo.
+  ///
+  /// In en, this message translates to:
+  /// **'To'**
+  String get setupDropWindowTo;
+
+  /// No description provided for @setupDropWindowHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'3–30 per 10 µL drop is the usual window; for other drop volumes, use your protocol\'s.'**
+  String get setupDropWindowHelp;
+
+  /// No description provided for @setupDropMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Calculation'**
+  String get setupDropMode;
+
+  /// No description provided for @dropModePooled.
+  ///
+  /// In en, this message translates to:
+  /// **'Pooled'**
+  String get dropModePooled;
+
+  /// No description provided for @dropModeFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'First countable'**
+  String get dropModeFirst;
+
+  /// No description provided for @setupDropPooledHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Every drop in the window, of all dilutions: ΣC ÷ Σ(V × d).'**
+  String get setupDropPooledHelp;
+
+  /// No description provided for @setupDropFirstHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'The mean of the least diluted dilution whose drops are in the window, as most protocols do.'**
+  String get setupDropFirstHelp;
+
+  /// No description provided for @dropTableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Drops per dilution'**
+  String get dropTableTitle;
+
+  /// No description provided for @dropRowMean.
+  ///
+  /// In en, this message translates to:
+  /// **'mean {mean}'**
+  String dropRowMean(Object mean);
+
+  /// No description provided for @dropRowLeftOut.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} left out'**
+  String dropRowLeftOut(int n);
+
+  /// No description provided for @dropUsedPooled.
+  ///
+  /// In en, this message translates to:
+  /// **'Pooled from {dilutions} ({n} drops)'**
+  String dropUsedPooled(String dilutions, int n);
+
+  /// No description provided for @dropUsedFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'From {dilution}, the first countable dilution ({n} drops)'**
+  String dropUsedFirst(String dilution, int n);
+
+  /// No description provided for @dropCi.
+  ///
+  /// In en, this message translates to:
+  /// **'95 % CI {low}–{high}'**
+  String dropCi(Object high, Object low);
+
+  /// No description provided for @dropRuleLine.
+  ///
+  /// In en, this message translates to:
+  /// **'{mode} · {range} colonies per drop. Each replicate goes through its drop table; log₁₀ is the mean ± SD of the replicates\' log values.'**
+  String dropRuleLine(Object mode, Object range);
+
+  /// No description provided for @dropWarnOverdispersed.
+  ///
+  /// In en, this message translates to:
+  /// **'Drops of a dilution disagree more than chance allows: check mixing and pipetting.'**
+  String get dropWarnOverdispersed;
+
+  /// No description provided for @dropWarnOutlier.
+  ///
+  /// In en, this message translates to:
+  /// **'A drop is far from the others of its dilution: check it, or leave it out.'**
+  String get dropWarnOutlier;
+
+  /// No description provided for @dropWarnNotTenfold.
+  ///
+  /// In en, this message translates to:
+  /// **'Neighbouring dilutions do not differ about tenfold: check the dilution series.'**
+  String get dropWarnNotTenfold;
+
+  /// No description provided for @dropWarnCrowded.
+  ///
+  /// In en, this message translates to:
+  /// **'Crowded drops: read the plates earlier, or count a higher dilution.'**
+  String get dropWarnCrowded;
+
+  /// No description provided for @dropWarnNotAsPlanned.
+  ///
+  /// In en, this message translates to:
+  /// **'The drops do not match the plan ({found} found, {planned} planned): check their labels.'**
+  String dropWarnNotAsPlanned(int found, int planned);
+
   /// No description provided for @homeSamples.
   ///
   /// In en, this message translates to:
@@ -2119,12 +2245,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'n = {n, plural, =1{1 replicate} other{{n} replicates}}'**
   String samplesReplicateCount(int n);
-
-  /// No description provided for @samplesPoolDrops.
-  ///
-  /// In en, this message translates to:
-  /// **'Each replicate pools its countable drops ({range} colonies, {rule}) as ΣC / Σ(V × d); log₁₀ is the mean ± SD of the replicates\' log values.'**
-  String samplesPoolDrops(Object range, Object rule);
 
   /// No description provided for @samplesPoolFilters.
   ///

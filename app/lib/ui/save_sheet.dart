@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../core/calculator.dart';
+import '../core/drop_stats.dart';
 import '../core/petrifilm.dart';
 import '../data/plate_record.dart';
 import '../data/plate_store.dart';
@@ -126,13 +127,23 @@ class _SaveSheetState extends State<SaveSheet> {
         : kFilmTypes[film]!.results;
     final ests = [
       for (final k in results)
-        (k, record?.estimateAlone(rule, membraneRule: membraneRule, result: k)),
+        (
+          k,
+          record?.estimateAlone(
+            rule,
+            membraneRule: membraneRule,
+            result: k,
+            dropMode: plan?.dropMode ?? DropMode.pooled,
+            dropWindow: plan?.dropWindow ?? kDropWindow,
+          ),
+        ),
     ];
     final knownSamples = [
       for (final s in widget.store.allSamples()) s.sampleId,
     ];
+    final window = plan?.dropWindow ?? kDropWindow;
     final ruleLabel = _drop
-        ? CountingRule.dropPlate.text
+        ? '${(plan?.dropMode ?? DropMode.pooled).text}, ${window.$1}–${window.$2}'
         : film != null
         ? filmCountingRule(film).text
         : _membrane

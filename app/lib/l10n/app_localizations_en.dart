@@ -190,6 +190,90 @@ class AppLocalizationsEn extends AppLocalizations {
   String get flagLayoutUncertain => 'Drop layout uncertain: check the drops';
 
   @override
+  String get setupDropWindow => 'Counting window (colonies per drop)';
+
+  @override
+  String get setupDropWindowFrom => 'From';
+
+  @override
+  String get setupDropWindowTo => 'To';
+
+  @override
+  String get setupDropWindowHelp =>
+      '3–30 per 10 µL drop is the usual window; for other drop volumes, use your protocol\'s.';
+
+  @override
+  String get setupDropMode => 'Calculation';
+
+  @override
+  String get dropModePooled => 'Pooled';
+
+  @override
+  String get dropModeFirst => 'First countable';
+
+  @override
+  String get setupDropPooledHelp =>
+      'Every drop in the window, of all dilutions: ΣC ÷ Σ(V × d).';
+
+  @override
+  String get setupDropFirstHelp =>
+      'The mean of the least diluted dilution whose drops are in the window, as most protocols do.';
+
+  @override
+  String get dropTableTitle => 'Drops per dilution';
+
+  @override
+  String dropRowMean(Object mean) {
+    return 'mean $mean';
+  }
+
+  @override
+  String dropRowLeftOut(int n) {
+    return '$n left out';
+  }
+
+  @override
+  String dropUsedPooled(String dilutions, int n) {
+    return 'Pooled from $dilutions ($n drops)';
+  }
+
+  @override
+  String dropUsedFirst(String dilution, int n) {
+    return 'From $dilution, the first countable dilution ($n drops)';
+  }
+
+  @override
+  String dropCi(Object high, Object low) {
+    return '95 % CI $low–$high';
+  }
+
+  @override
+  String dropRuleLine(Object mode, Object range) {
+    return '$mode · $range colonies per drop. Each replicate goes through its drop table; log₁₀ is the mean ± SD of the replicates\' log values.';
+  }
+
+  @override
+  String get dropWarnOverdispersed =>
+      'Drops of a dilution disagree more than chance allows: check mixing and pipetting.';
+
+  @override
+  String get dropWarnOutlier =>
+      'A drop is far from the others of its dilution: check it, or leave it out.';
+
+  @override
+  String get dropWarnNotTenfold =>
+      'Neighbouring dilutions do not differ about tenfold: check the dilution series.';
+
+  @override
+  String get dropWarnCrowded =>
+      'Crowded drops: read the plates earlier, or count a higher dilution.';
+
+  @override
+  String dropWarnNotAsPlanned(int found, int planned) {
+    return 'The drops do not match the plan ($found found, $planned planned): check their labels.';
+  }
+
+  @override
   String get homeSamples => 'Samples';
 
   @override
@@ -1265,11 +1349,6 @@ class AppLocalizationsEn extends AppLocalizations {
       one: '1 replicate',
     );
     return 'n = $_temp0';
-  }
-
-  @override
-  String samplesPoolDrops(Object range, Object rule) {
-    return 'Each replicate pools its countable drops ($range colonies, $rule) as ΣC / Σ(V × d); log₁₀ is the mean ± SD of the replicates\' log values.';
   }
 
   @override

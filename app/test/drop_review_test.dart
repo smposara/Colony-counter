@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:colony_counter/core/drop_stats.dart';
 import 'package:colony_counter/core/spots.dart';
 import 'package:colony_counter/data/plate_store.dart';
 import 'package:colony_counter/data/sample_info.dart';
@@ -93,7 +94,7 @@ void main() {
     expect(find.text('Why'), findsOneWidget);
     await tester.tap(find.text('OK'));
     await tester.pumpAndSettle();
-    expect(find.textContaining('left out'), findsOneWidget);
+    expect(find.textContaining(' · left out'), findsOneWidget);
 
     await _save(tester, store);
     final plate = store.records.single;
@@ -226,6 +227,17 @@ void main() {
     await tester.tap(plus);
     await tester.pumpAndSettle();
 
+    // Counting window and calculation.
+    final to = find.widgetWithText(TextField, 'To');
+    await tester.ensureVisible(to);
+    await tester.enterText(find.widgetWithText(TextField, 'From'), '5');
+    await tester.enterText(to, '50');
+    final first = find.text('First countable');
+    await tester.ensureVisible(first);
+    await tester.tap(first);
+    await tester.pumpAndSettle();
+    expect(find.textContaining('least diluted dilution'), findsOneWidget);
+
     final save = find.text('Save sample');
     await tester.scrollUntilVisible(
       save,
@@ -239,6 +251,8 @@ void main() {
     expect(saved!.dropLayout, DropLayout.dilutions);
     expect(saved!.dropsPerDilution, 2);
     expect(saved!.dropsPerPlate, saved!.dilutions.length * 2);
+    expect(saved!.dropWindow, (5, 50));
+    expect(saved!.dropMode, DropMode.first);
   });
 }
 

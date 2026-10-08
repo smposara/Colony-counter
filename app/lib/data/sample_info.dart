@@ -3,9 +3,11 @@ import 'dart:math' as math;
 import '../core/calculator.dart';
 import '../core/colour.dart';
 import '../core/drop_layout.dart';
+import '../core/drop_stats.dart';
 import '../core/petrifilm.dart';
 import '../core/plate.dart';
 import '../core/stats.dart';
+import 'drop_results.dart';
 import 'plate_record.dart';
 
 enum PlatingMethod {
@@ -77,6 +79,8 @@ class SampleInfo {
     this.dropArrangement = DropArrangement.free,
     this.dropsPerDilution = 1,
     this.dropPitchMm = 11,
+    this.dropMode = DropMode.pooled,
+    this.dropWindow = kDropWindow,
     this.colourMode = ColourMode.none,
     this.notes = '',
     this.strain = '',
@@ -141,6 +145,13 @@ class SampleInfo {
 
   /// Grid: centre-to-centre distance between neighbouring drops.
   final double dropPitchMm;
+
+  /// CFU/mL from all drops in the window pooled, or from the first (least
+  /// diluted) countable dilution.
+  final DropMode dropMode;
+
+  /// Countable colonies per drop (inclusive), 3–30 by default.
+  final (int, int) dropWindow;
 
   /// Drops planned on each plate.
   int get dropsPerPlate => dropLayout == DropLayout.replicates
@@ -295,15 +306,18 @@ class SampleInfo {
   }
 
   /// CFU per unit from the sample's plates. For a dry film, of [result]
-  /// (default: the film type's first result, e.g. E. coli on EC).
+  /// (default: the film type's first result, e.g. E. coli on EC). Drop
+  /// plates use the sample's window and calculation (see drop_results.dart).
   SampleResult analyse(
     List<PlateRecord> plates,
     CountingRule spreadRule, {
     String? result,
-  }) => analyseReplicates([
-    for (final p in latestOfSeries(plates))
-      ...p.observations(result: isFilm && p.isFilm ? result : null),
-  ], ruleFor(spreadRule));
+  }) => isDrop
+      ? analyseDrops(this, plates)
+      : analyseReplicates([
+          for (final p in latestOfSeries(plates))
+            ...p.observations(result: isFilm && p.isFilm ? result : null),
+        ], ruleFor(spreadRule));
 
   SampleInfo copyWith({String? sampleId}) => SampleInfo.fromJson({
     ...toJson(),
@@ -324,6 +338,8 @@ class SampleInfo {
     'drop_arrangement': dropArrangement.name,
     'drops_per_dilution': dropsPerDilution,
     'drop_pitch_mm': dropPitchMm,
+    'drop_mode': dropMode.name,
+    'drop_window': [dropWindow.$1, dropWindow.$2],
     'colour_mode': colourMode.name,
     'notes': notes,
     'strain': strain,
@@ -367,6 +383,17 @@ class SampleInfo {
     ),
     dropsPerDilution: (j['drops_per_dilution'] as num?)?.toInt() ?? 1,
     dropPitchMm: (j['drop_pitch_mm'] as num?)?.toDouble() ?? 11,
+    dropMode: DropMode.values.firstWhere(
+      (m) => m.name == j['drop_mode'],
+      orElse: () => DropMode.pooled,
+    ),
+    dropWindow: switch (j['drop_window']) {
+      [final num lo, final num hi] when lo >= 0 && hi > lo => (
+        lo.toInt(),
+        hi.toInt(),
+      ),
+      _ => kDropWindow,
+    },
     colourMode: ColourMode.values.firstWhere(
       (m) => m.name == j['colour_mode'],
       orElse: () => ColourMode.none,

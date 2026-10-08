@@ -176,8 +176,9 @@ void main() {
     expect(plates, contains(',film,'));
     final samples = samplesCsv(store).trim().split('\n');
     expect(samples.length, 3); // header + E. coli + coliforms
-    expect(samples[1], endsWith(',ecoli'));
-    expect(samples[2], endsWith(',coliform'));
+    final result = samples.first.split(',').indexOf('result');
+    expect(samples[1].split(',')[result], 'ecoli');
+    expect(samples[2].split(',')[result], 'coliform');
     final colonies = coloniesCsv(store);
     expect(colonies, contains('gas,yellow_zone'));
     expect(colonies, contains(',blue,'));

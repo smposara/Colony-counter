@@ -173,6 +173,7 @@ class _DataMenu extends StatelessWidget {
       ('plates_$stamp.csv', utf8.encode(platesCsv(store)), 'text/csv'),
       ('samples_$stamp.csv', utf8.encode(samplesCsv(store)), 'text/csv'),
       ('colonies_$stamp.csv', utf8.encode(coloniesCsv(store)), 'text/csv'),
+      ('drops_$stamp.csv', utf8.encode(dropsCsv(store)), 'text/csv'),
     ], tr.homeShareCounts);
   }
 

@@ -1,6 +1,6 @@
 # Drop plates (Options A + B): implementation plan
 
-Status: **M1–M4 done** (Python reference, Dart port, data model and Drops mode; October 2026; see Progress below). M5–M6 to do. Study and options: [DROP_PLATE.md](DROP_PLATE.md). Same
+Status: **M1–M5 done** (Python reference, Dart port, data model, Drops mode, drop table and exports; October 2026; see Progress below). M6 (screenshots, release) to do. Study and options: [DROP_PLATE.md](DROP_PLATE.md). Same
 approach as Petrifilm and AST: Python reference first, Dart port checked against golden
 fixtures, then data, UI and export.
 
@@ -280,10 +280,47 @@ sorts break ties by order found (Dart's sort is not stable).
   `drop_review_test.dart` (the 4 × 3 golden plate through the review screen, matching
   Python per drop; leaving a drop out; turning ring labels; the setup picker).
 
-Moved to M5: the counting window and the calculation choice (first countable or pooled) in
-setup, so they arrive together with the drop table and the results that use them. Not done:
+The counting window and the calculation choice moved to M5, so they arrived together with
+the drop table and the results that use them. Not done in M4:
 two-finger rotate and scale of the layout (the fit sets them; dragging moves it) and the
 camera outline; per-drop accuracy (plate level only).
+
+**M5 (drop table, window and calculation, warnings, exports, shared photo), done:**
+
+- **Setup:** counting window (from–to colonies per drop, default 3–30) and calculation
+  (Pooled / First countable), each with a one-line explanation; stored as `dropWindow` and
+  `dropMode` on `SampleInfo` (older samples: pooled, 3–30).
+- **Results (`app/lib/data/drop_results.dart`):** drop samples no longer go through the
+  spread-plate rule. Each replicate's drops go through `dilutionTable` and `estimateDrops`
+  with the sample's window and mode (`analyseDrops`), so mean ± SD and log₁₀ across
+  replicates use the same calculation; a plate alone (save sheet, `plates.csv`) does the
+  same with its own drops. `dropSummary` gives the sample's table over all its drops, CFU/mL
+  with its Poisson 95 % interval and the warnings. Left-out drops and every drop of a
+  spreader plate are excluded. `Estimate.range` carries the window, so notes name it
+  ("below countable range (5–50)").
+- **Drop table** (`ui/drop_table.dart`) on the sample card and in the review panel (this
+  plate's drops): "10⁻⁵ · 20 25 15 · mean 20.0 ± 5.0 · VMR 1.25", the dilutions used in
+  bold, a warning icon on flagged rows, then CFU/mL, "Pooled from 10⁻⁵, 10⁻⁶ (4 drops)" or
+  "From 10⁻⁵, the first countable dilution", the 95 % CI and any note. The rule line under
+  the sample result names the calculation and window.
+- **Warnings** under the table: drops disagree more than chance (χ², p < 0.01, ≥ 3 drops),
+  an outlier drop, dilutions not about tenfold apart, crowded drops, drops not as planned
+  (found vs planned, or `unplanned` drops), layout uncertain.
+- **Save sheet:** the plate's CFU/mL uses the sample's window and calculation, and says so.
+- **Exports:** `plates.csv` gains `drop_layout`, `drop_mode`, `drop_window`, `drops_planned`,
+  `drops_found`, `drops_excluded`, `drop_flags`; `samples.csv` gains `drop_mode`,
+  `drop_window`, `drop_cfu_per_ml`, `drop_qualifier`, `drop_dilution_used`, `drop_mean`,
+  `drop_sd`, `drop_vmr`, `drop_chi2_p` (of the first dilution used), `cfu_ci_low`,
+  `cfu_ci_high` (CFU/mL) and `drop_warnings`; new columns are at the end, so existing
+  positions do not move. New `drops.csv` (one row per drop: plate, sample, position,
+  dilution, replicate, count, TNTC, excluded and reason, flags, x/y and diameter in mm) in
+  the CSV share and the backup. The backup carries every new field; older backups load
+  unchanged.
+- **Shared photo:** the banner adds the drop table (three dilutions to a line) and CFU/mL
+  with the calculation, window and dilutions used.
+- **Tests:** `drop_results_test.dart` (mode and window round-trip, pooled vs first, a custom
+  window, left-out and spreader drops, summary interval and warnings, a plate alone, the
+  three CSVs, the sample card) and the setup test sets 5–50 and First countable.
 
 The decisions below were built with the plan's defaults (pooled by default with `first` as
 an option; 3–30 for every volume; sectors and grids; confluent detection on).

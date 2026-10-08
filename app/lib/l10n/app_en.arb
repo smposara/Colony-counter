@@ -90,6 +90,81 @@
   "reviewDropUnplanned": "More drops than the plan: check this drop's label.",
   "flagOutsideDrops": "Colonies between drops (not counted)",
   "flagLayoutUncertain": "Drop layout uncertain: check the drops",
+  "setupDropWindow": "Counting window (colonies per drop)",
+  "setupDropWindowFrom": "From",
+  "setupDropWindowTo": "To",
+  "setupDropWindowHelp": "3–30 per 10 µL drop is the usual window; for other drop volumes, use your protocol's.",
+  "setupDropMode": "Calculation",
+  "dropModePooled": "Pooled",
+  "dropModeFirst": "First countable",
+  "setupDropPooledHelp": "Every drop in the window, of all dilutions: ΣC ÷ Σ(V × d).",
+  "setupDropFirstHelp": "The mean of the least diluted dilution whose drops are in the window, as most protocols do.",
+  "dropTableTitle": "Drops per dilution",
+  "dropRowMean": "mean {mean}",
+  "@dropRowMean": {
+    "placeholders": {
+      "mean": {}
+    }
+  },
+  "dropRowLeftOut": "{n} left out",
+  "@dropRowLeftOut": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "dropUsedPooled": "Pooled from {dilutions} ({n} drops)",
+  "@dropUsedPooled": {
+    "placeholders": {
+      "dilutions": {
+        "type": "String"
+      },
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "dropUsedFirst": "From {dilution}, the first countable dilution ({n} drops)",
+  "@dropUsedFirst": {
+    "placeholders": {
+      "dilution": {
+        "type": "String"
+      },
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "dropCi": "95 % CI {low}–{high}",
+  "@dropCi": {
+    "placeholders": {
+      "high": {},
+      "low": {}
+    }
+  },
+  "dropRuleLine": "{mode} · {range} colonies per drop. Each replicate goes through its drop table; log₁₀ is the mean ± SD of the replicates' log values.",
+  "@dropRuleLine": {
+    "placeholders": {
+      "mode": {},
+      "range": {}
+    }
+  },
+  "dropWarnOverdispersed": "Drops of a dilution disagree more than chance allows: check mixing and pipetting.",
+  "dropWarnOutlier": "A drop is far from the others of its dilution: check it, or leave it out.",
+  "dropWarnNotTenfold": "Neighbouring dilutions do not differ about tenfold: check the dilution series.",
+  "dropWarnCrowded": "Crowded drops: read the plates earlier, or count a higher dilution.",
+  "dropWarnNotAsPlanned": "The drops do not match the plan ({found} found, {planned} planned): check their labels.",
+  "@dropWarnNotAsPlanned": {
+    "placeholders": {
+      "found": {
+        "type": "int"
+      },
+      "planned": {
+        "type": "int"
+      }
+    }
+  },
   "homeSamples": "Samples",
   "homeCompare": "Compare",
   "homePlates": "Plates",
@@ -863,13 +938,6 @@
       "n": {
         "type": "int"
       }
-    }
-  },
-  "samplesPoolDrops": "Each replicate pools its countable drops ({range} colonies, {rule}) as ΣC / Σ(V × d); log₁₀ is the mean ± SD of the replicates' log values.",
-  "@samplesPoolDrops": {
-    "placeholders": {
-      "range": {},
-      "rule": {}
     }
   },
   "samplesPoolFilters": "Each replicate pools its countable filters ({range} colonies, {rule}) as ΣC / Σ(V × d); log₁₀ is the mean ± SD of the replicates' log values.",

@@ -1,124 +1,519 @@
 {
-  "samplesNotFoundTitle": {"en": "Sample “{id}” not found", "th": "ไม่พบตัวอย่าง “{id}”"},
-  "samplesSetUpNow": {"en": "Set up this sample now?", "th": "ตั้งค่าตัวอย่างนี้ตอนนี้หรือไม่"},
-  "samplesCancel": {"en": "Cancel", "th": "ยกเลิก"},
-  "samplesSetUp": {"en": "Set up", "th": "ตั้งค่า"},
-  "samplesPhotographNow": {"en": "Photograph this plate now?", "th": "ถ่ายภาพเพลตนี้ตอนนี้หรือไม่"},
-  "samplesJustOpen": {"en": "Just open sample", "th": "เปิดตัวอย่างเท่านั้น"},
-  "samplesPhotograph": {"en": "Photograph", "th": "ถ่ายภาพ"},
-  "samplesAlreadyCounted": {"en": "{plate} is already counted.", "th": "{plate} นับแล้ว"},
-  "samplesNoResult": {"en": "No result yet", "th": "ยังไม่มีผล"},
-  "samplesEstimated": {"en": "est.", "th": "ประมาณ"},
-  "samplesHours": {"en": "{h} h", "th": "{h} ชม."},
-  "samplesEmpty": {"en": "Set up a sample to plan its dilution series and replicates. The app then tells you which plate to photograph next and reports mean ± SD and log₁₀ CFU/mL across replicates.", "th": "ตั้งค่าตัวอย่างเพื่อวางแผนระดับการเจือจางและจำนวนซ้ำ แอปจะบอกว่าต้องถ่ายภาพเพลตใดต่อไป และรายงานค่าเฉลี่ย ± SD และ log₁₀ CFU/mL ของทุกซ้ำ"},
-  "samplesSearchHint": {"en": "Search sample, strain, operator, tag…", "th": "ค้นหาตัวอย่าง สายพันธุ์ ผู้ปฏิบัติงาน แท็ก…"},
-  "samplesNoMatch": {"en": "No samples match.", "th": "ไม่พบตัวอย่างที่ตรงกัน"},
-  "samplesNoExperiment": {"en": "No experiment", "th": "ไม่ระบุการทดลอง"},
-  "samplesPlatesDone": {"en": "{done}/{total} plates", "th": "{done}/{total} เพลต", "placeholders": {"done": {"type": "int"}, "total": {"type": "int"}}},
-  "samplesPlateCount": {"en": "{n, plural, =1{1 plate} other{{n} plates}}", "th": "{n} เพลต", "placeholders": {"n": {"type": "int"}}},
-  "samplesSlotPlate": {"en": "plate", "th": "เพลต"},
-  "samplesLabelsSubject": {"en": "Plate labels for {id}", "th": "ฉลากเพลตของ {id}"},
-  "samplesDeleteTitle": {"en": "Delete {id}?", "th": "ลบ {id} หรือไม่"},
-  "samplesDeletePlanOnly": {"en": "The sample plan will be removed.", "th": "แผนการเพาะของตัวอย่างนี้จะถูกลบ"},
-  "samplesDeleteAsk": {"en": "Remove only the plan and keep its {n, plural, =1{1 plate} other{{n} plates}}, or delete the plates too?", "th": "ลบเฉพาะแผนการเพาะและเก็บ {n} เพลตไว้ หรือลบเพลตด้วย", "placeholders": {"n": {"type": "int"}}},
-  "samplesKeepPlates": {"en": "Keep plates", "th": "เก็บเพลตไว้"},
-  "samplesDeleteAll": {"en": "Delete all", "th": "ลบทั้งหมด"},
-  "samplesDelete": {"en": "Delete", "th": "ลบ"},
-  "samplesEditPlan": {"en": "Edit plan", "th": "แก้ไขแผนการเพาะ"},
-  "samplesCreatePlan": {"en": "Create plan", "th": "สร้างแผนการเพาะ"},
-  "samplesNewLikeThis": {"en": "New sample like this", "th": "สร้างตัวอย่างใหม่แบบนี้"},
-  "samplesMulti": {"en": "Photograph several plates at once", "th": "ถ่ายภาพหลายเพลตพร้อมกัน"},
-  "samplesPrintLabels": {"en": "Print plate labels (PDF)", "th": "พิมพ์ฉลากเพลต (PDF)"},
-  "samplesDeleteSample": {"en": "Delete sample", "th": "ลบตัวอย่าง"},
-  "samplesPlates": {"en": "Plates", "th": "เพลต"},
-  "samplesDropsUl": {"en": "{v} µL drops", "th": "หยดละ {v} µL"},
-  "samplesMlFiltered": {"en": "{v} mL filtered", "th": "กรอง {v} mL"},
-  "samplesMlPerPlate": {"en": "{v} mL per plate", "th": "{v} mL ต่อเพลต"},
-  "samplesPhotographSlot": {"en": "Photograph {slot}", "th": "ถ่ายภาพ {slot}"},
-  "samplesImportFor": {"en": "Import photo for {slot}", "th": "นำเข้าภาพสำหรับ {slot}"},
-  "samplesAllDone": {"en": "All planned plates are done.", "th": "เพลตตามแผนเสร็จครบแล้ว"},
-  "samplesNoPlan": {"en": "This sample has no plan (its plates were saved one by one). Use “Create plan” in the menu for a guided plate list.", "th": "ตัวอย่างนี้ไม่มีแผนการเพาะ (บันทึกเพลตทีละเพลต) ใช้ “สร้างแผนการเพาะ” ในเมนูเพื่อรับรายการเพลตแบบมีขั้นตอน"},
-  "samplesNoCountable": {"en": "No countable plates yet", "th": "ยังไม่มีเพลตที่นับได้"},
-  "samplesReplicateCount": {"en": "n = {n, plural, =1{1 replicate} other{{n} replicates}}", "th": "n = {n} ซ้ำ", "placeholders": {"n": {"type": "int"}}},
-  "samplesPoolDrops": {"en": "Each replicate pools its countable drops ({range} colonies, {rule}) as ΣC / Σ(V × d); log₁₀ is the mean ± SD of the replicates' log values.", "th": "แต่ละซ้ำรวมหยดที่นับได้ ({range} โคโลนี, {rule}) เป็น ΣC / Σ(V × d); log₁₀ คือค่าเฉลี่ย ± SD ของค่า log ของทุกซ้ำ"},
-  "samplesPoolFilters": {"en": "Each replicate pools its countable filters ({range} colonies, {rule}) as ΣC / Σ(V × d); log₁₀ is the mean ± SD of the replicates' log values.", "th": "แต่ละซ้ำรวมแผ่นกรองที่นับได้ ({range} โคโลนี, {rule}) เป็น ΣC / Σ(V × d); log₁₀ คือค่าเฉลี่ย ± SD ของค่า log ของทุกซ้ำ"},
-  "samplesPoolPlates": {"en": "Each replicate pools its countable plates ({range} colonies, {rule}) as ΣC / Σ(V × d); log₁₀ is the mean ± SD of the replicates' log values.", "th": "แต่ละซ้ำรวมเพลตที่นับได้ ({range} โคโลนี, {rule}) เป็น ΣC / Σ(V × d); log₁₀ คือค่าเฉลี่ย ± SD ของค่า log ของทุกซ้ำ"},
-  "samplesStrain": {"en": "Strain", "th": "สายพันธุ์"},
-  "samplesMedium": {"en": "Medium", "th": "อาหารเลี้ยงเชื้อ"},
-  "samplesBatch": {"en": "batch {batch}", "th": "ล็อต {batch}"},
-  "samplesIncubation": {"en": "Incubation", "th": "การบ่ม"},
-  "samplesIncubationAt": {"en": "{hours} at {temp}", "th": "{hours} ที่ {temp}"},
-  "samplesOperator": {"en": "Operator", "th": "ผู้ปฏิบัติงาน"},
-  "samplesTags": {"en": "Tags", "th": "แท็ก"},
-  "samplesNotes": {"en": "Notes", "th": "หมายเหตุ"},
-  "samplesDetails": {"en": "Details", "th": "รายละเอียด"},
-
-  "setupRequired": {"en": "Required", "th": "จำเป็นต้องกรอก"},
-  "setupIdTaken": {"en": "This sample ID already exists", "th": "มีรหัสตัวอย่างนี้อยู่แล้ว"},
-  "setupNewSample": {"en": "New sample", "th": "ตัวอย่างใหม่"},
-  "setupEditTitle": {"en": "Edit {id}", "th": "แก้ไข {id}"},
-  "setupSampleId": {"en": "Sample ID", "th": "รหัสตัวอย่าง"},
-  "setupExperiment": {"en": "Experiment (optional)", "th": "การทดลอง (ไม่บังคับ)"},
-  "setupExperimentHelp": {"en": "Samples of one experiment can be compared", "th": "เปรียบเทียบตัวอย่างในการทดลองเดียวกันได้"},
-  "setupCondition": {"en": "Condition", "th": "สภาวะ"},
-  "setupConditionHelp": {"en": "e.g. Control, 1 % NaOCl", "th": "เช่น ชุดควบคุม, 1 % NaOCl"},
-  "setupTimePoint": {"en": "Time point", "th": "จุดเวลา"},
-  "setupHoursUnit": {"en": "h", "th": "ชม."},
-  "setupOptional": {"en": "optional", "th": "ไม่บังคับ"},
-  "setupPlating": {"en": "Plating", "th": "การเพาะเชื้อ"},
-  "setupSpread": {"en": "Spread", "th": "สเปรด"},
-  "setupDrop": {"en": "Drop", "th": "ดรอป"},
-  "setupMembrane": {"en": "Membrane", "th": "เมมเบรน"},
-  "setupMembraneRange": {"en": "Countable range per filter", "th": "ช่วงที่นับได้ต่อแผ่นกรอง"},
-  "setupMembraneUnit": {"en": "Results are reported as CFU/100 mL", "th": "รายงานผลเป็น CFU/100 mL"},
-  "setupPlateType": {"en": "Plate type", "th": "ชนิดจาน"},
-  "setupFrom": {"en": "From", "th": "จาก"},
-  "setupTo": {"en": "To", "th": "ถึง"},
-  "setupReplicates": {"en": "Replicates", "th": "จำนวนซ้ำ"},
-  "setupVolumeFiltered": {"en": "Volume filtered", "th": "ปริมาตรที่กรอง"},
-  "setupVolumePerPlate": {"en": "Volume per plate", "th": "ปริมาตรต่อเพลต"},
-  "setupDropVolume": {"en": "Drop volume", "th": "ปริมาตรต่อหยด"},
-  "setupFilterCount": {"en": "{n, plural, =1{1 filter} other{{n} filters}}.", "th": "{n} แผ่นกรอง", "placeholders": {"n": {"type": "int"}}},
-  "setupPlateCount": {"en": "{n, plural, =1{1 plate} other{{n} plates}}.", "th": "{n} เพลต", "placeholders": {"n": {"type": "int"}}},
-  "setupPlateCountDrops": {"en": "{n, plural, =1{1 plate} other{{n} plates}} with {drops} drops each.", "th": "{n} เพลต เพลตละ {drops} หยด", "placeholders": {"n": {"type": "int"}, "drops": {"type": "int"}}},
-  "setupColonyColours": {"en": "Colony colours", "th": "สีโคโลนี"},
-  "setupColourNone": {"en": "All colonies are counted together.", "th": "นับทุกโคโลนีรวมกัน"},
-  "setupColourBlueWhite": {"en": "Blue and white colonies are counted separately (X-gal screening).", "th": "นับโคโลนีสีน้ำเงินและสีขาวแยกกัน (คัดกรองด้วย X-gal)"},
-  "setupColourTwo": {"en": "Colonies are split into two colour groups (e.g. chromogenic agar).", "th": "แบ่งโคโลนีเป็นสองกลุ่มสี (เช่น chromogenic agar)"},
-  "setupNotes": {"en": "Notes", "th": "หมายเหตุ"},
-  "setupSave": {"en": "Save sample", "th": "บันทึกตัวอย่าง"},
-  "setupDetails": {"en": "Experiment details", "th": "รายละเอียดการทดลอง"},
-  "setupDetailsSummary": {"en": "Strain, medium, incubation, operator, tags", "th": "สายพันธุ์ อาหารเลี้ยงเชื้อ การบ่ม ผู้ปฏิบัติงาน แท็ก"},
-  "setupStrain": {"en": "Strain / organism", "th": "สายพันธุ์ / สิ่งมีชีวิต"},
-  "setupMedium": {"en": "Medium", "th": "อาหารเลี้ยงเชื้อ"},
-  "setupBatch": {"en": "Batch / lot", "th": "ล็อต"},
-  "setupIncubation": {"en": "Incubation", "th": "การบ่ม"},
-  "setupTemperature": {"en": "Temperature", "th": "อุณหภูมิ"},
-  "setupOperator": {"en": "Operator", "th": "ผู้ปฏิบัติงาน"},
-  "setupTags": {"en": "Tags", "th": "แท็ก"},
-  "setupTagsHelp": {"en": "Comma-separated, e.g. thesis, batch 3", "th": "คั่นด้วยจุลภาค เช่น thesis, ล็อต 3"},
-
-  "saveSheetTitle": {"en": "Plate details", "th": "รายละเอียดเพลต"},
-  "saveSheetSampleId": {"en": "Sample ID", "th": "รหัสตัวอย่าง"},
-  "saveSheetSampleHelp": {"en": "Plates with the same sample ID are pooled for CFU/mL", "th": "เพลตที่มีรหัสตัวอย่างเดียวกันจะรวมกันเพื่อคำนวณ CFU/mL"},
-  "saveSheetScan": {"en": "Scan plate label", "th": "สแกนฉลากเพลต"},
-  "saveSheetDilution": {"en": "Plated dilution", "th": "ระดับการเจือจางที่เพาะ"},
-  "saveSheetReplicate": {"en": "Replicate", "th": "ซ้ำที่"},
-  "saveSheetDropVolume": {"en": "Drop volume", "th": "ปริมาตรต่อหยด"},
-  "saveSheetVolumeFiltered": {"en": "Volume filtered", "th": "ปริมาตรที่กรอง"},
-  "saveSheetVolume": {"en": "Volume", "th": "ปริมาตร"},
-  "saveSheetEnterVolume": {"en": "Enter a volume", "th": "กรอกปริมาตร"},
-  "saveSheetDropNote": {"en": "Drop plate: each drop has its own dilution and replicate (set them in Drops).", "th": "ดรอปเพลต: แต่ละหยดมีระดับการเจือจางและซ้ำของตัวเอง (ตั้งค่าในหน้าหยด)"},
-  "saveSheetSpreader": {"en": "Spreader on plate", "th": "มีโคโลนีแผ่กระจายบนเพลต"},
-  "saveSheetSpreaderHelp": {"en": "Excluded from CFU/mL", "th": "ไม่นำมาคำนวณ CFU/mL"},
-  "saveSheetTntc": {"en": "Too numerous to count", "th": "มากเกินนับ (TNTC)"},
-  "saveSheetTntcHelp": {"en": "Count is a lower bound", "th": "จำนวนนับเป็นค่าต่ำสุด"},
-  "saveSheetIncubation": {"en": "Incubation time (optional)", "th": "เวลาบ่ม (ไม่บังคับ)"},
-  "saveSheetHoursUnit": {"en": "h", "th": "ชม."},
-  "saveSheetIncubationHelp": {"en": "Hours since plating, for time-lapse photos", "th": "จำนวนชั่วโมงหลังเพาะ สำหรับภาพไทม์แลปส์"},
-  "saveSheetVerified": {"en": "Checked every colony", "th": "ตรวจทุกโคโลนีแล้ว"},
-  "saveSheetVerifiedHelp": {"en": "Use this plate as a reference count for accuracy tracking", "th": "ใช้เพลตนี้เป็นจำนวนอ้างอิงเพื่อติดตามความแม่นยำ"},
-  "saveSheetNotes": {"en": "Notes", "th": "หมายเหตุ"},
-  "saveSheetAlone": {"en": "This plate alone ({rule})", "th": "เฉพาะเพลตนี้ ({rule})"},
-  "saveSheetSave": {"en": "Save", "th": "บันทึก"}
+ "samplesNotFoundTitle": {
+  "en": "Sample “{id}” not found",
+  "th": "ไม่พบตัวอย่าง “{id}”"
+ },
+ "samplesSetUpNow": {
+  "en": "Set up this sample now?",
+  "th": "ตั้งค่าตัวอย่างนี้ตอนนี้หรือไม่"
+ },
+ "samplesCancel": {
+  "en": "Cancel",
+  "th": "ยกเลิก"
+ },
+ "samplesSetUp": {
+  "en": "Set up",
+  "th": "ตั้งค่า"
+ },
+ "samplesPhotographNow": {
+  "en": "Photograph this plate now?",
+  "th": "ถ่ายภาพเพลตนี้ตอนนี้หรือไม่"
+ },
+ "samplesJustOpen": {
+  "en": "Just open sample",
+  "th": "เปิดตัวอย่างเท่านั้น"
+ },
+ "samplesPhotograph": {
+  "en": "Photograph",
+  "th": "ถ่ายภาพ"
+ },
+ "samplesAlreadyCounted": {
+  "en": "{plate} is already counted.",
+  "th": "{plate} นับแล้ว"
+ },
+ "samplesNoResult": {
+  "en": "No result yet",
+  "th": "ยังไม่มีผล"
+ },
+ "samplesEstimated": {
+  "en": "est.",
+  "th": "ประมาณ"
+ },
+ "samplesHours": {
+  "en": "{h} h",
+  "th": "{h} ชม."
+ },
+ "samplesEmpty": {
+  "en": "Set up a sample to plan its dilution series and replicates. The app then tells you which plate to photograph next and reports mean ± SD and log₁₀ CFU/mL across replicates.",
+  "th": "ตั้งค่าตัวอย่างเพื่อวางแผนระดับการเจือจางและจำนวนซ้ำ แอปจะบอกว่าต้องถ่ายภาพเพลตใดต่อไป และรายงานค่าเฉลี่ย ± SD และ log₁₀ CFU/mL ของทุกซ้ำ"
+ },
+ "samplesSearchHint": {
+  "en": "Search sample, strain, operator, tag…",
+  "th": "ค้นหาตัวอย่าง สายพันธุ์ ผู้ปฏิบัติงาน แท็ก…"
+ },
+ "samplesNoMatch": {
+  "en": "No samples match.",
+  "th": "ไม่พบตัวอย่างที่ตรงกัน"
+ },
+ "samplesNoExperiment": {
+  "en": "No experiment",
+  "th": "ไม่ระบุการทดลอง"
+ },
+ "samplesPlatesDone": {
+  "en": "{done}/{total} plates",
+  "th": "{done}/{total} เพลต",
+  "placeholders": {
+   "done": {
+    "type": "int"
+   },
+   "total": {
+    "type": "int"
+   }
+  }
+ },
+ "samplesPlateCount": {
+  "en": "{n, plural, =1{1 plate} other{{n} plates}}",
+  "th": "{n} เพลต",
+  "placeholders": {
+   "n": {
+    "type": "int"
+   }
+  }
+ },
+ "samplesSlotPlate": {
+  "en": "plate",
+  "th": "เพลต"
+ },
+ "samplesLabelsSubject": {
+  "en": "Plate labels for {id}",
+  "th": "ฉลากเพลตของ {id}"
+ },
+ "samplesDeleteTitle": {
+  "en": "Delete {id}?",
+  "th": "ลบ {id} หรือไม่"
+ },
+ "samplesDeletePlanOnly": {
+  "en": "The sample plan will be removed.",
+  "th": "แผนการเพาะของตัวอย่างนี้จะถูกลบ"
+ },
+ "samplesDeleteAsk": {
+  "en": "Remove only the plan and keep its {n, plural, =1{1 plate} other{{n} plates}}, or delete the plates too?",
+  "th": "ลบเฉพาะแผนการเพาะและเก็บ {n} เพลตไว้ หรือลบเพลตด้วย",
+  "placeholders": {
+   "n": {
+    "type": "int"
+   }
+  }
+ },
+ "samplesKeepPlates": {
+  "en": "Keep plates",
+  "th": "เก็บเพลตไว้"
+ },
+ "samplesDeleteAll": {
+  "en": "Delete all",
+  "th": "ลบทั้งหมด"
+ },
+ "samplesDelete": {
+  "en": "Delete",
+  "th": "ลบ"
+ },
+ "samplesEditPlan": {
+  "en": "Edit plan",
+  "th": "แก้ไขแผนการเพาะ"
+ },
+ "samplesCreatePlan": {
+  "en": "Create plan",
+  "th": "สร้างแผนการเพาะ"
+ },
+ "samplesNewLikeThis": {
+  "en": "New sample like this",
+  "th": "สร้างตัวอย่างใหม่แบบนี้"
+ },
+ "samplesMulti": {
+  "en": "Photograph several plates at once",
+  "th": "ถ่ายภาพหลายเพลตพร้อมกัน"
+ },
+ "samplesPrintLabels": {
+  "en": "Print plate labels (PDF)",
+  "th": "พิมพ์ฉลากเพลต (PDF)"
+ },
+ "samplesDeleteSample": {
+  "en": "Delete sample",
+  "th": "ลบตัวอย่าง"
+ },
+ "samplesPlates": {
+  "en": "Plates",
+  "th": "เพลต"
+ },
+ "samplesDropsUl": {
+  "en": "{v} µL drops",
+  "th": "หยดละ {v} µL"
+ },
+ "samplesMlFiltered": {
+  "en": "{v} mL filtered",
+  "th": "กรอง {v} mL"
+ },
+ "samplesMlPerPlate": {
+  "en": "{v} mL per plate",
+  "th": "{v} mL ต่อเพลต"
+ },
+ "samplesPhotographSlot": {
+  "en": "Photograph {slot}",
+  "th": "ถ่ายภาพ {slot}"
+ },
+ "samplesImportFor": {
+  "en": "Import photo for {slot}",
+  "th": "นำเข้าภาพสำหรับ {slot}"
+ },
+ "samplesAllDone": {
+  "en": "All planned plates are done.",
+  "th": "เพลตตามแผนเสร็จครบแล้ว"
+ },
+ "samplesNoPlan": {
+  "en": "This sample has no plan (its plates were saved one by one). Use “Create plan” in the menu for a guided plate list.",
+  "th": "ตัวอย่างนี้ไม่มีแผนการเพาะ (บันทึกเพลตทีละเพลต) ใช้ “สร้างแผนการเพาะ” ในเมนูเพื่อรับรายการเพลตแบบมีขั้นตอน"
+ },
+ "samplesNoCountable": {
+  "en": "No countable plates yet",
+  "th": "ยังไม่มีเพลตที่นับได้"
+ },
+ "samplesReplicateCount": {
+  "en": "n = {n, plural, =1{1 replicate} other{{n} replicates}}",
+  "th": "n = {n} ซ้ำ",
+  "placeholders": {
+   "n": {
+    "type": "int"
+   }
+  }
+ },
+ "samplesPoolFilters": {
+  "en": "Each replicate pools its countable filters ({range} colonies, {rule}) as ΣC / Σ(V × d); log₁₀ is the mean ± SD of the replicates' log values.",
+  "th": "แต่ละซ้ำรวมแผ่นกรองที่นับได้ ({range} โคโลนี, {rule}) เป็น ΣC / Σ(V × d); log₁₀ คือค่าเฉลี่ย ± SD ของค่า log ของทุกซ้ำ"
+ },
+ "samplesPoolPlates": {
+  "en": "Each replicate pools its countable plates ({range} colonies, {rule}) as ΣC / Σ(V × d); log₁₀ is the mean ± SD of the replicates' log values.",
+  "th": "แต่ละซ้ำรวมเพลตที่นับได้ ({range} โคโลนี, {rule}) เป็น ΣC / Σ(V × d); log₁₀ คือค่าเฉลี่ย ± SD ของค่า log ของทุกซ้ำ"
+ },
+ "samplesStrain": {
+  "en": "Strain",
+  "th": "สายพันธุ์"
+ },
+ "samplesMedium": {
+  "en": "Medium",
+  "th": "อาหารเลี้ยงเชื้อ"
+ },
+ "samplesBatch": {
+  "en": "batch {batch}",
+  "th": "ล็อต {batch}"
+ },
+ "samplesIncubation": {
+  "en": "Incubation",
+  "th": "การบ่ม"
+ },
+ "samplesIncubationAt": {
+  "en": "{hours} at {temp}",
+  "th": "{hours} ที่ {temp}"
+ },
+ "samplesOperator": {
+  "en": "Operator",
+  "th": "ผู้ปฏิบัติงาน"
+ },
+ "samplesTags": {
+  "en": "Tags",
+  "th": "แท็ก"
+ },
+ "samplesNotes": {
+  "en": "Notes",
+  "th": "หมายเหตุ"
+ },
+ "samplesDetails": {
+  "en": "Details",
+  "th": "รายละเอียด"
+ },
+ "setupRequired": {
+  "en": "Required",
+  "th": "จำเป็นต้องกรอก"
+ },
+ "setupIdTaken": {
+  "en": "This sample ID already exists",
+  "th": "มีรหัสตัวอย่างนี้อยู่แล้ว"
+ },
+ "setupNewSample": {
+  "en": "New sample",
+  "th": "ตัวอย่างใหม่"
+ },
+ "setupEditTitle": {
+  "en": "Edit {id}",
+  "th": "แก้ไข {id}"
+ },
+ "setupSampleId": {
+  "en": "Sample ID",
+  "th": "รหัสตัวอย่าง"
+ },
+ "setupExperiment": {
+  "en": "Experiment (optional)",
+  "th": "การทดลอง (ไม่บังคับ)"
+ },
+ "setupExperimentHelp": {
+  "en": "Samples of one experiment can be compared",
+  "th": "เปรียบเทียบตัวอย่างในการทดลองเดียวกันได้"
+ },
+ "setupCondition": {
+  "en": "Condition",
+  "th": "สภาวะ"
+ },
+ "setupConditionHelp": {
+  "en": "e.g. Control, 1 % NaOCl",
+  "th": "เช่น ชุดควบคุม, 1 % NaOCl"
+ },
+ "setupTimePoint": {
+  "en": "Time point",
+  "th": "จุดเวลา"
+ },
+ "setupHoursUnit": {
+  "en": "h",
+  "th": "ชม."
+ },
+ "setupOptional": {
+  "en": "optional",
+  "th": "ไม่บังคับ"
+ },
+ "setupPlating": {
+  "en": "Plating",
+  "th": "การเพาะเชื้อ"
+ },
+ "setupSpread": {
+  "en": "Spread",
+  "th": "สเปรด"
+ },
+ "setupDrop": {
+  "en": "Drop",
+  "th": "ดรอป"
+ },
+ "setupMembrane": {
+  "en": "Membrane",
+  "th": "เมมเบรน"
+ },
+ "setupMembraneRange": {
+  "en": "Countable range per filter",
+  "th": "ช่วงที่นับได้ต่อแผ่นกรอง"
+ },
+ "setupMembraneUnit": {
+  "en": "Results are reported as CFU/100 mL",
+  "th": "รายงานผลเป็น CFU/100 mL"
+ },
+ "setupPlateType": {
+  "en": "Plate type",
+  "th": "ชนิดจาน"
+ },
+ "setupFrom": {
+  "en": "From",
+  "th": "จาก"
+ },
+ "setupTo": {
+  "en": "To",
+  "th": "ถึง"
+ },
+ "setupReplicates": {
+  "en": "Replicates",
+  "th": "จำนวนซ้ำ"
+ },
+ "setupVolumeFiltered": {
+  "en": "Volume filtered",
+  "th": "ปริมาตรที่กรอง"
+ },
+ "setupVolumePerPlate": {
+  "en": "Volume per plate",
+  "th": "ปริมาตรต่อเพลต"
+ },
+ "setupDropVolume": {
+  "en": "Drop volume",
+  "th": "ปริมาตรต่อหยด"
+ },
+ "setupFilterCount": {
+  "en": "{n, plural, =1{1 filter} other{{n} filters}}.",
+  "th": "{n} แผ่นกรอง",
+  "placeholders": {
+   "n": {
+    "type": "int"
+   }
+  }
+ },
+ "setupPlateCount": {
+  "en": "{n, plural, =1{1 plate} other{{n} plates}}.",
+  "th": "{n} เพลต",
+  "placeholders": {
+   "n": {
+    "type": "int"
+   }
+  }
+ },
+ "setupPlateCountDrops": {
+  "en": "{n, plural, =1{1 plate} other{{n} plates}} with {drops} drops each.",
+  "th": "{n} เพลต เพลตละ {drops} หยด",
+  "placeholders": {
+   "n": {
+    "type": "int"
+   },
+   "drops": {
+    "type": "int"
+   }
+  }
+ },
+ "setupColonyColours": {
+  "en": "Colony colours",
+  "th": "สีโคโลนี"
+ },
+ "setupColourNone": {
+  "en": "All colonies are counted together.",
+  "th": "นับทุกโคโลนีรวมกัน"
+ },
+ "setupColourBlueWhite": {
+  "en": "Blue and white colonies are counted separately (X-gal screening).",
+  "th": "นับโคโลนีสีน้ำเงินและสีขาวแยกกัน (คัดกรองด้วย X-gal)"
+ },
+ "setupColourTwo": {
+  "en": "Colonies are split into two colour groups (e.g. chromogenic agar).",
+  "th": "แบ่งโคโลนีเป็นสองกลุ่มสี (เช่น chromogenic agar)"
+ },
+ "setupNotes": {
+  "en": "Notes",
+  "th": "หมายเหตุ"
+ },
+ "setupSave": {
+  "en": "Save sample",
+  "th": "บันทึกตัวอย่าง"
+ },
+ "setupDetails": {
+  "en": "Experiment details",
+  "th": "รายละเอียดการทดลอง"
+ },
+ "setupDetailsSummary": {
+  "en": "Strain, medium, incubation, operator, tags",
+  "th": "สายพันธุ์ อาหารเลี้ยงเชื้อ การบ่ม ผู้ปฏิบัติงาน แท็ก"
+ },
+ "setupStrain": {
+  "en": "Strain / organism",
+  "th": "สายพันธุ์ / สิ่งมีชีวิต"
+ },
+ "setupMedium": {
+  "en": "Medium",
+  "th": "อาหารเลี้ยงเชื้อ"
+ },
+ "setupBatch": {
+  "en": "Batch / lot",
+  "th": "ล็อต"
+ },
+ "setupIncubation": {
+  "en": "Incubation",
+  "th": "การบ่ม"
+ },
+ "setupTemperature": {
+  "en": "Temperature",
+  "th": "อุณหภูมิ"
+ },
+ "setupOperator": {
+  "en": "Operator",
+  "th": "ผู้ปฏิบัติงาน"
+ },
+ "setupTags": {
+  "en": "Tags",
+  "th": "แท็ก"
+ },
+ "setupTagsHelp": {
+  "en": "Comma-separated, e.g. thesis, batch 3",
+  "th": "คั่นด้วยจุลภาค เช่น thesis, ล็อต 3"
+ },
+ "saveSheetTitle": {
+  "en": "Plate details",
+  "th": "รายละเอียดเพลต"
+ },
+ "saveSheetSampleId": {
+  "en": "Sample ID",
+  "th": "รหัสตัวอย่าง"
+ },
+ "saveSheetSampleHelp": {
+  "en": "Plates with the same sample ID are pooled for CFU/mL",
+  "th": "เพลตที่มีรหัสตัวอย่างเดียวกันจะรวมกันเพื่อคำนวณ CFU/mL"
+ },
+ "saveSheetScan": {
+  "en": "Scan plate label",
+  "th": "สแกนฉลากเพลต"
+ },
+ "saveSheetDilution": {
+  "en": "Plated dilution",
+  "th": "ระดับการเจือจางที่เพาะ"
+ },
+ "saveSheetReplicate": {
+  "en": "Replicate",
+  "th": "ซ้ำที่"
+ },
+ "saveSheetDropVolume": {
+  "en": "Drop volume",
+  "th": "ปริมาตรต่อหยด"
+ },
+ "saveSheetVolumeFiltered": {
+  "en": "Volume filtered",
+  "th": "ปริมาตรที่กรอง"
+ },
+ "saveSheetVolume": {
+  "en": "Volume",
+  "th": "ปริมาตร"
+ },
+ "saveSheetEnterVolume": {
+  "en": "Enter a volume",
+  "th": "กรอกปริมาตร"
+ },
+ "saveSheetDropNote": {
+  "en": "Drop plate: each drop has its own dilution and replicate (set them in Drops).",
+  "th": "ดรอปเพลต: แต่ละหยดมีระดับการเจือจางและซ้ำของตัวเอง (ตั้งค่าในหน้าหยด)"
+ },
+ "saveSheetSpreader": {
+  "en": "Spreader on plate",
+  "th": "มีโคโลนีแผ่กระจายบนเพลต"
+ },
+ "saveSheetSpreaderHelp": {
+  "en": "Excluded from CFU/mL",
+  "th": "ไม่นำมาคำนวณ CFU/mL"
+ },
+ "saveSheetTntc": {
+  "en": "Too numerous to count",
+  "th": "มากเกินนับ (TNTC)"
+ },
+ "saveSheetTntcHelp": {
+  "en": "Count is a lower bound",
+  "th": "จำนวนนับเป็นค่าต่ำสุด"
+ },
+ "saveSheetIncubation": {
+  "en": "Incubation time (optional)",
+  "th": "เวลาบ่ม (ไม่บังคับ)"
+ },
+ "saveSheetHoursUnit": {
+  "en": "h",
+  "th": "ชม."
+ },
+ "saveSheetIncubationHelp": {
+  "en": "Hours since plating, for time-lapse photos",
+  "th": "จำนวนชั่วโมงหลังเพาะ สำหรับภาพไทม์แลปส์"
+ },
+ "saveSheetVerified": {
+  "en": "Checked every colony",
+  "th": "ตรวจทุกโคโลนีแล้ว"
+ },
+ "saveSheetVerifiedHelp": {
+  "en": "Use this plate as a reference count for accuracy tracking",
+  "th": "ใช้เพลตนี้เป็นจำนวนอ้างอิงเพื่อติดตามความแม่นยำ"
+ },
+ "saveSheetNotes": {
+  "en": "Notes",
+  "th": "หมายเหตุ"
+ },
+ "saveSheetAlone": {
+  "en": "This plate alone ({rule})",
+  "th": "เฉพาะเพลตนี้ ({rule})"
+ },
+ "saveSheetSave": {
+  "en": "Save",
+  "th": "บันทึก"
+ }
 }

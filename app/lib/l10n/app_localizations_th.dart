@@ -190,6 +190,90 @@ class AppLocalizationsTh extends AppLocalizations {
   String get flagLayoutUncertain => 'ไม่แน่ใจตำแหน่งของหยด: ตรวจสอบหยด';
 
   @override
+  String get setupDropWindow => 'ช่วงที่นับได้ (โคโลนีต่อหยด)';
+
+  @override
+  String get setupDropWindowFrom => 'ตั้งแต่';
+
+  @override
+  String get setupDropWindowTo => 'ถึง';
+
+  @override
+  String get setupDropWindowHelp =>
+      'ช่วงที่ใช้ทั่วไปคือ 3–30 โคโลนีต่อหยด 10 µL หากใช้หยดปริมาตรอื่น ให้ใช้ช่วงตามวิธีปฏิบัติของห้องปฏิบัติการ';
+
+  @override
+  String get setupDropMode => 'วิธีคำนวณ';
+
+  @override
+  String get dropModePooled => 'รวมทุกหยด';
+
+  @override
+  String get dropModeFirst => 'ระดับแรกที่นับได้';
+
+  @override
+  String get setupDropPooledHelp =>
+      'รวมทุกหยดที่อยู่ในช่วงที่นับได้จากทุกระดับการเจือจาง: ΣC ÷ Σ(V × d)';
+
+  @override
+  String get setupDropFirstHelp =>
+      'ใช้ค่าเฉลี่ยของระดับการเจือจางที่น้อยที่สุดซึ่งหยดอยู่ในช่วงที่นับได้ ตามวิธีปฏิบัติส่วนใหญ่';
+
+  @override
+  String get dropTableTitle => 'หยดในแต่ละระดับการเจือจาง';
+
+  @override
+  String dropRowMean(Object mean) {
+    return 'เฉลี่ย $mean';
+  }
+
+  @override
+  String dropRowLeftOut(int n) {
+    return 'ไม่นำมาคำนวณ $n';
+  }
+
+  @override
+  String dropUsedPooled(String dilutions, int n) {
+    return 'รวมจาก $dilutions ($n หยด)';
+  }
+
+  @override
+  String dropUsedFirst(String dilution, int n) {
+    return 'จาก $dilution ระดับการเจือจางแรกที่นับได้ ($n หยด)';
+  }
+
+  @override
+  String dropCi(Object high, Object low) {
+    return 'ช่วงความเชื่อมั่น 95 % $low–$high';
+  }
+
+  @override
+  String dropRuleLine(Object mode, Object range) {
+    return '$mode · $range โคโลนีต่อหยด แต่ละซ้ำคำนวณจากตารางหยดของตนเอง log₁₀ คือค่าเฉลี่ย ± SD ของค่า log ของทุกซ้ำ';
+  }
+
+  @override
+  String get dropWarnOverdispersed =>
+      'หยดในระดับการเจือจางเดียวกันต่างกันมากเกินกว่าความบังเอิญ: ตรวจสอบการผสมและการปิเปต';
+
+  @override
+  String get dropWarnOutlier =>
+      'มีหยดที่ต่างจากหยดอื่นในระดับเดียวกันมาก: ตรวจสอบ หรือไม่นำมาคำนวณ';
+
+  @override
+  String get dropWarnNotTenfold =>
+      'ระดับการเจือจางที่ติดกันไม่ต่างกันประมาณ 10 เท่า: ตรวจสอบชุดการเจือจาง';
+
+  @override
+  String get dropWarnCrowded =>
+      'หยดแน่นเกินไป: อ่านผลเร็วขึ้น หรือนับระดับการเจือจางที่สูงขึ้น';
+
+  @override
+  String dropWarnNotAsPlanned(int found, int planned) {
+    return 'จำนวนหยดไม่ตรงกับแผน (พบ $found หยด แผน $planned หยด): ตรวจสอบป้ายกำกับ';
+  }
+
+  @override
   String get homeSamples => 'ตัวอย่าง';
 
   @override
@@ -1204,11 +1288,6 @@ class AppLocalizationsTh extends AppLocalizations {
   @override
   String samplesReplicateCount(int n) {
     return 'n = $n ซ้ำ';
-  }
-
-  @override
-  String samplesPoolDrops(Object range, Object rule) {
-    return 'แต่ละซ้ำรวมหยดที่นับได้ ($range โคโลนี, $rule) เป็น ΣC / Σ(V × d); log₁₀ คือค่าเฉลี่ย ± SD ของค่า log ของทุกซ้ำ';
   }
 
   @override

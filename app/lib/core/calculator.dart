@@ -65,6 +65,7 @@ class Estimate {
     this.rule,
     this.platesUsed, [
     this.note = '',
+    this.range,
   ]);
 
   final double value;
@@ -72,6 +73,13 @@ class Estimate {
   final CountingRule rule;
   final List<PlateCount> platesUsed;
   final String note;
+
+  /// The countable range used, when it is not [rule]'s (drop plates with
+  /// their own counting window).
+  final (int, int)? range;
+
+  int get rangeMin => range?.$1 ?? rule.min;
+  int get rangeMax => range?.$2 ?? rule.max;
 
   @override
   String toString() => describe();

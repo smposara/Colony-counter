@@ -7,12 +7,14 @@ import '../core/calculator.dart';
 import '../core/labels.dart';
 import '../core/plate.dart';
 import '../core/stats.dart';
+import '../data/drop_results.dart';
 import '../data/plate_record.dart';
 import '../data/label_sheet.dart';
 import '../data/plate_store.dart';
 import '../data/sample_info.dart';
 import '../l10n/l10n.dart';
 import '../l10n/labels.dart';
+import 'drop_table.dart';
 import 'format.dart';
 import 'home_screen.dart';
 import 'insets.dart';
@@ -620,6 +622,23 @@ class _ResultCard extends StatelessWidget {
             '${e.value.note.isNotEmpty ? ' — ${estimateNote(e.value)}' : ''}',
             style: t.bodySmall,
           ),
+        if (info.isDrop)
+          ...() {
+            final d = dropSummary(info, plates);
+            if (d.isEmpty) return const <Widget>[];
+            return [
+              const SizedBox(height: 12),
+              DropTableView(
+                rows: d.rows,
+                estimate: d.estimate,
+                mode: d.mode,
+                window: d.window,
+                factor: f,
+                unit: unit,
+                summary: d,
+              ),
+            ];
+          }(),
       ];
     }
 
@@ -639,11 +658,17 @@ class _ResultCard extends StatelessWidget {
             for (final k in results) ...block(k),
             const SizedBox(height: 8),
             Text(
-              (info.isDrop
-                  ? tr.samplesPoolDrops
-                  : info.isMembrane
-                  ? tr.samplesPoolFilters
-                  : tr.samplesPoolPlates)('${rule.min}–${rule.max}', rule.text),
+              info.isDrop
+                  ? tr.dropRuleLine(
+                      info.dropMode.text,
+                      '${info.dropWindow.$1}–${info.dropWindow.$2}',
+                    )
+                  : (info.isMembrane
+                        ? tr.samplesPoolFilters
+                        : tr.samplesPoolPlates)(
+                      '${rule.min}–${rule.max}',
+                      rule.text,
+                    ),
               style: t.bodySmall,
             ),
             if (!info.isDrop && !info.isMembrane && !info.isFilm) ...[

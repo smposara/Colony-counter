@@ -3,10 +3,12 @@ import 'dart:math' as math;
 import '../core/calculator.dart';
 import '../core/classical.dart';
 import '../core/colour.dart';
+import '../core/drop_stats.dart';
 import '../core/petrifilm.dart';
 import '../core/plate.dart';
 import '../core/spots.dart';
 import '../core/stats.dart';
+import 'drop_results.dart';
 
 /// One counted plate, as saved in the history.
 class PlateRecord {
@@ -172,21 +174,37 @@ class PlateRecord {
     ];
   }
 
-  /// CFU/mL from this plate alone (all its drops pooled for a drop plate).
+  /// CFU/mL from this plate alone (all its drops through the drop table for
+  /// a drop plate, with the sample's [dropWindow] and [dropMode]).
   Estimate estimateAlone(
     CountingRule spreadRule, {
     CountingRule membraneRule = CountingRule.membrane80,
     String? result,
-  }) => estimate(
-    [for (final o in observations(result: result)) o.count],
-    rule: isDropPlate
-        ? CountingRule.dropPlate
-        : isFilm
-        ? filmCountingRule(filmType!)
-        : format.membrane
-        ? membraneRule
-        : spreadRule,
-  );
+    DropMode dropMode = DropMode.pooled,
+    (int, int) dropWindow = kDropWindow,
+  }) {
+    if (isDropPlate) {
+      return estimateOfDrops(
+        estimateDrops(
+          dilutionTable(
+            dropCountsFromSpots(spots, colonies, spreader: spreader),
+          ),
+          volumeMl * 1000,
+          mode: dropMode,
+          window: dropWindow,
+        ),
+        dropWindow,
+      );
+    }
+    return estimate(
+      [for (final o in observations(result: result)) o.count],
+      rule: isFilm
+          ? filmCountingRule(filmType!)
+          : format.membrane
+          ? membraneRule
+          : spreadRule,
+    );
+  }
 
   PlateRecord copyWith({
     String? sampleId,
