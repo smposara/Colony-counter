@@ -146,7 +146,11 @@ String resultSummary(SampleResult r, SampleInfo info) {
 String qualifiedMean(SampleResult r, SampleInfo info) {
   final s = r.stats;
   if (s.n == 0) return '—';
-  final q = {for (final e in r.perReplicate.values) e.qualifier};
+  // Only the replicates the mean is made from (as ReplicateStats).
+  final q = {
+    for (final e in r.perReplicate.values)
+      if (e.value.isFinite && e.value > 0) e.qualifier,
+  };
   final v = sciValue(s.mean * info.unitFactor);
   if (q.length == 1 && q.first == Qualifier.lessThan) return '< $v';
   if (q.length == 1 && q.first == Qualifier.greaterThan) return '> $v';

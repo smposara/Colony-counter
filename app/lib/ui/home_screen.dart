@@ -536,10 +536,7 @@ class RecordTile extends StatelessWidget {
               ),
             const SizedBox(width: 6),
             Text(
-              r.isFilm
-                  ? '${r.filmEstimated() ? '≈' : ''}'
-                        '${formatCount(r.filmValue())}'
-                  : '${r.count}',
+              r.isFilm ? _filmValueText(r) : '${r.count}',
               style: Theme.of(context).textTheme.titleLarge,
             ),
           ],
@@ -552,6 +549,16 @@ class RecordTile extends StatelessWidget {
       ),
     );
   }
+}
+
+/// A film's main result, "≈" when estimated from grid squares (one tally).
+String _filmValueText(PlateRecord r) {
+  final t = r.filmTally;
+  final k = t.counts.keys.first;
+  final est = t.estimates?[k];
+  return est == null
+      ? formatCount(t.counts[k]!.toDouble())
+      : '≈${formatCount(est)}';
 }
 
 class _Thumbnail extends StatefulWidget {

@@ -131,8 +131,8 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
         _format = d.isFilm ? d : PlateFormat.filmAc;
         _volume.text = '1.0';
         // Films are usually plated from the 10⁻¹ dilution; keep a range the
-        // user has set.
-        if (!_rangeSet) {
+        // user has set (membrane's forced "neat" is not one).
+        if (!_rangeSet || (wasMembrane && _from == 0 && _to == 0)) {
           _from = 1;
           _to = 3;
         }

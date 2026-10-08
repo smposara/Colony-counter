@@ -576,7 +576,9 @@ class _ReviewScreenState extends State<ReviewScreen> {
       volumeMl:
           _sameKind(existing)?.volumeMl ??
           _sameKind(base)?.volumeMl ??
-          widget.preset?.info.unitVolumeMl ??
+          (widget.preset?.info.isFilm == _film
+              ? widget.preset?.info.unitVolumeMl
+              : null) ??
           (_drop
               ? 0.01
               : _format.membrane
@@ -644,7 +646,10 @@ class _ReviewScreenState extends State<ReviewScreen> {
   /// diameter in mm follows the radius; a dish keeps its nominal size.
   Plate _resized(Plate p, double r) {
     final grid = _filmGrid;
-    if (!_film || grid == null) return p.copyWith(radius: r);
+    // A grid that was not found gives no scale either: keep the nominal size.
+    if (!_film || grid == null || grid.strength < kGridMinStrength) {
+      return p.copyWith(radius: r);
+    }
     return Plate(p.cx, p.cy, r, diameterMm: 2 * r * grid.mmPerPx);
   }
 
@@ -1270,6 +1275,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
   /// is counted, so neither "estimated" nor "too many to count" applies.
   bool _showFlag(String f) =>
       f != 'estimated' &&
+      f != 'grid_not_found' && // has its own banner
       !(f == 'tntc' && _film && _plate != null && _filmTally.estimates != null);
 
   Widget _banner(TextTheme t, IconData icon, Color bg, Color fg, String text) =>

@@ -338,8 +338,10 @@ class FilmResult {
   final List<String> flags;
 
   /// Per-plate result: the estimate when there is one, else the count.
-  Map<String, double> get values =>
-      estimates ?? {for (final e in counts.entries) e.key: e.value.toDouble()};
+  Map<String, double> get values => {
+    for (final e in counts.entries)
+      e.key: estimates?[e.key] ?? e.value.toDouble(),
+  };
 
   FilmResult scaled(double s) => FilmResult(
     type: type,
@@ -1302,7 +1304,10 @@ FilmTally tallyFilm(
     for (final k in ft.results)
       k: colonies.where((c) => filmRule(type, k, c)).fold(0, (s, c) => s + c.n),
   };
-  if (grid == null || counts.values.reduce(math.max) <= ft.countMax) {
+  // Squares of a grid that was not found are not real squares: no estimate.
+  if (grid == null ||
+      grid.strength < kGridMinStrength ||
+      counts.values.reduce(math.max) <= ft.countMax) {
     return (counts: counts, estimates: null, squaresUsed: 0);
   }
   final squares = _completeSquares(grid, area);

@@ -99,6 +99,9 @@ def test_only_results_above_range_are_estimated():
     counts, est, used = tally_film("ec", marks, grid, area)
     assert counts == {"ecoli": 8, "coliform": 328}
     assert used >= 3 and set(est) == {"coliform"}
+    # No estimate from a grid that was not found.
+    weak = Grid(120, 0, 0, 0, (600, 600), strength=0.1)
+    assert tally_film("ec", marks, weak, area)[1] is None
 
 
 def test_given_grid_is_scaled_to_work_size():

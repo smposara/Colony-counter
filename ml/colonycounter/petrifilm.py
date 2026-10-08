@@ -594,7 +594,8 @@ def tally_film(type: str, colonies, grid: Grid, plate: Plate):
     results above the range (8 E. coli next to 300 coliforms stay 8)."""
     ft = TYPES[type]
     counts = {k: int(sum(c.n for c in colonies if film_rule(type, k, c))) for k in ft.results}
-    if max(counts.values()) <= ft.count_max:
+    # Squares of a grid that was not found are not real squares: no estimate.
+    if grid.strength < GRID_MIN_STRENGTH or max(counts.values()) <= ft.count_max:
         return counts, None, 0
     squares = _complete_squares(grid, plate)
     if len(squares) < 3:

@@ -348,4 +348,83 @@ void main() {
     expect(qualifiedMean(res(40), info), isNot(contains('est.')));
     expect(qualifiedMean(res(9), info), endsWith('est.'));
   });
+
+  test('no square estimate from a grid that was not found', () {
+    final marks = <Colony>[
+      for (var i = -2; i < 2; i++)
+        for (var j = -2; j < 2; j++)
+          for (var k = 0; k < 20; k++)
+            Colony(600 + i * 120 + 10 + k * 3, 600 + j * 120 + 60, 1),
+    ];
+    const weak = FilmGrid(120, 0, 0, 0, 600, 600, 2, 0.1);
+    final t = tallyFilm('ac', filmColoniesOf('ac', marks), weak, _area);
+    expect(t.counts['aerobic'], 320);
+    expect(t.estimates, isNull);
+  });
+
+  test('FilmResult.values merges estimates with counts', () {
+    const r = FilmResult(
+      type: 'ec',
+      plate: _area,
+      grid: _grid,
+      colonies: [],
+      bubbles: [],
+      counts: {'ecoli': 8, 'coliform': 300},
+      estimates: {'coliform': 310},
+      squaresUsed: 8,
+      flags: [],
+    );
+    expect(r.values, {'ecoli': 8.0, 'coliform': 310.0});
+  });
+
+  test('sample tile: a replicate without a value does not hide "<"', () {
+    final info = SampleInfo(
+      sampleId: 'Q2',
+      method: PlatingMethod.film,
+      format: PlateFormat.filmEc,
+      dilutions: const [1],
+      replicates: 2,
+      volumeMl: 1,
+    );
+    final res = analyseReplicates([
+      Observation(const PlateCount(0, 0.1, volumeMl: 1), 1),
+      Observation(const PlateCount(40, 0.1, volumeMl: 1, spreader: true), 2),
+    ], CountingRule.film150);
+    expect(qualifiedMean(res, info), startsWith('< '));
+  });
+
+  testWidgets('Membrane then Film gives the film dilutions, not neat', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1080, 6000);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+    final store = PlateStore(MemoryStorage());
+    await tester.runAsync(store.load);
+    await tester.runAsync(
+      () => store.upsertSample(
+        SampleInfo(
+          sampleId: 'W5',
+          method: PlatingMethod.membrane,
+          format: PlateFormat.membrane47,
+          dilutions: const [0],
+          replicates: 1,
+          volumeMl: 100,
+        ),
+      ),
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: SampleSetupScreen(store: store, edit: store.sampleInfo('W5')),
+      ),
+    );
+    await tester.tap(find.text('Film'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Save sample'));
+    await tester.pumpAndSettle();
+    final info = store.sampleInfo('W5');
+    expect(info.method, PlatingMethod.film);
+    expect(info.dilutions, [1, 2, 3]);
+    expect(info.volumeMl, 1);
+  });
 }

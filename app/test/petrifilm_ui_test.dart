@@ -145,6 +145,7 @@ void main() {
       () => find.byType(CircularProgressIndicator).evaluate().isEmpty,
     );
     expect(find.textContaining('printed grid was not found'), findsOneWidget);
-    expect(find.text('Grid not found'), findsOneWidget);
+    // The banner says it; no extra chip.
+    expect(find.text('Grid not found'), findsNothing);
   });
 }
