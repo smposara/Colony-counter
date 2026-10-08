@@ -55,13 +55,12 @@ Reads Neogen® Petrifilm® plates. Petrifilm and Neogen are trademarks of Neogen
 Intended use: for research and teaching. Colony Counter is not a medical or diagnostic device. Always check the automatic count.
 ```
 
-## Release notes (What's new) (434/500 characters)
+## Release notes (What's new) (398/500 characters)
 
 ```
-Version 0.7.0
-• Drop plates (Miles–Misra): choose a ring or rows of drops, and every planned drop is found, empty and confluent ones too
-• A drop table per dilution: mean ± SD, a Poisson check that drops agree, outlier and tenfold checks
-• CFU/mL pooled or from the first countable dilution, with a 95 % interval and your own counting window
-• Leave a drop out with a reason; new drops.csv export
-• Fixes for drop labels and spreaders
+Version 0.7.1
+• Drop plates: when no dilution is in the counting window, CFU/mL now comes from the closest one (it could show 0 before)
+• Stray colonies between the drops no longer shift a layout of rows, and a crowded plate is flagged for checking
+• Faster drop finding on photos with many specks
+• Clearer notes on estimates and "<" limits; the samples CSV names each sample's own counting window
 ```
