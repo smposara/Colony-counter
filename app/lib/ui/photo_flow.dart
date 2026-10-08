@@ -50,14 +50,16 @@ Future<void> countNewPlate(
   } else {
     final path = await Navigator.of(context).push<String>(
       MaterialPageRoute(
-        builder: (_) => CaptureScreen(
-          square:
-              (laterPhotoOf?.format ??
-                      preset?.info.format ??
-                      store.defaultFormat)
-                  .shape ==
-              PlateShape.square,
-        ),
+        builder: (_) {
+          final format =
+              laterPhotoOf?.format ??
+              preset?.info.format ??
+              store.defaultFormat;
+          return CaptureScreen(
+            square: format.shape == PlateShape.square,
+            film: format.isFilm,
+          );
+        },
       ),
     );
     if (path == null) return;

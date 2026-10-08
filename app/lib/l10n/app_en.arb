@@ -371,6 +371,88 @@
   "themeDark": "Dark",
   "restoreNotZip": "This file is not a Colony Counter backup (not a zip).",
   "restoreNotBackup": "This zip is not a Colony Counter backup.",
+  "methodFilm": "Petrifilm (dry film)",
+  "formatFilmAc": "Petrifilm AC (aerobic count)",
+  "formatFilmEc": "Petrifilm EC (E. coli/coliform)",
+  "formatFilmCc": "Petrifilm CC (coliform)",
+  "formatFilmEb": "Petrifilm EB (Enterobacteriaceae)",
+  "formatFilmYm": "Petrifilm YM (yeast & mold)",
+  "setupFilm": "Film",
+  "filmType": "Film type",
+  "filmRangeFromType": "Counting range {min}–{max} per film, from the film type. Volume is usually 1 mL.",
+  "@filmRangeFromType": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "resultAerobic": "Aerobic count",
+  "resultEcoli": "E. coli",
+  "resultColiform": "Coliforms",
+  "resultEnterobacteriaceae": "Enterobacteriaceae",
+  "resultYeast": "Yeasts",
+  "resultMold": "Molds",
+  "kindColony": "Colony",
+  "kindRed": "Red",
+  "kindBlue": "Blue",
+  "kindYeast": "Yeast",
+  "kindMold": "Mold",
+  "reviewModeKind": "Kind",
+  "reviewModeGas": "Gas",
+  "reviewModeYellow": "Zone",
+  "reviewHintKind": "Tap a colony to switch it between {a} and {b}.",
+  "@reviewHintKind": {
+    "placeholders": {
+      "a": {},
+      "b": {}
+    }
+  },
+  "reviewHintGas": "Tap a colony to mark or unmark a gas bubble next to it (white ring).",
+  "reviewHintYellow": "Tap a colony to mark or unmark a yellow zone around it (yellow ring).",
+  "reviewFilmMarks": "{n, plural, =1{mark} other{marks}}",
+  "@reviewFilmMarks": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "reviewFilmRedNoGas": "{n} red without gas (not counted)",
+  "@reviewFilmRedNoGas": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "reviewFilmNotCounted": "{n} not counted (no gas or zone)",
+  "@reviewFilmNotCounted": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "reviewFilmEstimate": "Above the counting range: estimated from {n} complete grid squares × 20 cm².",
+  "@reviewFilmEstimate": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "reviewFilmFewSquares": "Above the counting range, but fewer than 3 complete grid squares were found, so the count is shown.",
+  "reviewFilmNoGrid": "No grid was found on this photo: counted as a plain plate.",
+  "reviewFilmAid": "Automatic film counts are an aid: check them against the interpretation guide.",
+  "flagEstimated": "Estimated from squares",
+  "flagAreaSize": "Growth area size unexpected",
+  "captureFilmTip": "Lay the film flat on a plain background, photograph straight down and avoid glare on the clear top film.",
+  "aboutPetrifilmTitle": "Dry films",
+  "aboutPetrifilm": "Reads Neogen® Petrifilm® AC, EC, CC, EB and YM plates. Petrifilm and Neogen are trademarks of Neogen Corporation; this app is not made or endorsed by Neogen. Counts are an aid to be checked, not an AOAC-validated result.",
   "photoReadingLabel": "Reading label…",
   "photoNoLabelFound": "No plate label found. Fill the frame with the QR code and try again.",
   "captureLockNotSupported": "Lock not supported: {error}",

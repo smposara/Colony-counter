@@ -508,6 +508,145 @@ class AppLocalizationsEn extends AppLocalizations {
   String get restoreNotBackup => 'This zip is not a Colony Counter backup.';
 
   @override
+  String get methodFilm => 'Petrifilm (dry film)';
+
+  @override
+  String get formatFilmAc => 'Petrifilm AC (aerobic count)';
+
+  @override
+  String get formatFilmEc => 'Petrifilm EC (E. coli/coliform)';
+
+  @override
+  String get formatFilmCc => 'Petrifilm CC (coliform)';
+
+  @override
+  String get formatFilmEb => 'Petrifilm EB (Enterobacteriaceae)';
+
+  @override
+  String get formatFilmYm => 'Petrifilm YM (yeast & mold)';
+
+  @override
+  String get setupFilm => 'Film';
+
+  @override
+  String get filmType => 'Film type';
+
+  @override
+  String filmRangeFromType(int min, int max) {
+    return 'Counting range $min–$max per film, from the film type. Volume is usually 1 mL.';
+  }
+
+  @override
+  String get resultAerobic => 'Aerobic count';
+
+  @override
+  String get resultEcoli => 'E. coli';
+
+  @override
+  String get resultColiform => 'Coliforms';
+
+  @override
+  String get resultEnterobacteriaceae => 'Enterobacteriaceae';
+
+  @override
+  String get resultYeast => 'Yeasts';
+
+  @override
+  String get resultMold => 'Molds';
+
+  @override
+  String get kindColony => 'Colony';
+
+  @override
+  String get kindRed => 'Red';
+
+  @override
+  String get kindBlue => 'Blue';
+
+  @override
+  String get kindYeast => 'Yeast';
+
+  @override
+  String get kindMold => 'Mold';
+
+  @override
+  String get reviewModeKind => 'Kind';
+
+  @override
+  String get reviewModeGas => 'Gas';
+
+  @override
+  String get reviewModeYellow => 'Zone';
+
+  @override
+  String reviewHintKind(Object a, Object b) {
+    return 'Tap a colony to switch it between $a and $b.';
+  }
+
+  @override
+  String get reviewHintGas =>
+      'Tap a colony to mark or unmark a gas bubble next to it (white ring).';
+
+  @override
+  String get reviewHintYellow =>
+      'Tap a colony to mark or unmark a yellow zone around it (yellow ring).';
+
+  @override
+  String reviewFilmMarks(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'marks',
+      one: 'mark',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String reviewFilmRedNoGas(int n) {
+    return '$n red without gas (not counted)';
+  }
+
+  @override
+  String reviewFilmNotCounted(int n) {
+    return '$n not counted (no gas or zone)';
+  }
+
+  @override
+  String reviewFilmEstimate(int n) {
+    return 'Above the counting range: estimated from $n complete grid squares × 20 cm².';
+  }
+
+  @override
+  String get reviewFilmFewSquares =>
+      'Above the counting range, but fewer than 3 complete grid squares were found, so the count is shown.';
+
+  @override
+  String get reviewFilmNoGrid =>
+      'No grid was found on this photo: counted as a plain plate.';
+
+  @override
+  String get reviewFilmAid =>
+      'Automatic film counts are an aid: check them against the interpretation guide.';
+
+  @override
+  String get flagEstimated => 'Estimated from squares';
+
+  @override
+  String get flagAreaSize => 'Growth area size unexpected';
+
+  @override
+  String get captureFilmTip =>
+      'Lay the film flat on a plain background, photograph straight down and avoid glare on the clear top film.';
+
+  @override
+  String get aboutPetrifilmTitle => 'Dry films';
+
+  @override
+  String get aboutPetrifilm =>
+      'Reads Neogen® Petrifilm® AC, EC, CC, EB and YM plates. Petrifilm and Neogen are trademarks of Neogen Corporation; this app is not made or endorsed by Neogen. Counts are an aid to be checked, not an AOAC-validated result.';
+
+  @override
   String get photoReadingLabel => 'Reading label…';
 
   @override

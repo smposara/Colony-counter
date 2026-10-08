@@ -896,6 +896,234 @@ abstract class AppLocalizations {
   /// **'This zip is not a Colony Counter backup.'**
   String get restoreNotBackup;
 
+  /// No description provided for @methodFilm.
+  ///
+  /// In en, this message translates to:
+  /// **'Petrifilm (dry film)'**
+  String get methodFilm;
+
+  /// No description provided for @formatFilmAc.
+  ///
+  /// In en, this message translates to:
+  /// **'Petrifilm AC (aerobic count)'**
+  String get formatFilmAc;
+
+  /// No description provided for @formatFilmEc.
+  ///
+  /// In en, this message translates to:
+  /// **'Petrifilm EC (E. coli/coliform)'**
+  String get formatFilmEc;
+
+  /// No description provided for @formatFilmCc.
+  ///
+  /// In en, this message translates to:
+  /// **'Petrifilm CC (coliform)'**
+  String get formatFilmCc;
+
+  /// No description provided for @formatFilmEb.
+  ///
+  /// In en, this message translates to:
+  /// **'Petrifilm EB (Enterobacteriaceae)'**
+  String get formatFilmEb;
+
+  /// No description provided for @formatFilmYm.
+  ///
+  /// In en, this message translates to:
+  /// **'Petrifilm YM (yeast & mold)'**
+  String get formatFilmYm;
+
+  /// No description provided for @setupFilm.
+  ///
+  /// In en, this message translates to:
+  /// **'Film'**
+  String get setupFilm;
+
+  /// No description provided for @filmType.
+  ///
+  /// In en, this message translates to:
+  /// **'Film type'**
+  String get filmType;
+
+  /// No description provided for @filmRangeFromType.
+  ///
+  /// In en, this message translates to:
+  /// **'Counting range {min}–{max} per film, from the film type. Volume is usually 1 mL.'**
+  String filmRangeFromType(int min, int max);
+
+  /// No description provided for @resultAerobic.
+  ///
+  /// In en, this message translates to:
+  /// **'Aerobic count'**
+  String get resultAerobic;
+
+  /// No description provided for @resultEcoli.
+  ///
+  /// In en, this message translates to:
+  /// **'E. coli'**
+  String get resultEcoli;
+
+  /// No description provided for @resultColiform.
+  ///
+  /// In en, this message translates to:
+  /// **'Coliforms'**
+  String get resultColiform;
+
+  /// No description provided for @resultEnterobacteriaceae.
+  ///
+  /// In en, this message translates to:
+  /// **'Enterobacteriaceae'**
+  String get resultEnterobacteriaceae;
+
+  /// No description provided for @resultYeast.
+  ///
+  /// In en, this message translates to:
+  /// **'Yeasts'**
+  String get resultYeast;
+
+  /// No description provided for @resultMold.
+  ///
+  /// In en, this message translates to:
+  /// **'Molds'**
+  String get resultMold;
+
+  /// No description provided for @kindColony.
+  ///
+  /// In en, this message translates to:
+  /// **'Colony'**
+  String get kindColony;
+
+  /// No description provided for @kindRed.
+  ///
+  /// In en, this message translates to:
+  /// **'Red'**
+  String get kindRed;
+
+  /// No description provided for @kindBlue.
+  ///
+  /// In en, this message translates to:
+  /// **'Blue'**
+  String get kindBlue;
+
+  /// No description provided for @kindYeast.
+  ///
+  /// In en, this message translates to:
+  /// **'Yeast'**
+  String get kindYeast;
+
+  /// No description provided for @kindMold.
+  ///
+  /// In en, this message translates to:
+  /// **'Mold'**
+  String get kindMold;
+
+  /// No description provided for @reviewModeKind.
+  ///
+  /// In en, this message translates to:
+  /// **'Kind'**
+  String get reviewModeKind;
+
+  /// No description provided for @reviewModeGas.
+  ///
+  /// In en, this message translates to:
+  /// **'Gas'**
+  String get reviewModeGas;
+
+  /// No description provided for @reviewModeYellow.
+  ///
+  /// In en, this message translates to:
+  /// **'Zone'**
+  String get reviewModeYellow;
+
+  /// No description provided for @reviewHintKind.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a colony to switch it between {a} and {b}.'**
+  String reviewHintKind(Object a, Object b);
+
+  /// No description provided for @reviewHintGas.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a colony to mark or unmark a gas bubble next to it (white ring).'**
+  String get reviewHintGas;
+
+  /// No description provided for @reviewHintYellow.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a colony to mark or unmark a yellow zone around it (yellow ring).'**
+  String get reviewHintYellow;
+
+  /// No description provided for @reviewFilmMarks.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{mark} other{marks}}'**
+  String reviewFilmMarks(int n);
+
+  /// No description provided for @reviewFilmRedNoGas.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} red without gas (not counted)'**
+  String reviewFilmRedNoGas(int n);
+
+  /// No description provided for @reviewFilmNotCounted.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} not counted (no gas or zone)'**
+  String reviewFilmNotCounted(int n);
+
+  /// No description provided for @reviewFilmEstimate.
+  ///
+  /// In en, this message translates to:
+  /// **'Above the counting range: estimated from {n} complete grid squares × 20 cm².'**
+  String reviewFilmEstimate(int n);
+
+  /// No description provided for @reviewFilmFewSquares.
+  ///
+  /// In en, this message translates to:
+  /// **'Above the counting range, but fewer than 3 complete grid squares were found, so the count is shown.'**
+  String get reviewFilmFewSquares;
+
+  /// No description provided for @reviewFilmNoGrid.
+  ///
+  /// In en, this message translates to:
+  /// **'No grid was found on this photo: counted as a plain plate.'**
+  String get reviewFilmNoGrid;
+
+  /// No description provided for @reviewFilmAid.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic film counts are an aid: check them against the interpretation guide.'**
+  String get reviewFilmAid;
+
+  /// No description provided for @flagEstimated.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated from squares'**
+  String get flagEstimated;
+
+  /// No description provided for @flagAreaSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Growth area size unexpected'**
+  String get flagAreaSize;
+
+  /// No description provided for @captureFilmTip.
+  ///
+  /// In en, this message translates to:
+  /// **'Lay the film flat on a plain background, photograph straight down and avoid glare on the clear top film.'**
+  String get captureFilmTip;
+
+  /// No description provided for @aboutPetrifilmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Dry films'**
+  String get aboutPetrifilmTitle;
+
+  /// No description provided for @aboutPetrifilm.
+  ///
+  /// In en, this message translates to:
+  /// **'Reads Neogen® Petrifilm® AC, EC, CC, EB and YM plates. Petrifilm and Neogen are trademarks of Neogen Corporation; this app is not made or endorsed by Neogen. Counts are an aid to be checked, not an AOAC-validated result.'**
+  String get aboutPetrifilm;
+
   /// No description provided for @photoReadingLabel.
   ///
   /// In en, this message translates to:

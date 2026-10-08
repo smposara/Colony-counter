@@ -129,6 +129,11 @@ class AboutScreen extends StatelessWidget {
             tr.aboutIntendedUse,
             tr.aboutIntendedUseText,
           ),
+          note(
+            Icons.grid_on_outlined,
+            tr.aboutPetrifilmTitle,
+            tr.aboutPetrifilm,
+          ),
           const SizedBox(height: 16),
           Text(
             tr.aboutCopyright(kCopyrightYear, kDeveloper),

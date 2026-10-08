@@ -95,8 +95,28 @@ were made public: `edt` (classical.dart), `RingTaps.ridgeSectorsAt`, `sobel3`,
 comes out ~6 % small (the edge of the colony band, as the synthetic colonies stay 1.5 mm
 inside the rim); check on real crowded films.
 
-Next: data and UI (§4–5); thresholds for colours, bubbles and molds must then be set from
-real photos.
+**Data and UI (§4–5) done** for all five types (AC, EC, CC, EB, YM), with these choices:
+- Each film type is a `PlateFormat` (`filmAc` … `filmYm`, `film: 'ac'` …), so every format
+  picker, record, backup and export carries the type with no separate field. Plating method
+  `PlatingMethod.film`; counting ranges `CountingRule.filmAc` (25–250), `film150`, `film100`.
+- Marks reuse `Colony.cls` for the type's two kinds (red/blue, yeast/mold) and gain `gas` and
+  `yellow`. `PlateRecord.filmGrid` keeps the grid, so results and square estimates
+  (`tallyFilm`) are recomputed after every edit. Older records load unchanged.
+- Sample results per film result (`SampleInfo.analyse(..., result: 'coliform')`); the first
+  result (e.g. E. coli) is the sample's headline value. A plate estimated from squares is
+  not marked TNTC automatically.
+- Review: film counter instead of the dish counter; modes Kind (EC, EB, YM), Gas (EC, CC, EB)
+  and Zone (EB); faint marks for colonies that count towards no result; estimate banner with
+  the squares used drawn on the photo. Sensitivity, drop plate and colour modes are hidden.
+- Setup: "Film" method with a film-type picker and its counting range, 1 mL and 10⁻¹–10⁻³ by
+  default. Plate list, sample card and save sheet show each result. CSV: `film_type`,
+  `film_counts`, `film_estimates`, `film_squares` (plates), one row per result (samples,
+  `result` column), `gas` and `yellow_zone` (colonies). Camera guide: film outline with its
+  round area and a glare tip. About: the trademark notice. Strings: `l10n/parts/petrifilm.json`.
+- Not done yet: tapping a grid square to include or exclude it; the store-listing notice
+  (add with the release); a Thai food microbiologist's check of the terms.
+
+Next: thresholds for colours, bubbles and molds must be set from real photos.
 
 **`petrifilm.py`:**
 - `find_growth_area(image)`: find the round growth area, about 50 mm across. Use a circle

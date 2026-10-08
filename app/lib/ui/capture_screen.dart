@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
@@ -16,10 +17,13 @@ const double kMaxGlare = 0.005;
 /// Camera with a plate guide and live checks (level, focus, glare).
 /// Pops with the path of the captured photo.
 class CaptureScreen extends StatefulWidget {
-  const CaptureScreen({super.key, this.square = false});
+  const CaptureScreen({super.key, this.square = false, this.film = false});
 
   /// Show a square guide (square plates) instead of a circle.
   final bool square;
+
+  /// Show a dry-film guide: the film's outline with its round growth area.
+  final bool film;
 
   @override
   State<CaptureScreen> createState() => _CaptureScreenState();
@@ -221,8 +225,23 @@ class _CaptureScreenState extends State<CaptureScreen>
                                 painter: _GuidePainter(
                                   ok: _allOk,
                                   square: widget.square,
+                                  film: widget.film,
                                 ),
                               ),
+                              if (widget.film)
+                                Positioned(
+                                  left: 12,
+                                  right: 12,
+                                  top: 8,
+                                  child: Text(
+                                    tr.captureFilmTip,
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      shadows: [Shadow(blurRadius: 4)],
+                                    ),
+                                  ),
+                                ),
                             ],
                           ),
                         ),
@@ -251,13 +270,48 @@ class _CaptureScreenState extends State<CaptureScreen>
 }
 
 class _GuidePainter extends CustomPainter {
-  _GuidePainter({required this.ok, this.square = false});
+  _GuidePainter({required this.ok, this.square = false, this.film = false});
 
   final bool ok;
   final bool square;
+  final bool film;
+
+  /// A 75 × 100 mm film, upright, with its 50.5 mm round growth area; a
+  /// framing aid only (the counter finds the area itself).
+  void _paintFilm(Canvas canvas, Size size) {
+    final w = math.min(size.width * 0.8, size.height * 0.8 * 0.75);
+    final h = w / 0.75;
+    final film = Rect.fromCenter(
+      center: size.center(Offset.zero),
+      width: w,
+      height: h,
+    );
+    final area = film.center;
+    final r = w * 25.25 / 75;
+    canvas.drawPath(
+      Path()
+        ..fillType = PathFillType.evenOdd
+        ..addRect(Offset.zero & size)
+        ..addRect(film),
+      Paint()..color = Colors.black.withValues(alpha: 0.45),
+    );
+    final edge = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3
+      ..color = ok ? Colors.greenAccent : Colors.white70;
+    canvas.drawRect(film, edge);
+    canvas.drawCircle(
+      area,
+      r,
+      edge
+        ..strokeWidth = 1.5
+        ..color = edge.color.withValues(alpha: 0.7),
+    );
+  }
 
   @override
   void paint(Canvas canvas, Size size) {
+    if (film) return _paintFilm(canvas, size);
     final center = size.center(Offset.zero);
     final r = size.shortestSide * kGuideFraction / 2;
     // Dim everything outside the guide.
@@ -300,7 +354,7 @@ class _GuidePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_GuidePainter old) => old.ok != ok;
+  bool shouldRepaint(_GuidePainter old) => old.ok != ok || old.film != film;
 }
 
 class _ChecksBar extends StatelessWidget {

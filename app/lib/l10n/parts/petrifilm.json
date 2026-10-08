@@ -1,0 +1,46 @@
+{
+  "methodFilm": {"en": "Petrifilm (dry film)", "th": "Petrifilm (ฟิล์มแห้ง)"},
+  "formatFilmAc": {"en": "Petrifilm AC (aerobic count)", "th": "Petrifilm AC (จุลินทรีย์ทั้งหมด)"},
+  "formatFilmEc": {"en": "Petrifilm EC (E. coli/coliform)", "th": "Petrifilm EC (อี. โคไล/โคลิฟอร์ม)"},
+  "formatFilmCc": {"en": "Petrifilm CC (coliform)", "th": "Petrifilm CC (โคลิฟอร์ม)"},
+  "formatFilmEb": {"en": "Petrifilm EB (Enterobacteriaceae)", "th": "Petrifilm EB (เอนเทอโรแบคทีเรียซีอี)"},
+  "formatFilmYm": {"en": "Petrifilm YM (yeast & mold)", "th": "Petrifilm YM (ยีสต์และรา)"},
+  "setupFilm": {"en": "Film", "th": "ฟิล์ม"},
+  "filmType": {"en": "Film type", "th": "ชนิดฟิล์ม"},
+  "filmRangeFromType": {"en": "Counting range {min}–{max} per film, from the film type. Volume is usually 1 mL.", "th": "ช่วงที่นับได้ {min}–{max} ต่อแผ่น ตามชนิดฟิล์ม ปริมาตรปกติ 1 mL", "placeholders": {"min": {"type": "int"}, "max": {"type": "int"}}},
+
+  "resultAerobic": {"en": "Aerobic count", "th": "จุลินทรีย์ทั้งหมด"},
+  "resultEcoli": {"en": "E. coli", "th": "อี. โคไล"},
+  "resultColiform": {"en": "Coliforms", "th": "โคลิฟอร์ม"},
+  "resultEnterobacteriaceae": {"en": "Enterobacteriaceae", "th": "เอนเทอโรแบคทีเรียซีอี"},
+  "resultYeast": {"en": "Yeasts", "th": "ยีสต์"},
+  "resultMold": {"en": "Molds", "th": "รา"},
+
+  "kindColony": {"en": "Colony", "th": "โคโลนี"},
+  "kindRed": {"en": "Red", "th": "สีแดง"},
+  "kindBlue": {"en": "Blue", "th": "สีน้ำเงิน"},
+  "kindYeast": {"en": "Yeast", "th": "ยีสต์"},
+  "kindMold": {"en": "Mold", "th": "รา"},
+
+  "reviewModeKind": {"en": "Kind", "th": "ชนิด"},
+  "reviewModeGas": {"en": "Gas", "th": "แก๊ส"},
+  "reviewModeYellow": {"en": "Zone", "th": "โซน"},
+  "reviewHintKind": {"en": "Tap a colony to switch it between {a} and {b}.", "th": "แตะโคโลนีเพื่อสลับระหว่าง{a}และ{b}"},
+  "reviewHintGas": {"en": "Tap a colony to mark or unmark a gas bubble next to it (white ring).", "th": "แตะโคโลนีเพื่อทำเครื่องหมายหรือยกเลิกฟองแก๊สข้างโคโลนี (วงสีขาว)"},
+  "reviewHintYellow": {"en": "Tap a colony to mark or unmark a yellow zone around it (yellow ring).", "th": "แตะโคโลนีเพื่อทำเครื่องหมายหรือยกเลิกโซนสีเหลืองรอบโคโลนี (วงสีเหลือง)"},
+  "reviewFilmMarks": {"en": "{n, plural, =1{mark} other{marks}}", "th": "จุดที่ทำเครื่องหมาย", "placeholders": {"n": {"type": "int"}}},
+  "reviewFilmRedNoGas": {"en": "{n} red without gas (not counted)", "th": "สีแดงไม่มีแก๊ส {n} (ไม่นับ)", "placeholders": {"n": {"type": "int"}}},
+  "reviewFilmNotCounted": {"en": "{n} not counted (no gas or zone)", "th": "ไม่นับ {n} (ไม่มีแก๊สหรือโซน)", "placeholders": {"n": {"type": "int"}}},
+  "reviewFilmEstimate": {"en": "Above the counting range: estimated from {n} complete grid squares × 20 cm².", "th": "เกินช่วงที่นับได้: ประมาณจากช่องตารางที่สมบูรณ์ {n} ช่อง × 20 cm²", "placeholders": {"n": {"type": "int"}}},
+  "reviewFilmFewSquares": {"en": "Above the counting range, but fewer than 3 complete grid squares were found, so the count is shown.", "th": "เกินช่วงที่นับได้ แต่พบช่องตารางที่สมบูรณ์น้อยกว่า 3 ช่อง จึงแสดงจำนวนที่นับได้"},
+  "reviewFilmNoGrid": {"en": "No grid was found on this photo: counted as a plain plate.", "th": "ไม่พบตารางในภาพนี้: นับแบบเพลตทั่วไป"},
+  "reviewFilmAid": {"en": "Automatic film counts are an aid: check them against the interpretation guide.", "th": "การนับฟิล์มอัตโนมัติเป็นตัวช่วย: ตรวจสอบกับคู่มือการอ่านผล"},
+
+  "flagEstimated": {"en": "Estimated from squares", "th": "ประมาณจากช่องตาราง"},
+  "flagAreaSize": {"en": "Growth area size unexpected", "th": "ขนาดพื้นที่เพาะเชื้อผิดปกติ"},
+
+  "captureFilmTip": {"en": "Lay the film flat on a plain background, photograph straight down and avoid glare on the clear top film.", "th": "วางฟิล์มให้เรียบบนพื้นสีเรียบ ถ่ายตรงลงด้านล่าง และหลีกเลี่ยงแสงสะท้อนบนฟิล์มใสด้านบน"},
+
+  "aboutPetrifilmTitle": {"en": "Dry films", "th": "ฟิล์มแห้ง"},
+  "aboutPetrifilm": {"en": "Reads Neogen® Petrifilm® AC, EC, CC, EB and YM plates. Petrifilm and Neogen are trademarks of Neogen Corporation; this app is not made or endorsed by Neogen. Counts are an aid to be checked, not an AOAC-validated result.", "th": "อ่านแผ่น Neogen® Petrifilm® ชนิด AC, EC, CC, EB และ YM โดย Petrifilm และ Neogen เป็นเครื่องหมายการค้าของ Neogen Corporation แอปนี้ไม่ได้จัดทำหรือรับรองโดย Neogen ผลการนับเป็นตัวช่วยที่ต้องตรวจสอบ ไม่ใช่ผลที่ผ่านการรับรองตาม AOAC"}
+}

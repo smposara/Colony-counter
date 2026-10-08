@@ -13,6 +13,7 @@ extension PlatingMethodText on PlatingMethod {
     PlatingMethod.spread => tr.methodSpread,
     PlatingMethod.drop => tr.methodDrop,
     PlatingMethod.membrane => tr.methodMembrane,
+    PlatingMethod.film => tr.methodFilm,
   };
 }
 
@@ -49,8 +50,33 @@ extension PlateFormatText on PlateFormat {
     PlateFormat.square100 => tr.formatSquare100,
     PlateFormat.square120 => tr.formatSquare120,
     PlateFormat.membrane47 => tr.formatMembrane47,
+    PlateFormat.filmAc => tr.formatFilmAc,
+    PlateFormat.filmEc => tr.formatFilmEc,
+    PlateFormat.filmCc => tr.formatFilmCc,
+    PlateFormat.filmEb => tr.formatFilmEb,
+    PlateFormat.filmYm => tr.formatFilmYm,
   };
 }
+
+/// Name of a dry-film result ('ecoli', 'coliform', …).
+String filmResultText(String result) => switch (result) {
+  'aerobic' => tr.resultAerobic,
+  'ecoli' => tr.resultEcoli,
+  'coliform' => tr.resultColiform,
+  'enterobacteriaceae' => tr.resultEnterobacteriaceae,
+  'yeast' => tr.resultYeast,
+  'mold' => tr.resultMold,
+  _ => result,
+};
+
+/// Name of a dry-film mark kind ('red', 'blue', 'yeast', …).
+String filmKindText(String kind) => switch (kind) {
+  'red' => tr.kindRed,
+  'blue' => tr.kindBlue,
+  'yeast' => tr.kindYeast,
+  'mold' => tr.kindMold,
+  _ => tr.kindColony,
+};
 
 extension CountingRuleText on CountingRule {
   String get text => switch (this) {

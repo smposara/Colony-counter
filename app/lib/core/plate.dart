@@ -21,19 +21,47 @@ enum PlateFormat {
   square120('120 mm square plate', PlateShape.square, 120),
 
   /// A gridded membrane filter (water testing); the counted area is the filter.
-  membrane47('47 mm membrane filter', PlateShape.round, 47, membrane: true);
+  membrane47('47 mm membrane filter', PlateShape.round, 47, membrane: true),
+
+  /// Neogen® Petrifilm® dry films (and similar): the counted area is the
+  /// round growth area; the scale comes from the printed 1 cm grid.
+  filmAc('Petrifilm AC (aerobic count)', PlateShape.round, 50.5, film: 'ac'),
+  filmEc('Petrifilm EC (E. coli/coliform)', PlateShape.round, 50.5, film: 'ec'),
+  filmCc('Petrifilm CC (coliform)', PlateShape.round, 50.5, film: 'cc'),
+  filmEb(
+    'Petrifilm EB (Enterobacteriaceae)',
+    PlateShape.round,
+    50.5,
+    film: 'eb',
+  ),
+  filmYm('Petrifilm YM (yeast & mold)', PlateShape.round, 50.5, film: 'ym');
 
   const PlateFormat(
     this.label,
     this.shape,
     this.sizeMm, {
     this.membrane = false,
+    this.film,
   });
 
   final String label;
   final PlateShape shape;
   final double sizeMm;
   final bool membrane;
+
+  /// Dry-film type (a key of kFilmTypes in petrifilm.dart), null for dishes
+  /// and filters.
+  final String? film;
+
+  bool get isFilm => film != null;
+
+  /// Dishes and square plates (not filters or films).
+  bool get isDish => !membrane && !isFilm;
+
+  static List<PlateFormat> get films => [
+    for (final f in values)
+      if (f.isFilm) f,
+  ];
 
   static PlateFormat byName(String? name) => PlateFormat.values.firstWhere(
     (f) => f.name == name,

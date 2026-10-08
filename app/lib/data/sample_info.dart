@@ -1,5 +1,6 @@
 import '../core/calculator.dart';
 import '../core/colour.dart';
+import '../core/petrifilm.dart';
 import '../core/plate.dart';
 import '../core/stats.dart';
 import 'plate_record.dart';
@@ -7,7 +8,10 @@ import 'plate_record.dart';
 enum PlatingMethod {
   spread('Spread / pour plate'),
   drop('Drop plate (Miles–Misra)'),
-  membrane('Membrane filtration');
+  membrane('Membrane filtration'),
+
+  /// Dry films such as Neogen® Petrifilm®: one film per dilution, 1 mL each.
+  film('Petrifilm (dry film)');
 
   const PlatingMethod(this.label);
   final String label;
@@ -147,6 +151,11 @@ class SampleInfo {
 
   bool get isDrop => method == PlatingMethod.drop;
   bool get isMembrane => method == PlatingMethod.membrane;
+  bool get isFilm => method == PlatingMethod.film && format.isFilm;
+
+  /// What a dry film reports (e.g. E. coli and coliforms); empty otherwise.
+  List<String> get filmResults =>
+      isFilm ? kFilmTypes[format.film]!.results : const [];
 
   bool get isSolid => solid && !isMembrane;
 
@@ -172,6 +181,8 @@ class SampleInfo {
       ? CountingRule.dropPlate
       : isMembrane
       ? membraneRule
+      : isFilm
+      ? filmCountingRule(format.film!)
       : spreadRule;
 
   /// Every plate in the plan, in the order to photograph them.
@@ -195,10 +206,16 @@ class SampleInfo {
     return null;
   }
 
-  SampleResult analyse(List<PlateRecord> plates, CountingRule spreadRule) =>
-      analyseReplicates([
-        for (final p in latestOfSeries(plates)) ...p.observations(),
-      ], ruleFor(spreadRule));
+  /// CFU per unit from the sample's plates. For a dry film, of [result]
+  /// (default: the film type's first result, e.g. E. coli on EC).
+  SampleResult analyse(
+    List<PlateRecord> plates,
+    CountingRule spreadRule, {
+    String? result,
+  }) => analyseReplicates([
+    for (final p in latestOfSeries(plates))
+      ...p.observations(result: isFilm && p.isFilm ? result : null),
+  ], ruleFor(spreadRule));
 
   SampleInfo copyWith({String? sampleId}) => SampleInfo.fromJson({
     ...toJson(),
@@ -284,12 +301,15 @@ class SampleInfo {
         .fold(1, (a, b) => a > b ? a : b);
     final drop = plates.any((p) => p.isDropPlate);
     final membrane = !drop && plates.any((p) => p.format.membrane);
+    final film = !drop && plates.any((p) => p.isFilm);
     return SampleInfo(
       sampleId: id,
       method: drop
           ? PlatingMethod.drop
           : membrane
           ? PlatingMethod.membrane
+          : film
+          ? PlatingMethod.film
           : PlatingMethod.spread,
       format: plates.isEmpty ? PlateFormat.dish90 : plates.first.format,
       dilutions: ds.isEmpty ? const [0] : ds,

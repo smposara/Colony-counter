@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import 'petrifilm.dart';
 import 'pipeline.dart';
 
 CountResult _count((Uint8List, CountOptions) job) => countPhoto(job.$1, job.$2);
@@ -17,4 +18,14 @@ Future<CountResult> countPhotoInBackground(
     return countPhoto(bytes, options);
   }
   return compute(_count, (bytes, options));
+}
+
+/// Counts a dry-film photo off the UI thread (on the web, after a frame so
+/// the progress indicator shows).
+Future<FilmResult> countFilmInBackground(FilmJob job) async {
+  if (kIsWeb) {
+    await Future<void>.delayed(const Duration(milliseconds: 60));
+    return countFilmJob(job);
+  }
+  return compute(countFilmJob, job);
 }

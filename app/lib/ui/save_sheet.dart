@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../core/calculator.dart';
+import '../core/petrifilm.dart';
 import '../data/plate_record.dart';
 import '../data/plate_store.dart';
 import '../l10n/l10n.dart';
@@ -118,12 +119,22 @@ class _SaveSheetState extends State<SaveSheet> {
     // CFU/100 mL for membranes and CFU/mL otherwise.
     final factor = plan?.unitFactor ?? (_membrane ? 100.0 : 1.0);
     final unit = plan?.unitLabel ?? (_membrane ? 'CFU/100 mL' : 'CFU/mL');
-    final est = record?.estimateAlone(rule, membraneRule: membraneRule);
+    // A dry film reports each of its results (e.g. E. coli and coliforms).
+    final film = widget.draft.filmType;
+    final results = film == null
+        ? const <String?>[null]
+        : kFilmTypes[film]!.results;
+    final ests = [
+      for (final k in results)
+        (k, record?.estimateAlone(rule, membraneRule: membraneRule, result: k)),
+    ];
     final knownSamples = [
       for (final s in widget.store.allSamples()) s.sampleId,
     ];
     final ruleLabel = _drop
         ? CountingRule.dropPlate.text
+        : film != null
+        ? filmCountingRule(film).text
         : _membrane
         ? membraneRule.text
         : rule.text;
@@ -302,17 +313,21 @@ class _SaveSheetState extends State<SaveSheet> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(tr.saveSheetAlone(ruleLabel), style: t.labelMedium),
-                    const SizedBox(height: 4),
-                    Text(
-                      est == null
-                          ? '—'
-                          : prettySci(
-                              estimateText(est, factor: factor, unit: unit),
-                            ),
-                      style: t.titleLarge,
-                    ),
-                    if (est != null && est.note.isNotEmpty)
-                      Text(estimateNote(est), style: t.bodySmall),
+                    for (final (k, est) in ests) ...[
+                      const SizedBox(height: 4),
+                      if (k != null)
+                        Text(filmResultText(k), style: t.labelMedium),
+                      Text(
+                        est == null
+                            ? '—'
+                            : prettySci(
+                                estimateText(est, factor: factor, unit: unit),
+                              ),
+                        style: t.titleLarge,
+                      ),
+                      if (est != null && est.note.isNotEmpty)
+                        Text(estimateNote(est), style: t.bodySmall),
+                    ],
                   ],
                 ),
               ),

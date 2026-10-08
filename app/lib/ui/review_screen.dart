@@ -7,6 +7,7 @@ import '../core/annotate.dart';
 import '../core/background.dart';
 import '../core/classical.dart';
 import '../core/colour.dart';
+import '../core/petrifilm.dart';
 import '../core/pipeline.dart';
 import '../core/plate.dart';
 import '../core/spots.dart';
@@ -23,7 +24,7 @@ import 'timelapse_screen.dart';
 
 const double kRimFraction = 0.95;
 
-enum _Mode { zoom, edit, plate, spots, colour }
+enum _Mode { zoom, edit, plate, spots, colour, gas, yellow }
 
 /// Default drop diameter for a 10 µL drop on agar.
 const double kDropDiameterMm = 7;
@@ -95,6 +96,38 @@ class _ReviewScreenState extends State<ReviewScreen> {
   /// Automatic detections removed by the user (kept for training data).
   List<Colony> _rejected = [];
 
+  /// Dry films: the printed grid found in the photo.
+  FilmGrid? _filmGrid;
+
+  bool get _film => _format.isFilm;
+  String get _filmType => _format.film!;
+
+  /// Counts per result of a dry film, from the current marks.
+  FilmTally get _filmTally => tallyFilm(
+    _filmType,
+    filmColoniesOf(_filmType, _colonies),
+    _filmGrid,
+    _plate!,
+  );
+
+  /// Whether each mark counts towards any of the film's results.
+  List<bool> get _filmCounted {
+    final type = _filmType;
+    final results = kFilmTypes[type]!.results;
+    return [
+      for (final c in filmColoniesOf(type, _colonies))
+        results.any((k) => filmRule(type, k, c)),
+    ];
+  }
+
+  /// Film modes: telling the two kinds apart, gas and yellow zones matter
+  /// only for the types whose rules use them.
+  bool get _filmKindMode =>
+      _film && const {'ec', 'eb', 'ym'}.contains(_filmType);
+  bool get _filmGasMode =>
+      _film && const {'ec', 'cc', 'eb'}.contains(_filmType);
+  bool get _filmYellowMode => _film && _filmType == 'eb';
+
   @override
   void initState() {
     super.initState();
@@ -113,12 +146,17 @@ class _ReviewScreenState extends State<ReviewScreen> {
       _colourMode = r.colourMode;
       _format = r.format;
       _rejected = List.of(r.rejected);
+      _filmGrid = r.filmGrid;
     } else {
       final info = widget.preset?.info;
       final base = widget.laterPhotoOf;
       _drop = base?.isDropPlate ?? info?.isDrop ?? false;
       _colourMode = base?.colourMode ?? info?.colourMode ?? ColourMode.none;
       _format = base?.format ?? info?.format ?? widget.store.defaultFormat;
+      if (_format.isFilm) {
+        _drop = false;
+        _colourMode = ColourMode.none;
+      }
       if (base != null && base.isDropPlate) {
         // Same drops as before; their positions are adjusted after counting.
         _spots = List.of(base.spots);
@@ -149,6 +187,27 @@ class _ReviewScreenState extends State<ReviewScreen> {
       _error = null;
     });
     try {
+      if (_film) {
+        final res = await countFilmInBackground(
+          FilmJob(_photo!, _filmType, area: plate),
+        );
+        if (!mounted) return;
+        setState(() {
+          _imageW = res.imageWidth;
+          _imageH = res.imageHeight;
+          _plate = res.plate;
+          _filmGrid = res.grid;
+          _colonies = marksOf(_filmType, res.colonies);
+          _autoCount = _colonies.fold(0, (s, c) => s + c.n);
+          _flags = res.flags;
+          _rejected = [];
+          _spots = [];
+          _drop = false;
+          _undo.clear();
+          _dirty = true;
+        });
+        return;
+      }
       final res = await countPhotoInBackground(
         _photo!,
         CountOptions(
@@ -387,13 +446,18 @@ class _ReviewScreenState extends State<ReviewScreen> {
       }
       return;
     }
-    if (_mode == _Mode.colour) {
+    if (_mode == _Mode.colour || _mode == _Mode.gas || _mode == _Mode.yellow) {
       final i = _hit(p);
       if (i == null) return;
+      final c = _colonies[i];
       setState(() {
         _push();
         _colonies = [..._colonies]
-          ..[i] = _colonies[i].withCls(1 - _colonies[i].cls);
+          ..[i] = switch (_mode) {
+            _Mode.gas => c.withGas(!c.gas),
+            _Mode.yellow => c.withYellow(!c.yellow),
+            _ => c.withCls(1 - c.cls),
+          };
       });
       return;
     }
@@ -515,10 +579,15 @@ class _ReviewScreenState extends State<ReviewScreen> {
               ? 0.01
               : _format.membrane
               ? 100
+              : _film
+              ? 1
               : widget.store.defaultVolumeMl),
       notes: existing?.notes ?? '',
       spreader: existing?.spreader ?? _flags.contains('spreader'),
-      tntc: existing?.tntc ?? _flags.contains('tntc'),
+      // A film estimated from grid squares is counted, not "too many".
+      tntc:
+          existing?.tntc ??
+          (_flags.contains('tntc') && !(_film && _filmTally.estimates != null)),
       guided: existing?.guided ?? widget.guided,
       kSigma: _kSigma,
       replicate:
@@ -537,6 +606,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
               ? ''
               : (base.seriesId.isEmpty ? base.id : base.seriesId)),
       incubationH: existing?.incubationH ?? _suggestedHours(base),
+      filmGrid: _film ? _filmGrid : null,
     );
     final result = await showModalBottomSheet<PlateRecord>(
       context: context,
@@ -621,6 +691,11 @@ class _ReviewScreenState extends State<ReviewScreen> {
     if (f == null || f == _format || !mounted) return;
     if (!await _confirmDiscardEdits()) return;
     _format = f;
+    _filmGrid = null;
+    if (f.isFilm) {
+      _drop = false;
+      _colourMode = ColourMode.none;
+    }
     await _recount();
   }
 
@@ -653,7 +728,25 @@ class _ReviewScreenState extends State<ReviewScreen> {
         ? ''
         : ' (${[for (var k = 0; k < 2; k++) '${_colourMode.classNames[k]} ${_colonies.where((c) => c.cls == k).fold(0, (s, c) => s + c.n)}'].join(', ')})';
     var count = 'Count: $_count$classes';
-    if (r != null && !_drop && r.volumeMl > 0) {
+    if (_film && _plate != null) {
+      // English names for the ASCII banner font.
+      const names = {
+        'aerobic': 'Aerobic count',
+        'ecoli': 'E. coli',
+        'coliform': 'Coliforms',
+        'enterobacteriaceae': 'Enterobacteriaceae',
+        'yeast': 'Yeasts',
+        'mold': 'Molds',
+      };
+      final t = _filmTally;
+      count = [
+        for (final k in kFilmTypes[_filmType]!.results)
+          t.estimates == null
+              ? '${names[k]} ${t.counts[k]}'
+              : '${names[k]} est. ${t.estimates![k]!.round()}',
+      ].join(' / ');
+    }
+    if (r != null && !_drop && !_film && r.volumeMl > 0) {
       count += ' · ${sciValue(_count / (r.volumeMl * r.dilution))} CFU/mL';
     }
     return [
@@ -744,7 +837,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
             ),
             IconButton(
               tooltip: tr.reviewSensitivity,
-              onPressed: _busy || _plate == null || _photo == null
+              onPressed: _busy || _plate == null || _photo == null || _film
                   ? null
                   : _adjustSensitivity,
               icon: const Icon(Icons.tune),
@@ -802,18 +895,20 @@ class _ReviewScreenState extends State<ReviewScreen> {
                   enabled: !_busy && _photo != null,
                   child: Text(tr.reviewPlateTypeItem(_format.text)),
                 ),
-                CheckedPopupMenuItem(
-                  value: 'drop',
-                  checked: _drop,
-                  child: Text(tr.reviewDropPlate),
-                ),
-                const PopupMenuDivider(),
-                for (final m in ColourMode.values)
+                if (!_film) ...[
                   CheckedPopupMenuItem(
-                    value: m,
-                    checked: _colourMode == m,
-                    child: Text(tr.reviewColoursItem(m.text)),
+                    value: 'drop',
+                    checked: _drop,
+                    child: Text(tr.reviewDropPlate),
                   ),
+                  const PopupMenuDivider(),
+                  for (final m in ColourMode.values)
+                    CheckedPopupMenuItem(
+                      value: m,
+                      checked: _colourMode == m,
+                      child: Text(tr.reviewColoursItem(m.text)),
+                    ),
+                ],
               ],
             ),
           ],
@@ -899,6 +994,17 @@ class _ReviewScreenState extends State<ReviewScreen> {
                                   spots: _drop ? _spots : const [],
                                   colourMode: _colourMode,
                                   showMarks: _showMarks,
+                                  film: _film ? _filmType : null,
+                                  filmCounted: _film ? _filmCounted : const [],
+                                  squares:
+                                      _film &&
+                                          _filmGrid != null &&
+                                          _filmTally.estimates != null
+                                      ? completeSquareOutlines(
+                                          _filmGrid!,
+                                          _plate!,
+                                        )
+                                      : const [],
                                 ),
                               ),
                             ],
@@ -948,8 +1054,13 @@ class _ReviewScreenState extends State<ReviewScreen> {
       (_Mode.edit, Icons.touch_app, tr.reviewModeEdit),
       (_Mode.plate, Icons.radio_button_unchecked, tr.reviewModePlate),
       if (_drop) (_Mode.spots, Icons.bubble_chart_outlined, tr.reviewModeDrops),
-      if (_colourMode != ColourMode.none)
+      if (_colourMode != ColourMode.none && !_film)
         (_Mode.colour, Icons.palette_outlined, tr.reviewModeColour),
+      if (_filmKindMode)
+        (_Mode.colour, Icons.palette_outlined, tr.reviewModeKind),
+      if (_filmGasMode)
+        (_Mode.gas, Icons.bubble_chart_outlined, tr.reviewModeGas),
+      if (_filmYellowMode) (_Mode.yellow, Icons.blur_on, tr.reviewModeYellow),
     ];
     if (!modes.any((m) => m.$1 == _mode)) _mode = _Mode.edit;
     final compact = modes.length > 3;
@@ -984,7 +1095,10 @@ class _ReviewScreenState extends State<ReviewScreen> {
                         const SizedBox(width: 8),
                         Padding(
                           padding: const EdgeInsets.only(bottom: 6),
-                          child: Text('CFU', style: t.titleMedium),
+                          child: Text(
+                            _film ? tr.reviewFilmMarks(_count) : 'CFU',
+                            style: t.titleMedium,
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -1006,20 +1120,24 @@ class _ReviewScreenState extends State<ReviewScreen> {
                       ],
                     ),
                     ..._banners(t, cs),
-                    if (_colourMode != ColourMode.none) _classSummary(t),
+                    if (_film) ..._filmSummary(t, cs),
+                    if (_colourMode != ColourMode.none && !_film)
+                      _classSummary(t),
                     if (_drop) _dropSummary(t),
-                    if (_flags.isNotEmpty)
+                    if (_flags.any((f) => f != 'estimated'))
                       Wrap(
                         spacing: 6,
                         children: [
+                          // The estimate has its own banner.
                           for (final f in _flags)
-                            Chip(
-                              label: Text(flagLabel(f)),
-                              visualDensity: VisualDensity.compact,
-                              backgroundColor: f == 'clusters_estimated'
-                                  ? null
-                                  : cs.errorContainer,
-                            ),
+                            if (f != 'estimated')
+                              Chip(
+                                label: Text(flagLabel(f)),
+                                visualDensity: VisualDensity.compact,
+                                backgroundColor: f == 'clusters_estimated'
+                                    ? null
+                                    : cs.errorContainer,
+                              ),
                         ],
                       ),
                     const SizedBox(height: 8),
@@ -1041,6 +1159,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
                     Text(switch (_mode) {
                       _Mode.edit ||
                       _Mode.spots ||
+                      _Mode.gas ||
+                      _Mode.yellow ||
                       _Mode.colour when !_showMarks => tr.reviewHintMarksHidden,
                       _Mode.zoom => tr.reviewHintZoom,
                       _Mode.edit => tr.reviewHintEdit,
@@ -1049,7 +1169,13 @@ class _ReviewScreenState extends State<ReviewScreen> {
                             ? tr.reviewHintSquare
                             : tr.reviewHintCircle,
                       _Mode.spots => tr.reviewHintDrops,
+                      _Mode.colour when _film => tr.reviewHintKind(
+                        filmKindText(filmKinds(_filmType)[0]).toLowerCase(),
+                        filmKindText(filmKinds(_filmType).last).toLowerCase(),
+                      ),
                       _Mode.colour => tr.reviewHintColour,
+                      _Mode.gas => tr.reviewHintGas,
+                      _Mode.yellow => tr.reviewHintYellow,
                     }, style: t.bodySmall),
                   ],
                 ),
@@ -1122,6 +1248,25 @@ class _ReviewScreenState extends State<ReviewScreen> {
     );
   }
 
+  Widget _banner(TextTheme t, IconData icon, Color bg, Color fg, String text) =>
+      Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 20, color: fg),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(text, style: t.bodySmall?.copyWith(color: fg)),
+            ),
+          ],
+        ),
+      );
+
   /// "Check this count" when the automatic count is likely to be wrong, and
   /// the periodic accuracy check.
   List<Widget> _banners(TextTheme t, ColorScheme cs) {
@@ -1129,23 +1274,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
       for (final f in _flags)
         if (kCheckFlags.contains(f) && f != 'tntc') flagLabel(f).toLowerCase(),
     ];
-    Widget banner(IconData icon, Color bg, Color fg, String text) => Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 20, color: fg),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(text, style: t.bodySmall?.copyWith(color: fg)),
-          ),
-        ],
-      ),
-    );
+    Widget banner(IconData icon, Color bg, Color fg, String text) =>
+        _banner(t, icon, bg, fg, text);
     return [
       if (warnings.isNotEmpty && !_hasEdits)
         banner(
@@ -1161,6 +1291,68 @@ class _ReviewScreenState extends State<ReviewScreen> {
           cs.onSecondaryContainer,
           tr.reviewAccuracyCheck,
         ),
+    ];
+  }
+
+  /// Dry films: each result (with its estimate above the counting range),
+  /// what was left out, and how an estimate was made.
+  List<Widget> _filmSummary(TextTheme t, ColorScheme cs) {
+    final type = _filmType;
+    final tally = _filmTally;
+    final ft = kFilmTypes[type]!;
+    final cols = filmColoniesOf(type, _colonies);
+    final notCounted = [
+      for (final c in cols)
+        if (!ft.results.any((k) => filmRule(type, k, c))) c,
+    ].fold(0, (s, c) => s + c.n);
+    final above = tally.counts.values.any((v) => v > ft.countMax);
+    final est = tally.estimates;
+    return [
+      if (est != null)
+        _banner(
+          t,
+          Icons.grid_on,
+          cs.secondaryContainer,
+          cs.onSecondaryContainer,
+          tr.reviewFilmEstimate(tally.squaresUsed),
+        )
+      else if (above && _filmGrid != null)
+        _banner(
+          t,
+          Icons.grid_off,
+          cs.tertiaryContainer,
+          cs.onTertiaryContainer,
+          tr.reviewFilmFewSquares,
+        ),
+      Padding(
+        padding: const EdgeInsets.only(bottom: 4),
+        child: Wrap(
+          spacing: 14,
+          runSpacing: 4,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            for (final k in ft.results)
+              Text(
+                est == null
+                    ? '${filmResultText(k)} ${tally.counts[k]}'
+                    : '${filmResultText(k)} ≈ ${formatCount(est[k]!)} '
+                          '(${tally.counts[k]})',
+                style: t.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
+              ),
+            if (notCounted > 0)
+              Text(
+                type == 'ec'
+                    ? tr.reviewFilmRedNoGas(notCounted)
+                    : tr.reviewFilmNotCounted(notCounted),
+                style: t.bodySmall,
+              ),
+          ],
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.only(bottom: 4),
+        child: Text(tr.reviewFilmAid, style: t.bodySmall),
+      ),
     ];
   }
 
@@ -1227,6 +1419,15 @@ class _ReviewScreenState extends State<ReviewScreen> {
   }
 }
 
+/// Mark colour for a film's kind: green for red colonies, yeasts and AC
+/// (red marks would vanish on the red gel), light blue for blue colonies,
+/// purple for molds.
+Color _filmKindColour(String type, int cls) => switch ((type, cls)) {
+  ('ym', 1) => Colors.purpleAccent,
+  ('ac', _) || (_, 0) => Colors.greenAccent,
+  _ => const Color(0xFF40C4FF),
+};
+
 Color _classColour(ColourMode mode, int cls) => switch ((mode, cls)) {
   (ColourMode.blueWhite, 1) => const Color(0xFF40C4FF),
   (ColourMode.twoColours, 1) => const Color(0xFFFF4081),
@@ -1258,10 +1459,22 @@ class _OverlayPainter extends CustomPainter {
     required this.spots,
     required this.colourMode,
     this.showMarks = true,
+    this.film,
+    this.filmCounted = const [],
+    this.squares = const [],
   });
 
   /// Off: only the plate outline while moving it, nothing else.
   final bool showMarks;
+
+  /// Dry-film type, when the plate is a film: marks are drawn by kind, with
+  /// rings for gas and yellow zones; marks counted towards no result are
+  /// faint ([filmCounted]).
+  final String? film;
+  final List<bool> filmCounted;
+
+  /// Grid squares an estimate was made from.
+  final List<List<(double, double)>> squares;
   final List<Spot> spots;
   final ColourMode colourMode;
   final Plate? plate;
@@ -1308,6 +1521,29 @@ class _OverlayPainter extends CustomPainter {
       }
     }
     if (!showMarks) return;
+    if (film != null) {
+      _paintFilm(canvas, px);
+      // On top of the marks: on crowded films they cover the gel.
+      for (final sq in squares) {
+        final path = Path()
+          ..addPolygon([for (final (x, y) in sq) Offset(x, y)], true);
+        canvas.drawPath(
+          path,
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 5 * px
+            ..color = Colors.black54,
+        );
+        canvas.drawPath(
+          path,
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2.5 * px
+            ..color = Colors.amberAccent,
+        );
+      }
+      return;
+    }
     for (var i = 0; i < spots.length; i++) {
       final sp = spots[i];
       canvas.drawCircle(
@@ -1381,6 +1617,61 @@ class _OverlayPainter extends CustomPainter {
     }
   }
 
+  void _paintFilm(Canvas canvas, double px) {
+    for (var i = 0; i < colonies.length; i++) {
+      final c = colonies[i];
+      final counted = i < filmCounted.length ? filmCounted[i] : true;
+      final r = math.max(c.radiusPx * 1.25, 5 * px);
+      final colour = c.n > 1
+          ? Colors.orangeAccent
+          : c.manual
+          ? Colors.pinkAccent
+          : _filmKindColour(film!, c.cls);
+      canvas.drawCircle(
+        Offset(c.x, c.y),
+        r,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = (counted ? 2.5 : 1.5) * px
+          ..color = counted ? colour : colour.withValues(alpha: 0.45),
+      );
+      if (c.gas) {
+        canvas.drawCircle(
+          Offset(c.x, c.y),
+          r + 3 * px,
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.5 * px
+            ..color = Colors.white,
+        );
+      }
+      if (c.yellow) {
+        canvas.drawCircle(
+          Offset(c.x, c.y),
+          r + (c.gas ? 6 : 3) * px,
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.5 * px
+            ..color = Colors.yellowAccent,
+        );
+      }
+      if (c.n > 1) {
+        final tp = TextPainter(
+          text: TextSpan(
+            text: '×${c.n}',
+            style: TextStyle(
+              color: Colors.orangeAccent,
+              fontSize: 13 * px,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          textDirection: TextDirection.ltr,
+        )..layout();
+        tp.paint(canvas, Offset(c.x + r, c.y - tp.height / 2));
+      }
+    }
+  }
+
   @override
   bool shouldRepaint(_OverlayPainter old) =>
       old.plate != plate ||
@@ -1389,7 +1680,9 @@ class _OverlayPainter extends CustomPainter {
       old.plateMode != plateMode ||
       old.spots != spots ||
       old.colourMode != colourMode ||
-      old.showMarks != showMarks;
+      old.showMarks != showMarks ||
+      old.film != film ||
+      old.squares.length != squares.length;
 }
 
 class _ClusterDialog extends StatefulWidget {

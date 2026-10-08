@@ -484,6 +484,138 @@ class AppLocalizationsTh extends AppLocalizations {
       'ไฟล์ zip นี้ไม่ใช่ไฟล์สำรองข้อมูลของ Colony Counter';
 
   @override
+  String get methodFilm => 'Petrifilm (ฟิล์มแห้ง)';
+
+  @override
+  String get formatFilmAc => 'Petrifilm AC (จุลินทรีย์ทั้งหมด)';
+
+  @override
+  String get formatFilmEc => 'Petrifilm EC (อี. โคไล/โคลิฟอร์ม)';
+
+  @override
+  String get formatFilmCc => 'Petrifilm CC (โคลิฟอร์ม)';
+
+  @override
+  String get formatFilmEb => 'Petrifilm EB (เอนเทอโรแบคทีเรียซีอี)';
+
+  @override
+  String get formatFilmYm => 'Petrifilm YM (ยีสต์และรา)';
+
+  @override
+  String get setupFilm => 'ฟิล์ม';
+
+  @override
+  String get filmType => 'ชนิดฟิล์ม';
+
+  @override
+  String filmRangeFromType(int min, int max) {
+    return 'ช่วงที่นับได้ $min–$max ต่อแผ่น ตามชนิดฟิล์ม ปริมาตรปกติ 1 mL';
+  }
+
+  @override
+  String get resultAerobic => 'จุลินทรีย์ทั้งหมด';
+
+  @override
+  String get resultEcoli => 'อี. โคไล';
+
+  @override
+  String get resultColiform => 'โคลิฟอร์ม';
+
+  @override
+  String get resultEnterobacteriaceae => 'เอนเทอโรแบคทีเรียซีอี';
+
+  @override
+  String get resultYeast => 'ยีสต์';
+
+  @override
+  String get resultMold => 'รา';
+
+  @override
+  String get kindColony => 'โคโลนี';
+
+  @override
+  String get kindRed => 'สีแดง';
+
+  @override
+  String get kindBlue => 'สีน้ำเงิน';
+
+  @override
+  String get kindYeast => 'ยีสต์';
+
+  @override
+  String get kindMold => 'รา';
+
+  @override
+  String get reviewModeKind => 'ชนิด';
+
+  @override
+  String get reviewModeGas => 'แก๊ส';
+
+  @override
+  String get reviewModeYellow => 'โซน';
+
+  @override
+  String reviewHintKind(Object a, Object b) {
+    return 'แตะโคโลนีเพื่อสลับระหว่าง$aและ$b';
+  }
+
+  @override
+  String get reviewHintGas =>
+      'แตะโคโลนีเพื่อทำเครื่องหมายหรือยกเลิกฟองแก๊สข้างโคโลนี (วงสีขาว)';
+
+  @override
+  String get reviewHintYellow =>
+      'แตะโคโลนีเพื่อทำเครื่องหมายหรือยกเลิกโซนสีเหลืองรอบโคโลนี (วงสีเหลือง)';
+
+  @override
+  String reviewFilmMarks(int n) {
+    return 'จุดที่ทำเครื่องหมาย';
+  }
+
+  @override
+  String reviewFilmRedNoGas(int n) {
+    return 'สีแดงไม่มีแก๊ส $n (ไม่นับ)';
+  }
+
+  @override
+  String reviewFilmNotCounted(int n) {
+    return 'ไม่นับ $n (ไม่มีแก๊สหรือโซน)';
+  }
+
+  @override
+  String reviewFilmEstimate(int n) {
+    return 'เกินช่วงที่นับได้: ประมาณจากช่องตารางที่สมบูรณ์ $n ช่อง × 20 cm²';
+  }
+
+  @override
+  String get reviewFilmFewSquares =>
+      'เกินช่วงที่นับได้ แต่พบช่องตารางที่สมบูรณ์น้อยกว่า 3 ช่อง จึงแสดงจำนวนที่นับได้';
+
+  @override
+  String get reviewFilmNoGrid => 'ไม่พบตารางในภาพนี้: นับแบบเพลตทั่วไป';
+
+  @override
+  String get reviewFilmAid =>
+      'การนับฟิล์มอัตโนมัติเป็นตัวช่วย: ตรวจสอบกับคู่มือการอ่านผล';
+
+  @override
+  String get flagEstimated => 'ประมาณจากช่องตาราง';
+
+  @override
+  String get flagAreaSize => 'ขนาดพื้นที่เพาะเชื้อผิดปกติ';
+
+  @override
+  String get captureFilmTip =>
+      'วางฟิล์มให้เรียบบนพื้นสีเรียบ ถ่ายตรงลงด้านล่าง และหลีกเลี่ยงแสงสะท้อนบนฟิล์มใสด้านบน';
+
+  @override
+  String get aboutPetrifilmTitle => 'ฟิล์มแห้ง';
+
+  @override
+  String get aboutPetrifilm =>
+      'อ่านแผ่น Neogen® Petrifilm® ชนิด AC, EC, CC, EB และ YM โดย Petrifilm และ Neogen เป็นเครื่องหมายการค้าของ Neogen Corporation แอปนี้ไม่ได้จัดทำหรือรับรองโดย Neogen ผลการนับเป็นตัวช่วยที่ต้องตรวจสอบ ไม่ใช่ผลที่ผ่านการรับรองตาม AOAC';
+
+  @override
   String get photoReadingLabel => 'กำลังอ่านฉลากเพลต…';
 
   @override

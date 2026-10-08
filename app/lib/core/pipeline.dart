@@ -99,6 +99,7 @@ const kCheckFlags = {
   'crowded',
   'many_clusters',
   'low_contrast',
+  'area_size_unexpected',
 };
 
 /// Colonies per cm² above which neighbours start to merge (about 220 on a

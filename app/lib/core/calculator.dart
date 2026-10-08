@@ -18,7 +18,12 @@ enum CountingRule {
 
   /// Membrane filters: 20–80 for coliforms / E. coli, 20–200 for total counts.
   membrane80('Membrane 20–80', 20, 80),
-  membrane200('Membrane 20–200', 20, 200);
+  membrane200('Membrane 20–200', 20, 200),
+
+  /// Dry films (Petrifilm): the range comes from the film type's guide.
+  filmAc('Petrifilm 25–250', 25, 250),
+  film150('Petrifilm 15–150', 15, 150),
+  film100('Petrifilm 15–100', 15, 100);
 
   const CountingRule(this.label, this.min, this.max);
 

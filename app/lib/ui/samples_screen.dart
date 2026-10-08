@@ -247,9 +247,17 @@ class _SampleTile extends StatelessWidget {
           ? tr.samplesPlatesDone(done, info.slots.length)
           : tr.samplesPlateCount(plates.length),
     ];
+    // A dry film also lists its other results (e.g. coliforms beside E. coli).
+    final film = [
+      for (final k in info.filmResults)
+        '${filmResultText(k)} ${sciValue(info.analyse(plates, store.rule, result: k).stats.mean * info.unitFactor)}',
+    ];
     return ListTile(
       title: Text(info.sampleId),
-      subtitle: Text('${details.join(' · ')}\n${resultSummary(res, info)}'),
+      subtitle: Text(
+        '${details.join(' · ')}\n'
+        '${film.length > 1 ? film.join(' · ') : resultSummary(res, info)}',
+      ),
       isThreeLine: true,
       trailing: Text(
         sciValue(res.stats.mean * info.unitFactor),
@@ -387,7 +395,8 @@ class SampleDetailScreen extends StatelessWidget {
                     value: 'copy',
                     child: Text(tr.samplesNewLikeThis),
                   ),
-                  if (next != null)
+                  // One film per photo: the multi-plate finder is for dishes.
+                  if (next != null && !info.isFilm)
                     PopupMenuItem(value: 'multi', child: Text(tr.samplesMulti)),
                   if (planned)
                     PopupMenuItem(
@@ -424,8 +433,11 @@ class SampleDetailScreen extends StatelessWidget {
                       )
                     else
                       tr.samplesMlPerPlate('${info.volumeMl}'),
-                    if (!info.isMembrane && info.format != PlateFormat.dish90)
+                    if (!info.isMembrane &&
+                        !info.isFilm &&
+                        info.format != PlateFormat.dish90)
                       info.format.text,
+                    if (info.isFilm) info.format.text,
                     if (info.isDrop) info.dropLayout.text,
                   ].join(' · '),
                   style: t.bodySmall,
@@ -548,10 +560,52 @@ class _ResultCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = Theme.of(context).textTheme;
     final rule = info.ruleFor(store.rule);
-    final res = info.analyse(plates, store.rule);
-    final s = res.stats;
     final f = info.unitFactor, unit = info.unitLabel;
     final logShift = math.log(f) / math.ln10;
+    // One block per result: a dry film reports each (E. coli, coliforms…).
+    final results = info.filmResults.isEmpty
+        ? const <String?>[null]
+        : info.filmResults;
+    List<Widget> block(String? result) {
+      final res = info.analyse(plates, store.rule, result: result);
+      final s = res.stats;
+      return [
+        if (result != null) ...[
+          const SizedBox(height: 8),
+          Text(filmResultText(result), style: t.titleSmall),
+        ],
+        const SizedBox(height: 4),
+        Text(
+          s.n == 0 ? tr.samplesNoCountable : '${sciValue(s.mean * f)} $unit',
+          style: t.headlineSmall,
+        ),
+        if (s.n > 0) ...[
+          const SizedBox(height: 4),
+          Text(
+            [
+              if (s.n > 1) 'SD ${sciValue(s.sd * f)}',
+              if (s.n > 1) 'CV ${fixed(s.cvPercent, 1)} %',
+              tr.samplesReplicateCount(s.n),
+            ].join(' · '),
+            style: t.bodyMedium,
+          ),
+          const SizedBox(height: 2),
+          Text(
+            'log₁₀ $unit ${fixed(s.log10Mean + logShift)}'
+            '${s.n > 1 ? ' ± ${fixed(s.log10Sd)}' : ''}',
+            style: t.titleMedium,
+          ),
+        ],
+        const SizedBox(height: 8),
+        for (final e in res.perReplicate.entries)
+          Text(
+            'R${e.key}: ${prettySci(estimateText(e.value, factor: f, unit: unit))}'
+            '${e.value.note.isNotEmpty ? ' — ${estimateNote(e.value)}' : ''}',
+            style: t.bodySmall,
+          ),
+      ];
+    }
+
     final details = [
       if (info.experiment.isNotEmpty) info.experiment,
       if (info.condition.isNotEmpty) info.condition,
@@ -565,37 +619,7 @@ class _ResultCard extends StatelessWidget {
           children: [
             if (details.isNotEmpty)
               Text(details.join(' · '), style: t.labelLarge),
-            const SizedBox(height: 4),
-            Text(
-              s.n == 0
-                  ? tr.samplesNoCountable
-                  : '${sciValue(s.mean * f)} $unit',
-              style: t.headlineSmall,
-            ),
-            if (s.n > 0) ...[
-              const SizedBox(height: 4),
-              Text(
-                [
-                  if (s.n > 1) 'SD ${sciValue(s.sd * f)}',
-                  if (s.n > 1) 'CV ${fixed(s.cvPercent, 1)} %',
-                  tr.samplesReplicateCount(s.n),
-                ].join(' · '),
-                style: t.bodyMedium,
-              ),
-              const SizedBox(height: 2),
-              Text(
-                'log₁₀ $unit ${fixed(s.log10Mean + logShift)}'
-                '${s.n > 1 ? ' ± ${fixed(s.log10Sd)}' : ''}',
-                style: t.titleMedium,
-              ),
-            ],
-            const SizedBox(height: 8),
-            for (final e in res.perReplicate.entries)
-              Text(
-                'R${e.key}: ${prettySci(estimateText(e.value, factor: f, unit: unit))}'
-                '${e.value.note.isNotEmpty ? ' — ${estimateNote(e.value)}' : ''}',
-                style: t.bodySmall,
-              ),
+            for (final k in results) ...block(k),
             const SizedBox(height: 8),
             Text(
               (info.isDrop
@@ -605,7 +629,7 @@ class _ResultCard extends StatelessWidget {
                   : tr.samplesPoolPlates)('${rule.min}–${rule.max}', rule.text),
               style: t.bodySmall,
             ),
-            if (!info.isDrop && !info.isMembrane) ...[
+            if (!info.isDrop && !info.isMembrane && !info.isFilm) ...[
               const SizedBox(height: 8),
               SegmentedButton<CountingRule>(
                 showSelectedIcon: false,

@@ -46,6 +46,8 @@ class Colony {
     this.manual = false,
     this.colour,
     this.cls = 0,
+    this.gas = false,
+    this.yellow = false,
   });
 
   final double x;
@@ -60,10 +62,24 @@ class Colony {
   /// Mean colour of the colony centre, when measured.
   final Lab? colour;
 
-  /// Colour class (0 or 1) under the plate's [ColourMode].
+  /// Colour class (0 or 1) under the plate's [ColourMode]; on a dry film,
+  /// the film's kind (see filmKinds in petrifilm.dart).
   final int cls;
 
-  Colony _copy({double? s, int? n, Lab? colour, int? cls}) => Colony(
+  /// Dry films: a gas bubble within one colony diameter.
+  final bool gas;
+
+  /// Dry films: a yellow zone around the colony (Enterobacteriaceae).
+  final bool yellow;
+
+  Colony _copy({
+    double? s,
+    int? n,
+    Lab? colour,
+    int? cls,
+    bool? gas,
+    bool? yellow,
+  }) => Colony(
     x * (s ?? 1),
     y * (s ?? 1),
     radiusPx * (s ?? 1),
@@ -72,9 +88,13 @@ class Colony {
     manual: manual,
     colour: colour ?? this.colour,
     cls: cls ?? this.cls,
+    gas: gas ?? this.gas,
+    yellow: yellow ?? this.yellow,
   );
 
   Colony scaled(double s) => _copy(s: s);
+  Colony withGas(bool gas) => _copy(gas: gas);
+  Colony withYellow(bool yellow) => _copy(yellow: yellow);
   Colony withN(int n) => _copy(n: n);
   Colony withColour(Lab colour) => _copy(colour: colour);
   Colony withCls(int cls) => _copy(cls: cls);
@@ -88,6 +108,8 @@ class Colony {
     if (manual) 'manual': true,
     if (colour != null) 'lab': colour!.toJson(),
     if (cls != 0) 'cls': cls,
+    if (gas) 'gas': true,
+    if (yellow) 'yellow': true,
   };
 
   factory Colony.fromJson(Map<String, dynamic> j) => Colony(
@@ -99,6 +121,8 @@ class Colony {
     manual: j['manual'] as bool? ?? false,
     colour: j['lab'] == null ? null : Lab.fromJson(j['lab'] as List),
     cls: (j['cls'] as num?)?.toInt() ?? 0,
+    gas: j['gas'] as bool? ?? false,
+    yellow: j['yellow'] as bool? ?? false,
   );
 }
 

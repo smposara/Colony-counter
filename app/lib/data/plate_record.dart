@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import '../core/calculator.dart';
 import '../core/classical.dart';
 import '../core/colour.dart';
+import '../core/petrifilm.dart';
 import '../core/plate.dart';
 import '../core/spots.dart';
 import '../core/stats.dart';
@@ -35,6 +36,7 @@ class PlateRecord {
     this.rejected = const [],
     this.seriesId = '',
     this.incubationH,
+    this.filmGrid,
   });
 
   final String id;
@@ -88,7 +90,31 @@ class PlateRecord {
   /// Hours since plating when photographed, if known.
   final double? incubationH;
 
+  /// Dry films: the printed grid found in the photo (for square estimates).
+  final FilmGrid? filmGrid;
+
   bool get isDropPlate => spots.isNotEmpty;
+
+  bool get isFilm => format.isFilm;
+
+  /// Dry-film type ('ac', 'ec', …), null for dishes and filters.
+  String? get filmType => format.film;
+
+  /// Counts per result of a dry film, with square estimates above its range.
+  FilmTally get filmTally => tallyFilm(
+    filmType!,
+    filmColoniesOf(filmType!, colonies),
+    filmGrid,
+    plate,
+  );
+
+  /// Per-plate value of [result]: the square estimate when there is one,
+  /// else the count. [result] defaults to the film type's first result.
+  double filmValue([String? result]) {
+    final t = filmTally;
+    final k = result ?? kFilmTypes[filmType!]!.results.first;
+    return t.estimates?[k] ?? (t.counts[k] ?? 0).toDouble();
+  }
 
   /// Colonies per colour class (index = class).
   List<int> get classCounts {
@@ -103,17 +129,20 @@ class PlateRecord {
   int get added => colonies.where((c) => c.manual).length;
   double get dilution => math.pow(10, -dilutionExp).toDouble();
 
-  PlateCount toPlateCount() => PlateCount(
-    count,
+  PlateCount toPlateCount({String? result}) => PlateCount(
+    isFilm ? filmValue(result).round() : count,
     dilution,
     volumeMl: volumeMl,
     spreader: spreader,
     tntc: tntc,
   );
 
-  /// The countable units of this plate: the whole plate, or each drop.
-  List<Observation> observations() {
-    if (!isDropPlate) return [Observation(toPlateCount(), replicate)];
+  /// The countable units of this plate: the whole plate, or each drop. For a
+  /// dry film, the plate's [result] (default: the type's first result).
+  List<Observation> observations({String? result}) {
+    if (!isDropPlate) {
+      return [Observation(toPlateCount(result: result), replicate)];
+    }
     return [
       for (final s in spots)
         Observation(
@@ -132,10 +161,13 @@ class PlateRecord {
   Estimate estimateAlone(
     CountingRule spreadRule, {
     CountingRule membraneRule = CountingRule.membrane80,
+    String? result,
   }) => estimate(
-    [for (final o in observations()) o.count],
+    [for (final o in observations(result: result)) o.count],
     rule: isDropPlate
         ? CountingRule.dropPlate
+        : isFilm
+        ? filmCountingRule(filmType!)
         : format.membrane
         ? membraneRule
         : spreadRule,
@@ -159,6 +191,7 @@ class PlateRecord {
     String? seriesId,
     double? incubationH,
     bool clearIncubation = false,
+    FilmGrid? filmGrid,
   }) => PlateRecord(
     id: id,
     createdAt: createdAt,
@@ -185,6 +218,7 @@ class PlateRecord {
     rejected: rejected ?? this.rejected,
     seriesId: seriesId ?? this.seriesId,
     incubationH: clearIncubation ? null : incubationH ?? this.incubationH,
+    filmGrid: filmGrid ?? this.filmGrid,
   );
 
   Map<String, dynamic> toJson() => {
@@ -213,6 +247,7 @@ class PlateRecord {
     if (rejected.isNotEmpty) 'rejected': [for (final c in rejected) c.toJson()],
     if (seriesId.isNotEmpty) 'series_id': seriesId,
     if (incubationH != null) 'incubation_h': incubationH,
+    if (filmGrid != null) 'film_grid': filmGrid!.toJson(),
   };
 
   factory PlateRecord.fromJson(Map<String, dynamic> j) => PlateRecord(
@@ -253,6 +288,9 @@ class PlateRecord {
     ],
     seriesId: j['series_id'] as String? ?? '',
     incubationH: (j['incubation_h'] as num?)?.toDouble(),
+    filmGrid: j['film_grid'] == null
+        ? null
+        : FilmGrid.fromJson(j['film_grid'] as Map<String, dynamic>),
   );
 }
 

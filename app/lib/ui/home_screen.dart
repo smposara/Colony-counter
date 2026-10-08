@@ -51,7 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: Text([tr.appTitle, tr.homeSamples, tr.homeCompare][_tab]),
         actions: [
-          if (_tab == 0)
+          if (_tab == 0 && !store.defaultFormat.isFilm)
             IconButton(
               tooltip: tr.homeSeveralPlates,
               icon: const Icon(Icons.grid_view_outlined),
@@ -504,7 +504,12 @@ class RecordTile extends StatelessWidget {
           child: _Thumbnail(store: store, record: r),
         ),
         title: Text(plateLabel(r)),
-        subtitle: Text(shortDate(r.createdAt)),
+        subtitle: Text(
+          r.isFilm
+              ? '${shortDate(r.createdAt)}\n${filmSummary(r)}'
+              : shortDate(r.createdAt),
+        ),
+        isThreeLine: r.isFilm,
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -530,7 +535,13 @@ class RecordTile extends StatelessWidget {
                 child: Icon(Icons.timeline, color: cs.secondary, size: 20),
               ),
             const SizedBox(width: 6),
-            Text('${r.count}', style: Theme.of(context).textTheme.titleLarge),
+            Text(
+              r.isFilm
+                  ? '${r.filmTally.estimates == null ? '' : '≈'}'
+                        '${formatCount(r.filmValue())}'
+                  : '${r.count}',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
           ],
         ),
         onTap: () => Navigator.of(context).push(

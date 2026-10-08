@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:image/image.dart' as img;
 
+import 'calculator.dart';
 import 'classical.dart';
 import 'gray_image.dart';
 import 'normalize.dart';
@@ -119,6 +120,60 @@ const Map<String, FilmType> kFilmTypes = {
 };
 
 const double kNominalAreaDiameterMm = 50.5; // 20 cm²
+
+/// The two kinds a film's marks are told apart by, stored as colour class 0
+/// and 1 in the app (one kind for AC).
+List<String> filmKinds(String type) => switch (type) {
+  'ac' => const ['colony'],
+  'ym' => const ['yeast', 'mold'],
+  _ => const ['red', 'blue'],
+};
+
+int filmClass(String type, String kind) =>
+    math.max(0, filmKinds(type).indexOf(kind));
+
+/// The app's marks as the film counter sees them: kind from the colour
+/// class, plus gas and yellow zone.
+List<FilmColony> filmColoniesOf(String type, List<Colony> marks) {
+  final kinds = filmKinds(type);
+  return [
+    for (final c in marks)
+      FilmColony(
+        c.x,
+        c.y,
+        c.radiusPx,
+        kinds[c.cls.clamp(0, kinds.length - 1)],
+        n: c.n,
+        gas: c.gas,
+        yellow: c.yellow,
+      ),
+  ];
+}
+
+/// The film counter's marks as app marks (see [filmColoniesOf]).
+List<Colony> marksOf(String type, List<FilmColony> colonies) => [
+  for (final c in colonies)
+    Colony(
+      c.x,
+      c.y,
+      c.radiusPx,
+      n: c.n,
+      cls: filmClass(type, c.kind),
+      gas: c.gas,
+      yellow: c.yellow,
+    ),
+];
+
+/// Countable range of a film type, for the CFU calculator.
+CountingRule filmCountingRule(String type) {
+  final t = kFilmTypes[type]!;
+  return CountingRule.values.firstWhere(
+    (r) =>
+        r.name.startsWith('film') && r.min == t.countMin && r.max == t.countMax,
+    orElse: () => CountingRule.film150,
+  );
+}
+
 const double kGridPitchMm = 10.0;
 
 /// The printed grid. Line positions are `ox + k * pitchPx` (and `oy + ...`) in
@@ -169,7 +224,25 @@ class FilmGrid {
     lineHalfPx * s,
   );
 
-  Map<String, dynamic> toJson() => {'pitch_px': pitchPx, 'angle_deg': angleDeg};
+  Map<String, dynamic> toJson() => {
+    'pitch_px': pitchPx,
+    'angle_deg': angleDeg,
+    'ox': ox,
+    'oy': oy,
+    'cx': cx,
+    'cy': cy,
+    'line_half_px': lineHalfPx,
+  };
+
+  factory FilmGrid.fromJson(Map<String, dynamic> j) => FilmGrid(
+    (j['pitch_px'] as num).toDouble(),
+    (j['angle_deg'] as num).toDouble(),
+    (j['ox'] as num?)?.toDouble() ?? 0,
+    (j['oy'] as num?)?.toDouble() ?? 0,
+    (j['cx'] as num?)?.toDouble() ?? 0,
+    (j['cy'] as num?)?.toDouble() ?? 0,
+    (j['line_half_px'] as num?)?.toDouble() ?? 2,
+  );
 }
 
 class FilmColony {
@@ -227,9 +300,15 @@ class FilmResult {
     required this.estimates,
     required this.squaresUsed,
     required this.flags,
+    this.imageWidth = 0,
+    this.imageHeight = 0,
   });
 
   final String type;
+
+  /// Size of the photo the coordinates refer to.
+  final int imageWidth;
+  final int imageHeight;
 
   /// The growth area.
   final Plate plate;
@@ -259,6 +338,22 @@ class FilmResult {
     estimates: estimates,
     squaresUsed: squaresUsed,
     flags: flags,
+    imageWidth: imageWidth,
+    imageHeight: imageHeight,
+  );
+
+  FilmResult withSize(int w, int h) => FilmResult(
+    type: type,
+    plate: plate,
+    grid: grid,
+    colonies: colonies,
+    bubbles: bubbles,
+    counts: counts,
+    estimates: estimates,
+    squaresUsed: squaresUsed,
+    flags: flags,
+    imageWidth: w,
+    imageHeight: h,
   );
 
   Map<String, dynamic> toJson() => {
@@ -981,8 +1076,21 @@ const double kYellowMinDb = 10.0;
 
 /// Decodes a photo, counts a downscaled copy and returns results in the
 /// photo's full-resolution pixels. Takes a record so it can run in `compute`.
-FilmResult countPetrifilmInPhoto((Uint8List, String) job) {
-  final decoded = img.decodeImage(job.$1);
+FilmResult countPetrifilmInPhoto((Uint8List, String) job) =>
+    countFilmJob(FilmJob(job.$1, job.$2));
+
+/// A film photo to count in the background: its bytes, the film type and,
+/// when the user has moved it, the growth area (in photo pixels).
+class FilmJob {
+  const FilmJob(this.bytes, this.type, {this.area});
+
+  final Uint8List bytes;
+  final String type;
+  final Plate? area;
+}
+
+FilmResult countFilmJob(FilmJob job) {
+  final decoded = img.decodeImage(job.bytes);
   if (decoded == null) throw const FormatException('Unsupported image');
   final photo = img.bakeOrientation(decoded);
   final s = math.min(1.0, kWorkShortSide / math.min(photo.width, photo.height));
@@ -994,8 +1102,8 @@ FilmResult countPetrifilmInPhoto((Uint8List, String) job) {
           interpolation: img.Interpolation.average,
         )
       : photo;
-  final res = countPetrifilm(work, job.$2);
-  return s < 1 ? res.scaled(1 / s) : res;
+  final res = countPetrifilm(work, job.type, plate: job.area?.scaled(s));
+  return (s < 1 ? res.scaled(1 / s) : res).withSize(photo.width, photo.height);
 }
 
 /// Counts a (work-size) film photo of [type] (a key of [kFilmTypes]).
@@ -1005,7 +1113,6 @@ FilmResult countPetrifilm(
   Plate? plate,
   FilmGrid? grid,
 }) {
-  final ft = kFilmTypes[type]!;
   final rgb = _rgbPlanes(image);
   final w = image.width, h = image.height;
   final gray = _gray(rgb);
@@ -1102,41 +1209,8 @@ FilmResult countPetrifilm(
     );
   }
 
-  bool rule(String result, FilmColony c) => switch (result) {
-    'aerobic' => true,
-    'ecoli' => c.kind == 'blue',
-    'coliform' =>
-      type == 'ec' ? c.kind == 'blue' || (c.kind == 'red' && c.gas) : c.gas,
-    'enterobacteriaceae' => c.kind == 'red' && (c.gas || c.yellow),
-    'yeast' => c.kind == 'yeast',
-    'mold' => c.kind == 'mold',
-    _ => false,
-  };
-
-  final counts = {
-    for (final k in ft.results)
-      k: colonies.where((c) => rule(k, c)).fold(0, (s, c) => s + c.n),
-  };
-
-  Map<String, double>? estimates;
-  var used = 0;
-  if (counts.values.reduce(math.max) > ft.countMax) {
-    final squares = _completeSquares(g, p);
-    used = squares.length;
-    if (used >= 3) {
-      estimates = {};
-      for (final k in ft.results) {
-        var total = 0;
-        for (final sq in squares) {
-          for (final c in colonies) {
-            if (rule(k, c) && _inSquare(g, sq, c.x, c.y)) total += c.n;
-          }
-        }
-        estimates[k] = total / used * ft.areaCm2;
-      }
-      flags.add('estimated');
-    }
-  }
+  final tally = tallyFilm(type, colonies, g, p);
+  if (tally.estimates != null) flags.add('estimated');
   if (det.coverage > (type == 'ym' ? 0.6 : 0.3)) flags.add('tntc');
   if (det.spreaders > 0) flags.add('spreader');
   return FilmResult(
@@ -1145,11 +1219,78 @@ FilmResult countPetrifilm(
     grid: g,
     colonies: colonies,
     bubbles: bubbles,
-    counts: counts,
-    estimates: estimates,
-    squaresUsed: used,
+    counts: tally.counts,
+    estimates: tally.estimates,
+    squaresUsed: tally.squaresUsed,
     flags: flags,
   );
+}
+
+/// Whether colony [c] counts towards [result] on a film of [type], per the
+/// interpretation guides.
+bool filmRule(String type, String result, FilmColony c) => switch (result) {
+  'aerobic' => true,
+  'ecoli' => c.kind == 'blue',
+  'coliform' =>
+    type == 'ec' ? c.kind == 'blue' || (c.kind == 'red' && c.gas) : c.gas,
+  'enterobacteriaceae' => c.kind == 'red' && (c.gas || c.yellow),
+  'yeast' => c.kind == 'yeast',
+  'mold' => c.kind == 'mold',
+  _ => false,
+};
+
+/// Counts per result of a film, and above the counting range an estimate
+/// from the complete grid squares (mean per square × growth area).
+typedef FilmTally = ({
+  Map<String, int> counts,
+  Map<String, double>? estimates,
+  int squaresUsed,
+});
+
+FilmTally tallyFilm(
+  String type,
+  List<FilmColony> colonies,
+  FilmGrid? grid,
+  Plate area,
+) {
+  final ft = kFilmTypes[type]!;
+  final counts = {
+    for (final k in ft.results)
+      k: colonies.where((c) => filmRule(type, k, c)).fold(0, (s, c) => s + c.n),
+  };
+  if (grid == null || counts.values.reduce(math.max) <= ft.countMax) {
+    return (counts: counts, estimates: null, squaresUsed: 0);
+  }
+  final squares = _completeSquares(grid, area);
+  if (squares.length < 3) {
+    return (counts: counts, estimates: null, squaresUsed: squares.length);
+  }
+  final estimates = <String, double>{};
+  for (final k in ft.results) {
+    var total = 0;
+    for (final sq in squares) {
+      for (final c in colonies) {
+        if (filmRule(type, k, c) && _inSquare(grid, sq, c.x, c.y)) {
+          total += c.n;
+        }
+      }
+    }
+    estimates[k] = total / squares.length * ft.areaCm2;
+  }
+  return (counts: counts, estimates: estimates, squaresUsed: squares.length);
+}
+
+/// Complete grid squares inside [area], as image-pixel corner lists (for
+/// drawing the squares an estimate used).
+List<List<(double, double)>> completeSquareOutlines(FilmGrid grid, Plate area) {
+  final p = grid.pitchPx;
+  return [
+    for (final (i, j) in _completeSquares(grid, area))
+      [
+        for (final (a, b) in const [(0, 0), (1, 0), (1, 1), (0, 1)])
+          grid.toImage(grid.ox + (i + a) * p, grid.oy + (j + b) * p),
+      ],
+  ];
 }
 
 double _dist(double x0, double y0, double x1, double y1) =>

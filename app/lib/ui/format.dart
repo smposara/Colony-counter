@@ -1,5 +1,6 @@
 import '../data/plate_record.dart';
 import '../l10n/l10n.dart';
+import '../l10n/labels.dart';
 
 const _superscripts = {
   '0': '⁰',
@@ -41,6 +42,8 @@ String flagLabel(String flag) => switch (flag) {
   'crowded' => tr.flagCrowded,
   'many_clusters' => tr.flagManyClusters,
   'low_contrast' => tr.flagLowContrast,
+  'estimated' => tr.flagEstimated,
+  'area_size_unexpected' => tr.flagAreaSize,
   _ => flag,
 };
 
@@ -68,3 +71,27 @@ String formatSciValue(double v) {
 
 String fixed(double v, [int digits = 2]) =>
     v.isFinite ? v.toStringAsFixed(digits) : '—';
+
+/// A count or estimate as a whole number with thousands separators,
+/// e.g. 1240.4 → "1,240".
+String formatCount(double v) {
+  final s = v.round().abs().toString();
+  final b = StringBuffer(v < 0 ? '-' : '');
+  for (var i = 0; i < s.length; i++) {
+    if (i > 0 && (s.length - i) % 3 == 0) b.write(',');
+    b.write(s[i]);
+  }
+  return b.toString();
+}
+
+/// A dry film's results, e.g. "E. coli 12 · Coliforms 31" ("≈" marks
+/// estimates from grid squares).
+String filmSummary(PlateRecord r) {
+  final t = r.filmTally;
+  return [
+    for (final k in t.counts.keys)
+      t.estimates == null
+          ? '${filmResultText(k)} ${t.counts[k]}'
+          : '${filmResultText(k)} ≈ ${formatCount(t.estimates![k]!)}',
+  ].join(' · ');
+}

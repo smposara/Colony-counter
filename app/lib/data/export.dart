@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:archive/archive.dart';
 
 import '../core/calculator.dart';
+import '../core/petrifilm.dart';
 import '../core/plate.dart';
 import '../core/spots.dart';
 import 'plate_record.dart';
@@ -54,8 +55,14 @@ String platesCsv(PlateStore store) {
       'spots',
       'notes',
       'image',
+      'film_type',
+      'film_counts',
+      'film_estimates',
+      'film_squares',
     ],
   ];
+  String pairs(Map<String, num> m) =>
+      [for (final e in m.entries) '${e.key}=${e.value}'].join(';');
   for (final r in store.records) {
     final info = r.sampleId.isEmpty ? null : store.sampleInfo(r.sampleId);
     final est = r.estimateAlone(
@@ -74,6 +81,8 @@ String platesCsv(PlateStore store) {
           ? 'drop'
           : r.format.membrane
           ? 'membrane'
+          : r.isFilm
+          ? 'film'
           : 'spread',
       r.isDropPlate ? '' : '1e-${r.dilutionExp}',
       r.isDropPlate ? '' : r.replicate,
@@ -102,6 +111,26 @@ String platesCsv(PlateStore store) {
       ].join('; '),
       r.notes,
       r.imagePath,
+      r.filmType,
+      if (r.isFilm)
+        ...() {
+          final t = r.filmTally;
+          return [
+            pairs(t.counts),
+            t.estimates == null
+                ? ''
+                : pairs({
+                    for (final e in t.estimates!.entries)
+                      e.key: e.value.round(),
+                  }),
+            t.estimates == null ? '' : t.squaresUsed,
+          ];
+        }()
+      else ...[
+        '',
+        '',
+        '',
+      ],
     ]);
   }
   return _csv(rows);
@@ -141,47 +170,55 @@ String samplesCsv(PlateStore store) {
       'estimated',
       'replicate_values',
       'notes',
+      'result',
     ],
   ];
   for (final info in store.allSamples()) {
     final plates = store.platesOf(info.sampleId);
-    final res = info.analyse(plates, store.rule);
-    final st = res.stats;
-    rows.add([
-      info.sampleId,
-      info.experiment,
-      info.condition,
-      info.timeH,
-      info.strain,
-      info.medium,
-      info.mediumBatch,
-      info.incubationTempC,
-      info.incubationH,
-      info.operator,
-      info.tags.join('; '),
-      info.method.name,
-      info.format.name,
-      info.ruleFor(store.rule).label,
-      plates.length,
-      st.n,
-      st.mean,
-      st.sd,
-      st.cvPercent,
-      st.log10Mean,
-      st.log10Sd,
-      info.unitLabel,
-      st.n > 0 ? st.mean * info.unitFactor : null,
-      st.n > 1 ? st.sd * info.unitFactor : null,
-      st.n > 0 ? st.log10Mean + math.log(info.unitFactor) / math.ln10 : null,
-      info.isSolid ? info.sampleWeightG : null,
-      info.isSolid ? info.diluentMl : null,
-      res.qualified,
-      [
-        for (final e in res.perReplicate.entries)
-          'r${e.key}:${e.value.qualifier == Qualifier.exact ? '' : '${e.value.qualifier.name} '}${e.value.value}',
-      ].join('; '),
-      info.notes,
-    ]);
+    // A dry film gives one row per result (e.g. E. coli and coliforms).
+    for (final result
+        in info.filmResults.isEmpty
+            ? const <String?>[null]
+            : info.filmResults) {
+      final res = info.analyse(plates, store.rule, result: result);
+      final st = res.stats;
+      rows.add([
+        info.sampleId,
+        info.experiment,
+        info.condition,
+        info.timeH,
+        info.strain,
+        info.medium,
+        info.mediumBatch,
+        info.incubationTempC,
+        info.incubationH,
+        info.operator,
+        info.tags.join('; '),
+        info.method.name,
+        info.format.name,
+        info.ruleFor(store.rule).label,
+        plates.length,
+        st.n,
+        st.mean,
+        st.sd,
+        st.cvPercent,
+        st.log10Mean,
+        st.log10Sd,
+        info.unitLabel,
+        st.n > 0 ? st.mean * info.unitFactor : null,
+        st.n > 1 ? st.sd * info.unitFactor : null,
+        st.n > 0 ? st.log10Mean + math.log(info.unitFactor) / math.ln10 : null,
+        info.isSolid ? info.sampleWeightG : null,
+        info.isSolid ? info.diluentMl : null,
+        res.qualified,
+        [
+          for (final e in res.perReplicate.entries)
+            'r${e.key}:${e.value.qualifier == Qualifier.exact ? '' : '${e.value.qualifier.name} '}${e.value.value}',
+        ].join('; '),
+        info.notes,
+        result,
+      ]);
+    }
   }
   return _csv(rows);
 }
@@ -225,6 +262,8 @@ String coloniesCsv(PlateStore store) {
       'drop',
       'drop_dilution',
       'drop_replicate',
+      'gas',
+      'yellow_zone',
     ],
   ];
   for (final r in store.records) {
@@ -232,7 +271,7 @@ String coloniesCsv(PlateStore store) {
     for (var i = 0; i < r.colonies.length; i++) {
       final c = r.colonies[i];
       final drop = r.spots.indexWhere((s) => s.contains(c.x, c.y));
-      final names = r.colourMode.classNames;
+      final names = r.isFilm ? filmKinds(r.filmType!) : r.colourMode.classNames;
       rows.add([
         r.id,
         r.sampleId,
@@ -252,6 +291,8 @@ String coloniesCsv(PlateStore store) {
         drop < 0 ? '' : drop + 1,
         drop < 0 ? '' : '1e-${r.spots[drop].dilutionExp}',
         drop < 0 ? '' : r.spots[drop].replicate,
+        r.isFilm ? c.gas : '',
+        r.isFilm ? c.yellow : '',
       ]);
     }
   }

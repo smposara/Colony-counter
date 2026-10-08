@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../core/calculator.dart';
 import '../core/colour.dart';
+import '../core/petrifilm.dart';
 import '../core/plate.dart';
 import '../data/plate_store.dart';
 import '../data/sample_info.dart';
@@ -49,7 +50,8 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
         : fixed(_base!.timeH!, _base.timeH! % 1 == 0 ? 0 : 1),
   );
   late final _volume = TextEditingController(
-    text: '${_base?.volumeMl ?? widget.store.defaultVolumeMl}',
+    text:
+        '${_base?.volumeMl ?? (widget.store.defaultFormat.isFilm ? 1.0 : widget.store.defaultVolumeMl)}',
   );
   late final _dropVolume = TextEditingController(
     text: fixed(_base?.dropVolumeUl ?? 10, 0),
@@ -79,7 +81,11 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
     text: _base?.operator ?? widget.store.defaultOperator,
   );
   late final _tags = TextEditingController(text: _base?.tags.join(', ') ?? '');
-  late PlatingMethod _method = _base?.method ?? PlatingMethod.spread;
+  late PlatingMethod _method =
+      _base?.method ??
+      (widget.store.defaultFormat.isFilm
+          ? PlatingMethod.film
+          : PlatingMethod.spread);
   late PlateFormat _format = _base?.format ?? widget.store.defaultFormat;
   late bool _solid = _base?.solid ?? false;
   late final _weight = TextEditingController(
@@ -111,7 +117,26 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
   void _setMethod(PlatingMethod m) {
     setState(() {
       final wasMembrane = _method == PlatingMethod.membrane;
+      final wasFilm = _method == PlatingMethod.film;
       _method = m;
+      if (m == PlatingMethod.film && !wasFilm) {
+        // One film per dilution, 1 mL each.
+        final d = widget.store.defaultFormat;
+        _format = d.isFilm ? d : PlateFormat.filmAc;
+        _volume.text = '1.0';
+        // Films are usually plated from the 10⁻¹ dilution.
+        if (_base == null || (_from == 0 && _to == 0)) {
+          _from = 1;
+          _to = 3;
+        }
+        return;
+      }
+      if (m != PlatingMethod.film && wasFilm) {
+        final d = widget.store.defaultFormat;
+        _format = d.isDish ? d : PlateFormat.dish90;
+        _volume.text = '${widget.store.defaultVolumeMl}';
+        if (m != PlatingMethod.membrane) return;
+      }
       if (m == PlatingMethod.membrane && !wasMembrane) {
         // Water samples are usually filtered neat, 100 mL at a time.
         _format = PlateFormat.membrane47;
@@ -175,7 +200,7 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
       volumeMl: _num(_volume) ?? 0.1,
       dropVolumeUl: _num(_dropVolume) ?? 10,
       dropLayout: _layout,
-      colourMode: _colour,
+      colourMode: _method == PlatingMethod.film ? ColourMode.none : _colour,
       notes: _notes.text.trim(),
       strain: _strain.text.trim(),
       medium: _medium.text.trim(),
@@ -199,7 +224,7 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
     widget.store.setDefaults(
       operator: info.operator,
       medium: info.medium,
-      format: _format.membrane ? null : _format,
+      format: _format.isDish ? _format : null,
     );
     Navigator.of(context).pop(info);
   }
@@ -263,6 +288,7 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
     }.toList()..sort();
     final drop = _method == PlatingMethod.drop;
     final membrane = _method == PlatingMethod.membrane;
+    final film = _method == PlatingMethod.film;
     final dilutionCount = _to - _from + 1;
     final plates = !drop
         ? dilutionCount * _replicates
@@ -352,6 +378,10 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
                 value: PlatingMethod.membrane,
                 label: Text(tr.setupMembrane),
               ),
+              ButtonSegment(
+                value: PlatingMethod.film,
+                label: Text(tr.setupFilm),
+              ),
             ],
             selected: {_method},
             onSelectionChanged: (s) => _setMethod(s.first),
@@ -406,14 +436,23 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
             DropdownButtonFormField<PlateFormat>(
               isExpanded: true,
               key: ValueKey(_method),
-              initialValue: _format.membrane ? PlateFormat.dish90 : _format,
+              initialValue: film
+                  ? (_format.isFilm ? _format : PlateFormat.filmAc)
+                  : (_format.isDish ? _format : PlateFormat.dish90),
               decoration: InputDecoration(
-                labelText: tr.setupPlateType,
+                labelText: film ? tr.filmType : tr.setupPlateType,
+                helperText: film && _format.isFilm
+                    ? tr.filmRangeFromType(
+                        filmCountingRule(_format.film!).min,
+                        filmCountingRule(_format.film!).max,
+                      )
+                    : null,
+                helperMaxLines: 3,
                 border: const OutlineInputBorder(),
               ),
               items: [
                 for (final f in PlateFormat.values)
-                  if (!f.membrane)
+                  if (film ? f.isFilm : f.isDish)
                     DropdownMenuItem(value: f, child: Text(f.text)),
               ],
               onChanged: (v) => setState(() => _format = v!),
@@ -529,24 +568,26 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
                 : tr.setupPlateCount(plates),
             style: t.bodyMedium,
           ),
-          const SizedBox(height: 24),
-          Text(tr.setupColonyColours, style: t.titleMedium),
-          const SizedBox(height: 8),
-          SegmentedButton<ColourMode>(
-            showSelectedIcon: false,
-            segments: [
-              for (final m in ColourMode.values)
-                ButtonSegment(value: m, label: Text(m.text)),
-            ],
-            selected: {_colour},
-            onSelectionChanged: (s) => setState(() => _colour = s.first),
-          ),
-          const SizedBox(height: 4),
-          Text(switch (_colour) {
-            ColourMode.none => tr.setupColourNone,
-            ColourMode.blueWhite => tr.setupColourBlueWhite,
-            ColourMode.twoColours => tr.setupColourTwo,
-          }, style: t.bodySmall),
+          if (!film) ...[
+            const SizedBox(height: 24),
+            Text(tr.setupColonyColours, style: t.titleMedium),
+            const SizedBox(height: 8),
+            SegmentedButton<ColourMode>(
+              showSelectedIcon: false,
+              segments: [
+                for (final m in ColourMode.values)
+                  ButtonSegment(value: m, label: Text(m.text)),
+              ],
+              selected: {_colour},
+              onSelectionChanged: (s) => setState(() => _colour = s.first),
+            ),
+            const SizedBox(height: 4),
+            Text(switch (_colour) {
+              ColourMode.none => tr.setupColourNone,
+              ColourMode.blueWhite => tr.setupColourBlueWhite,
+              ColourMode.twoColours => tr.setupColourTwo,
+            }, style: t.bodySmall),
+          ],
           gap,
           _detailsSection(),
           gap,
