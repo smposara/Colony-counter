@@ -20,6 +20,7 @@
   "pitch_px": 120.007,
   "angle_deg": -3.0,
   "line_half_px": 2.5,
+  "grid_strength": 0.716,
   "area": {
    "cx": 586.0782097568124,
    "cy": 591.133185736051,

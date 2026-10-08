@@ -33,10 +33,11 @@
   "reviewFilmNotCounted": {"en": "{n} not counted (no gas or zone)", "th": "ไม่นับ {n} (ไม่มีแก๊สหรือโซน)", "placeholders": {"n": {"type": "int"}}},
   "reviewFilmEstimate": {"en": "Above the counting range: estimated from {n} complete grid squares × 20 cm².", "th": "เกินช่วงที่นับได้: ประมาณจากช่องตารางที่สมบูรณ์ {n} ช่อง × 20 cm²", "placeholders": {"n": {"type": "int"}}},
   "reviewFilmFewSquares": {"en": "Above the counting range, but fewer than 3 complete grid squares were found, so the count is shown.", "th": "เกินช่วงที่นับได้ แต่พบช่องตารางที่สมบูรณ์น้อยกว่า 3 ช่อง จึงแสดงจำนวนที่นับได้"},
-  "reviewFilmNoGrid": {"en": "No grid was found on this photo: counted as a plain plate.", "th": "ไม่พบตารางในภาพนี้: นับแบบเพลตทั่วไป"},
+  "reviewFilmNoGrid": {"en": "The printed grid was not found, so the scale and this count may be wrong. Is this a Petrifilm plate, flat, in focus and without glare? Retake the photo or check every colony.", "th": "ไม่พบตารางที่พิมพ์บนฟิล์ม มาตราส่วนและผลการนับนี้อาจผิด ภาพนี้เป็นแผ่น Petrifilm ที่วางเรียบ ชัด และไม่มีแสงสะท้อนหรือไม่? ถ่ายภาพใหม่หรือตรวจทุกโคโลนี"},
   "reviewFilmAid": {"en": "Automatic film counts are an aid: check them against the interpretation guide.", "th": "การนับฟิล์มอัตโนมัติเป็นตัวช่วย: ตรวจสอบกับคู่มือการอ่านผล"},
 
   "flagEstimated": {"en": "Estimated from squares", "th": "ประมาณจากช่องตาราง"},
+  "flagGridNotFound": {"en": "Grid not found", "th": "ไม่พบตาราง"},
   "flagAreaSize": {"en": "Growth area size unexpected", "th": "ขนาดพื้นที่เพาะเชื้อผิดปกติ"},
 
   "captureFilmTip": {"en": "Lay the film flat on a plain background, photograph straight down and avoid glare on the clear top film.", "th": "วางฟิล์มให้เรียบบนพื้นสีเรียบ ถ่ายตรงลงด้านล่าง และหลีกเลี่ยงแสงสะท้อนบนฟิล์มใสด้านบน"},

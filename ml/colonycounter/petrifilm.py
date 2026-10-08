@@ -54,6 +54,10 @@ TYPES: dict[str, FilmType] = {
 }
 
 NOMINAL_AREA_DIAMETER_MM = 50.5  # 20 cm²
+# Below this the printed grid is not clear: flag "grid_not_found". Synthetic
+# films score 0.59-0.84 (also blurred or washed out), very noisy ones 0.24-0.41;
+# dish photos -0.18-0.23.
+GRID_MIN_STRENGTH = 0.3
 WORK_SHORT_SIDE = 1800  # photos are analysed at most this size (as in the app)
 GRID_PITCH_MM = 10.0
 
@@ -66,6 +70,9 @@ class Grid:
     oy: float
     centre: tuple[float, float]  # rotation centre
     line_half_px: float = 2.0  # erased on each side of a line's centre
+    # How clearly the grid repeats (the weaker of the two axes, see
+    # _periodicity); compared with GRID_MIN_STRENGTH.
+    strength: float = 1.0
 
     @property
     def mm_per_px(self) -> float:
@@ -122,7 +129,8 @@ class FilmResult:
             "flags": self.flags,
             "mm_per_px": self.plate.mm_per_px,
             "plate": asdict(self.plate),
-            "grid": {"pitch_px": self.grid.pitch_px, "angle_deg": self.grid.angle_deg},
+            "grid": {"pitch_px": self.grid.pitch_px, "angle_deg": self.grid.angle_deg,
+                     "strength": self.grid.strength},
             "colonies": [asdict(c) for c in self.colonies],
             "bubbles": [list(b) for b in self.bubbles],
         }
@@ -208,7 +216,23 @@ def find_grid(gray: np.ndarray) -> Grid:
     pitch = float(np.mean([_refine_period(px, coarse), _refine_period(py, coarse)]))
     ox, oy = _phase(px, pitch), _phase(py, pitch)
     half = np.mean([_line_half_width(px, pitch, ox), _line_half_width(py, pitch, oy)])
-    return Grid(pitch, angle, ox, oy, centre, float(half))
+    strength = min(_periodicity(px, pitch), _periodicity(py, pitch))
+    return Grid(pitch, angle, ox, oy, centre, float(half), strength)
+
+
+def _periodicity(profile: np.ndarray, pitch: float) -> float:
+    """How clearly ``profile`` repeats every ``pitch``: its normalised
+    autocorrelation one pitch away minus half a pitch away. Thin lines give a
+    peak at one pitch and a dip at half; a merely smooth profile (a dish rim,
+    shading) correlates about equally at both, so it scores near zero."""
+    p = profile - profile.mean()
+    norm = float(np.dot(p, p)) + 1e-9
+
+    def ac(lag: float) -> float:
+        i = int(round(lag))
+        return float(np.dot(p[:-i], p[i:])) / norm if 0 < i < len(p) else 0.0
+
+    return ac(pitch) - ac(pitch / 2)
 
 
 def _line_half_width(profile: np.ndarray, pitch: float, offset: float) -> float:
@@ -251,7 +275,9 @@ def _refine_period(profile: np.ndarray, guess: float) -> float:
         a, b, c = ac[i - 1], ac[i], ac[i + 1]
         den = a - 2 * b + c
         if den < 0:
-            return i + 0.5 * (a - c) / den
+            # The parabola's top, kept within half a pixel of the peak: at a
+            # flat window edge it can land anywhere (even below zero).
+            return i + float(np.clip(0.5 * (a - c) / den, -0.5, 0.5))
     return float(i)
 
 
@@ -468,11 +494,16 @@ def count_petrifilm(image: np.ndarray, type: str, plate: Plate | None = None,
             plate = Plate(plate.cx * scale, plate.cy * scale, plate.radius * scale, plate.diameter_mm)
         if grid is not None:
             grid = Grid(grid.pitch_px * scale, grid.angle_deg, grid.ox * scale, grid.oy * scale,
-                        (grid.centre[0] * scale, grid.centre[1] * scale), grid.line_half_px * scale)
+                        (grid.centre[0] * scale, grid.centre[1] * scale), grid.line_half_px * scale,
+                        grid.strength)
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     grid = grid or find_grid(gray)
     mm = grid.mm_per_px
     flags: list[str] = []
+    if grid.strength < GRID_MIN_STRENGTH:
+        # No clear printed grid (not a film, glare, or out of focus): the
+        # scale, growth area and estimates may all be wrong.
+        flags.append("grid_not_found")
     if plate is None:
         plate = find_growth_area(cv2.cvtColor(image, cv2.COLOR_BGR2LAB), mm)
     plate = Plate(plate.cx, plate.cy, plate.radius, 2 * plate.radius * mm)
@@ -537,7 +568,7 @@ def count_petrifilm(image: np.ndarray, type: str, plate: Plate | None = None,
         up = 1 / scale
         plate = Plate(plate.cx * up, plate.cy * up, plate.radius * up, plate.diameter_mm)
         grid = Grid(grid.pitch_px * up, grid.angle_deg, grid.ox * up, grid.oy * up,
-                    (grid.centre[0] * up, grid.centre[1] * up), grid.line_half_px * up)
+                    (grid.centre[0] * up, grid.centre[1] * up), grid.line_half_px * up, grid.strength)
         colonies = [FilmColony(c.x * up, c.y * up, c.radius_px * up, c.kind, c.n, c.gas, c.yellow)
                     for c in colonies]
         bubbles = [(x * up, y * up, r * up) for x, y, r in bubbles]

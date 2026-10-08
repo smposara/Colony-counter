@@ -145,6 +145,9 @@ type. Crowded AC (≈600 colonies) estimated from 8 squares at +10 %:
 the synthetic films keep colonies 1.5 mm from the edge, so the inner squares are denser
 than the plate average.
 
+**Flags:** `grid_not_found` when the printed grid does not repeat clearly (`Grid.strength` <
+0.3: not a film, glare or out of focus), `area_size_unexpected`, `estimated`, `tntc`, `spreader`.
+
 Synthetic colours are approximations of the guides: they test the method, not the
 thresholds. Blue/red, yellow-zone, bubble and mold thresholds must be set from real photos.
 

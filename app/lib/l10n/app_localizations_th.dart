@@ -592,7 +592,8 @@ class AppLocalizationsTh extends AppLocalizations {
       'เกินช่วงที่นับได้ แต่พบช่องตารางที่สมบูรณ์น้อยกว่า 3 ช่อง จึงแสดงจำนวนที่นับได้';
 
   @override
-  String get reviewFilmNoGrid => 'ไม่พบตารางในภาพนี้: นับแบบเพลตทั่วไป';
+  String get reviewFilmNoGrid =>
+      'ไม่พบตารางที่พิมพ์บนฟิล์ม มาตราส่วนและผลการนับนี้อาจผิด ภาพนี้เป็นแผ่น Petrifilm ที่วางเรียบ ชัด และไม่มีแสงสะท้อนหรือไม่? ถ่ายภาพใหม่หรือตรวจทุกโคโลนี';
 
   @override
   String get reviewFilmAid =>
@@ -600,6 +601,9 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get flagEstimated => 'ประมาณจากช่องตาราง';
+
+  @override
+  String get flagGridNotFound => 'ไม่พบตาราง';
 
   @override
   String get flagAreaSize => 'ขนาดพื้นที่เพาะเชื้อผิดปกติ';

@@ -728,6 +728,9 @@ class _ReviewScreenState extends State<ReviewScreen> {
       'crowded' => en.flagCrowded,
       'many_clusters' => en.flagManyClusters,
       'low_contrast' => en.flagLowContrast,
+      'grid_not_found' => en.flagGridNotFound,
+      'estimated' => en.flagEstimated,
+      'area_size_unexpected' => en.flagAreaSize,
       _ => f,
     };
     final r = widget.record;
@@ -1293,7 +1296,9 @@ class _ReviewScreenState extends State<ReviewScreen> {
   List<Widget> _banners(TextTheme t, ColorScheme cs) {
     final warnings = [
       for (final f in _flags)
-        if (kCheckFlags.contains(f) && f != 'tntc') flagLabel(f).toLowerCase(),
+        // A film without a grid has its own banner (see _filmSummary).
+        if (kCheckFlags.contains(f) && f != 'tntc' && f != 'grid_not_found')
+          flagLabel(f).toLowerCase(),
     ];
     Widget banner(IconData icon, Color bg, Color fg, String text) =>
         _banner(t, icon, bg, fg, text);
@@ -1329,6 +1334,14 @@ class _ReviewScreenState extends State<ReviewScreen> {
     final above = tally.counts.values.any((v) => v > ft.countMax);
     final est = tally.estimates;
     return [
+      if (_flags.contains('grid_not_found'))
+        _banner(
+          t,
+          Icons.grid_off,
+          cs.errorContainer,
+          cs.onErrorContainer,
+          tr.reviewFilmNoGrid,
+        ),
       if (est != null)
         _banner(
           t,

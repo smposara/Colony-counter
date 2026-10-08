@@ -623,7 +623,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reviewFilmNoGrid =>
-      'No grid was found on this photo: counted as a plain plate.';
+      'The printed grid was not found, so the scale and this count may be wrong. Is this a Petrifilm plate, flat, in focus and without glare? Retake the photo or check every colony.';
 
   @override
   String get reviewFilmAid =>
@@ -631,6 +631,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get flagEstimated => 'Estimated from squares';
+
+  @override
+  String get flagGridNotFound => 'Grid not found';
 
   @override
   String get flagAreaSize => 'Growth area size unexpected';

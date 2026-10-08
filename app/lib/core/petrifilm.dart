@@ -176,6 +176,11 @@ CountingRule filmCountingRule(String type) {
 
 const double kGridPitchMm = 10.0;
 
+/// Below this the printed grid is not clear: flag "grid_not_found". Synthetic
+/// films score 0.59–0.84 (also blurred or washed out), very noisy ones
+/// 0.24–0.41; dish photos −0.18–0.23.
+const double kGridMinStrength = 0.3;
+
 /// The printed grid. Line positions are `ox + k * pitchPx` (and `oy + ...`) in
 /// the frame turned by [angleDeg] about ([cx], [cy]).
 class FilmGrid {
@@ -187,6 +192,7 @@ class FilmGrid {
     this.cx,
     this.cy, [
     this.lineHalfPx = 2.0,
+    this.strength = 1.0,
   ]);
 
   final double pitchPx;
@@ -200,6 +206,10 @@ class FilmGrid {
 
   /// Erased on each side of a line's centre.
   final double lineHalfPx;
+
+  /// How clearly the grid repeats (the weaker axis, see [_periodicity]);
+  /// below [kGridMinStrength] the grid is flagged as not found.
+  final double strength;
 
   double get mmPerPx => kGridPitchMm / pitchPx;
 
@@ -222,6 +232,7 @@ class FilmGrid {
     cx * s,
     cy * s,
     lineHalfPx * s,
+    strength,
   );
 
   Map<String, dynamic> toJson() => {
@@ -232,6 +243,7 @@ class FilmGrid {
     'cx': cx,
     'cy': cy,
     'line_half_px': lineHalfPx,
+    'strength': strength,
   };
 
   factory FilmGrid.fromJson(Map<String, dynamic> j) => FilmGrid(
@@ -242,6 +254,7 @@ class FilmGrid {
     (j['cx'] as num?)?.toDouble() ?? 0,
     (j['cy'] as num?)?.toDouble() ?? 0,
     (j['line_half_px'] as num?)?.toDouble() ?? 2,
+    (j['strength'] as num?)?.toDouble() ?? 1,
   );
 }
 
@@ -657,7 +670,31 @@ FilmGrid findGrid(GrayImage gray) {
   final ox = _phase(px, pitch), oy = _phase(py, pitch);
   final half =
       (_lineHalfWidth(px, pitch, ox) + _lineHalfWidth(py, pitch, oy)) / 2;
-  return FilmGrid(pitch, angle, ox, oy, cx, cy, half);
+  final strength = math.min(_periodicity(px, pitch), _periodicity(py, pitch));
+  return FilmGrid(pitch, angle, ox, oy, cx, cy, half, strength);
+}
+
+/// How clearly [profile] repeats every [pitch]: its normalised
+/// autocorrelation one pitch away minus half a pitch away. Thin lines give a
+/// peak at one pitch and a dip at half; a merely smooth profile (a dish rim,
+/// shading) correlates about equally at both, so it scores near zero.
+double _periodicity(Float64List profile, double pitch) {
+  final p = _centred(profile);
+  var norm = 1e-9;
+  for (final v in p) {
+    norm += v * v;
+  }
+  double ac(double lag) {
+    final i = lag.round();
+    if (i <= 0 || i >= p.length) return 0;
+    var s = 0.0;
+    for (var k = 0; k + i < p.length; k++) {
+      s += p[k] * p[k + i];
+    }
+    return s / norm;
+  }
+
+  return ac(pitch) - ac(pitch / 2);
 }
 
 Float64List _centred(Float64List p) {
@@ -718,7 +755,9 @@ double _refinePeriod(Float64List profile, double guess) {
   if (i > 0 && i < n - 1 && i + 1 < ac.length) {
     final a = ac[i - 1], b = ac[i], c = ac[i + 1];
     final den = a - 2 * b + c;
-    if (den < 0) return i + 0.5 * (a - c) / den;
+    // The parabola's top, kept within half a pixel of the peak: at a flat
+    // window edge it can land anywhere (even below zero).
+    if (den < 0) return i + (0.5 * (a - c) / den).clamp(-0.5, 0.5);
   }
   return i.toDouble();
 }
@@ -1118,7 +1157,11 @@ FilmResult countPetrifilm(
   final gray = _gray(rgb);
   final g = grid ?? findGrid(gray);
   final mm = g.mmPerPx;
-  final flags = <String>[];
+  final flags = <String>[
+    // No clear printed grid (not a film, glare, out of focus): the scale,
+    // growth area and estimates may all be wrong.
+    if (g.strength < kGridMinStrength) 'grid_not_found',
+  ];
   final rawLab = _lab(rgb);
   final area = plate ?? findGrowthArea(rawLab, mm);
   final p = Plate(

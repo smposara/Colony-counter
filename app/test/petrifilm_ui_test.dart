@@ -114,4 +114,37 @@ void main() {
       closeTo(tally.counts['coliform']! * 10, 10),
     );
   });
+
+  testWidgets('a dish photo counted as a film warns that no grid was found', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1080, 2340);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+    final store = PlateStore(MemoryStorage());
+    await tester.runAsync(store.load);
+    final info = SampleInfo(
+      sampleId: 'G1',
+      method: PlatingMethod.film,
+      format: PlateFormat.filmAc,
+      dilutions: const [1],
+      replicates: 1,
+      volumeMl: 1,
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: ReviewScreen(
+          store: store,
+          photo: File('test/fixtures/sparse.jpg').readAsBytesSync(),
+          preset: PlatePreset(info: info, slot: info.slots.first),
+        ),
+      ),
+    );
+    await _settleReal(
+      tester,
+      () => find.byType(CircularProgressIndicator).evaluate().isEmpty,
+    );
+    expect(find.textContaining('printed grid was not found'), findsOneWidget);
+    expect(find.text('Grid not found'), findsOneWidget);
+  });
 }

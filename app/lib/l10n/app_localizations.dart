@@ -1085,7 +1085,7 @@ abstract class AppLocalizations {
   /// No description provided for @reviewFilmNoGrid.
   ///
   /// In en, this message translates to:
-  /// **'No grid was found on this photo: counted as a plain plate.'**
+  /// **'The printed grid was not found, so the scale and this count may be wrong. Is this a Petrifilm plate, flat, in focus and without glare? Retake the photo or check every colony.'**
   String get reviewFilmNoGrid;
 
   /// No description provided for @reviewFilmAid.
@@ -1099,6 +1099,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Estimated from squares'**
   String get flagEstimated;
+
+  /// No description provided for @flagGridNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Grid not found'**
+  String get flagGridNotFound;
 
   /// No description provided for @flagAreaSize.
   ///

@@ -109,3 +109,24 @@ def test_given_grid_is_scaled_to_work_size():
     res = count_petrifilm(big, "ac", grid=g)
     assert abs(res.grid.pitch_px - g.pitch_px) < 0.01 * g.pitch_px
     assert abs(res.counts["aerobic"] - 30) <= 2
+
+
+def test_grid_not_found_on_a_dish_photo():
+    """A dish photo has no printed grid: flagged, and the pitch stays sane."""
+    import cv2
+    from colonycounter.synth import make_plate
+    plate = make_plate(n_colonies=60, seed=5)
+    img = plate.image if plate.image.ndim == 3 else cv2.cvtColor(plate.image, cv2.COLOR_GRAY2BGR)
+    try:
+        res = count_petrifilm(img, "ac")
+    except ValueError:  # no growth area found is also acceptable
+        return
+    assert "grid_not_found" in res.flags
+    assert res.grid.pitch_px > 0
+
+
+def test_films_have_a_strong_grid():
+    for t, seed in [("ac", 21), ("ec", 22), ("ym", 23)]:
+        res = count_petrifilm(make_film(t, n=40, seed=seed, angle_deg=7).image, t)
+        assert "grid_not_found" not in res.flags
+        assert res.grid.strength > 0.5

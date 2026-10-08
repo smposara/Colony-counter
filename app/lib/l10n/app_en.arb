@@ -446,9 +446,10 @@
     }
   },
   "reviewFilmFewSquares": "Above the counting range, but fewer than 3 complete grid squares were found, so the count is shown.",
-  "reviewFilmNoGrid": "No grid was found on this photo: counted as a plain plate.",
+  "reviewFilmNoGrid": "The printed grid was not found, so the scale and this count may be wrong. Is this a Petrifilm plate, flat, in focus and without glare? Retake the photo or check every colony.",
   "reviewFilmAid": "Automatic film counts are an aid: check them against the interpretation guide.",
   "flagEstimated": "Estimated from squares",
+  "flagGridNotFound": "Grid not found",
   "flagAreaSize": "Growth area size unexpected",
   "captureFilmTip": "Lay the film flat on a plain background, photograph straight down and avoid glare on the clear top film.",
   "aboutPetrifilmTitle": "Dry films",

@@ -42,6 +42,8 @@ void main() {
         expect(res.grid.pitchPx, closeTo(_num(python['pitch_px']), 0.2));
         expect(res.grid.angleDeg, closeTo(_num(python['angle_deg']), 0.05));
         expect(res.grid.lineHalfPx, closeTo(_num(python['line_half_px']), 0.5));
+        expect(res.grid.strength, closeTo(_num(python['grid_strength']), 0.03));
+        expect(res.grid.strength, greaterThan(kGridMinStrength));
 
         // Growth area. On the crowded film both find the edge of the colony
         // band: synthetic films keep colonies 1.5 mm inside the rim.
@@ -122,6 +124,21 @@ void main() {
       });
     }
   });
+
+  // Dish photos counted as films: no printed grid, so the count is flagged
+  // (or no growth area is found at all), and nothing crashes.
+  for (final name in ['sparse', 'medium', 'drops', 'zones_reflected']) {
+    test('no grid on a dish photo: $name', () {
+      final bytes = File('test/fixtures/$name.jpg').readAsBytesSync();
+      try {
+        final res = countPetrifilmInPhoto((bytes, 'ac'));
+        expect(res.flags, contains('grid_not_found'));
+        expect(res.grid.pitchPx, greaterThan(0));
+      } on StateError {
+        // "No growth area found" is also an acceptable outcome.
+      }
+    });
+  }
 
   test('film types', () {
     expect(kFilmTypes.keys, ['ac', 'ec', 'cc', 'eb', 'ym']);

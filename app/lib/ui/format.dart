@@ -44,6 +44,7 @@ String flagLabel(String flag) => switch (flag) {
   'low_contrast' => tr.flagLowContrast,
   'estimated' => tr.flagEstimated,
   'area_size_unexpected' => tr.flagAreaSize,
+  'grid_not_found' => tr.flagGridNotFound,
   _ => flag,
 };
 

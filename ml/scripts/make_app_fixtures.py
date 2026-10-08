@@ -179,6 +179,7 @@ def make_petrifilm_fixtures() -> None:
                 "pitch_px": round(res.grid.pitch_px, 3),
                 "angle_deg": round(res.grid.angle_deg, 3),
                 "line_half_px": round(res.grid.line_half_px, 2),
+                "grid_strength": round(res.grid.strength, 3),
                 "area": _plate(res.plate),
                 "bubbles": len(res.bubbles),
                 "colonies": [{"x": round(c.x, 1), "y": round(c.y, 1), "r": round(c.radius_px, 2),

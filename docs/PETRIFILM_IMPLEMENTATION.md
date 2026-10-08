@@ -116,6 +116,13 @@ inside the rim); check on real crowded films.
 - Not done yet: tapping a grid square to include or exclude it; the store-listing notice
   (add with the release); a Thai food microbiologist's check of the terms.
 
+**Grid check:** `find_grid` / `findGrid` score how clearly the grid repeats
+(autocorrelation one pitch away minus half a pitch away, weaker axis). Below 0.3 the result
+is flagged `grid_not_found` and the review shows a warning (synthetic films score 0.59–0.84,
+also blurred or washed out; dish photos −0.18–0.23). The sub-pixel pitch step is limited to
+±0.5 px, which stopped photos without a grid from giving a negative pitch (a crash in Python).
+The 0.3 limit must be checked on real film photos.
+
 Next: thresholds for colours, bubbles and molds must be set from real photos.
 
 **`petrifilm.py`:**
