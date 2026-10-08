@@ -24,6 +24,10 @@
 
   "reviewModeKind": {"en": "Kind", "th": "ชนิด"},
   "reviewModeGas": {"en": "Gas", "th": "แก๊ส"},
+  "reviewModeSquares": {"en": "Squares", "th": "ช่อง"},
+  "reviewHintSquares": {"en": "Tap a grid square to leave it out of the estimate (a bubble, a fold, a spreader), or tap it again to add it back.", "th": "แตะช่องตารางเพื่อไม่นำมาประมาณ (มีฟอง รอยพับ หรือการแผ่กระจาย) หรือแตะอีกครั้งเพื่อนำกลับมา"},
+  "reviewFilmSquaresLeftOut": {"en": "{n, plural, =1{1 square left out.} other{{n} squares left out.}}", "th": "ไม่นับ {n} ช่อง", "placeholders": {"n": {"type": "int"}}},
+  "reviewFilmGasSplit": {"en": "{kind}: {withGas} with gas, {without} without", "th": "{kind}: มีแก๊ส {withGas} ไม่มีแก๊ส {without}", "placeholders": {"kind": {"type": "String"}, "withGas": {"type": "int"}, "without": {"type": "int"}}},
   "reviewModeYellow": {"en": "Zone", "th": "โซน"},
   "reviewHintKind": {"en": "Tap a colony to switch it between {a} and {b}.", "th": "แตะโคโลนีเพื่อสลับระหว่าง{a}และ{b}"},
   "reviewHintGas": {"en": "Tap a colony to mark or unmark a gas bubble next to it (white ring).", "th": "แตะโคโลนีเพื่อทำเครื่องหมายหรือยกเลิกฟองแก๊สข้างโคโลนี (วงสีขาว)"},

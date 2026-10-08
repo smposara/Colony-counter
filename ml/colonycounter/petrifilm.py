@@ -587,17 +587,19 @@ def film_rule(type: str, result: str, c: FilmColony) -> bool:
     }.get(result, False)
 
 
-def tally_film(type: str, colonies, grid: Grid, plate: Plate):
+def tally_film(type: str, colonies, grid: Grid, plate: Plate, excluded=()):
     """Counts per result, and for each result above the counting range an
     estimate from the complete grid squares (mean per square × growth area).
     Returns (counts, estimates or None, squares used); estimates hold only the
-    results above the range (8 E. coli next to 300 coliforms stay 8)."""
+    results above the range (8 E. coli next to 300 coliforms stay 8).
+    ``excluded`` lists grid squares (i, j) left out by the user."""
     ft = TYPES[type]
     counts = {k: int(sum(c.n for c in colonies if film_rule(type, k, c))) for k in ft.results}
     # Squares of a grid that was not found are not real squares: no estimate.
     if grid.strength < GRID_MIN_STRENGTH or max(counts.values()) <= ft.count_max:
         return counts, None, 0
-    squares = _complete_squares(grid, plate)
+    skip = {tuple(sq) for sq in excluded}
+    squares = [sq for sq in _complete_squares(grid, plate) if tuple(sq) not in skip]
     if len(squares) < 3:
         return counts, None, len(squares)
     estimates = {}

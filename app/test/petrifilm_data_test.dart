@@ -427,4 +427,49 @@ void main() {
     expect(info.dilutions, [1, 2, 3]);
     expect(info.volumeMl, 1);
   });
+
+  test('squares left out are not used for the estimate', () {
+    final marks = <Colony>[
+      for (var i = -2; i < 2; i++)
+        for (var j = -2; j < 2; j++)
+          for (var k = 0; k < 20; k++)
+            Colony(600 + i * 120 + 10 + k * 3, 600 + j * 120 + 60, 1),
+    ];
+    final cols = filmColoniesOf('ac', marks);
+    final all = completeSquares(_grid, _area);
+    final full = tallyFilm('ac', cols, _grid, _area);
+    final less = tallyFilm('ac', cols, _grid, _area, excluded: {all.first});
+    expect(less.squaresUsed, full.squaresUsed - 1);
+    final none = tallyFilm('ac', cols, _grid, _area, excluded: all.toSet());
+    expect(none.estimates, isNull);
+    expect(squareAt(_grid, 610, 610), (5, 5));
+
+    final r = _film(
+      PlateFormat.filmAc,
+      marks,
+    ).copyWith(excludedSquares: [all.first]);
+    final back = PlateRecord.fromJson(
+      jsonDecode(jsonEncode(r.toJson())) as Map<String, dynamic>,
+    );
+    expect(back.excludedSquares, [all.first]);
+    expect(back.filmTally.squaresUsed, full.squaresUsed - 1);
+  });
+
+  test('gas split: every kind with and without gas', () {
+    final cols = filmColoniesOf('ec', _ec(blue: 3, redGas: 4, red: 2));
+    expect(gasSplit('ec', cols), {'red': (4, 2), 'blue': (0, 3)});
+    expect(filmUsesGas('ec'), isTrue);
+    expect(filmUsesGas('ym'), isFalse);
+  });
+
+  test('CSV export lists colonies with and without gas', () async {
+    final store = PlateStore(MemoryStorage());
+    await store.load();
+    await store.upsert(
+      _film(PlateFormat.filmEc, _ec(blue: 3, redGas: 4, red: 2), id: '77'),
+    );
+    final csv = platesCsv(store);
+    expect(csv, contains('film_gas'));
+    expect(csv, contains('red_gas=4;red_no_gas=2;blue_gas=0;blue_no_gas=3'));
+  });
 }

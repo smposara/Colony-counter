@@ -113,8 +113,15 @@ inside the rim); check on real crowded films.
   `film_counts`, `film_estimates`, `film_squares` (plates), one row per result (samples,
   `result` column), `gas` and `yellow_zone` (colonies). Camera guide: film outline with its
   round area and a glare tip. About: the trademark notice. Strings: `l10n/parts/petrifilm.json`.
-- Not done yet: tapping a grid square to include or exclude it; the store-listing notice
-  (add with the release); a Thai food microbiologist's check of the terms.
+- Gas: the review panel, the shared photo and `plates.csv` (`film_gas`) list every kind with
+  and without gas (e.g. "Blue: 5 with gas, 15 without"); E. coli still counts every blue
+  colony, as the rule above, so the split lets the reader apply a stricter guide.
+- Squares: above the counting range a **Squares** mode lets the user tap a complete grid
+  square to leave it out of the estimate (a bubble, a fold, a spreader) and tap again to
+  add it back; left-out squares are crossed through, saved with the plate
+  (`excluded_squares`), counted in `plates.csv` (`film_squares_left_out`) and undoable.
+  Below 3 squares no estimate is made.
+- Not done yet: a Thai food microbiologist's check of the terms.
 
 **Grid check:** `find_grid` / `findGrid` score how clearly the grid repeats
 (autocorrelation one pitch away minus half a pitch away, weaker axis). Below 0.3 the result

@@ -102,6 +102,11 @@ def test_only_results_above_range_are_estimated():
     # No estimate from a grid that was not found.
     weak = Grid(120, 0, 0, 0, (600, 600), strength=0.1)
     assert tally_film("ec", marks, weak, area)[1] is None
+    # Squares left out by the user are not used.
+    from colonycounter.petrifilm import _complete_squares
+    all_sq = _complete_squares(grid, area)
+    _, est2, used2 = tally_film("ec", marks, grid, area, excluded=all_sq[:2])
+    assert used2 == used - 2
 
 
 def test_given_grid_is_scaled_to_work_size():

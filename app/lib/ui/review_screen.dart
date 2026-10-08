@@ -24,7 +24,7 @@ import 'timelapse_screen.dart';
 
 const double kRimFraction = 0.95;
 
-enum _Mode { zoom, edit, plate, spots, colour, gas, yellow }
+enum _Mode { zoom, edit, plate, spots, colour, gas, yellow, squares }
 
 /// Default drop diameter for a 10 µL drop on agar.
 const double kDropDiameterMm = 7;
@@ -82,7 +82,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
   int _autoCount = 0;
   List<String> _flags = [];
   double _kSigma = 4.0;
-  final List<(List<Colony>, List<Spot>, List<Colony>)> _undo = [];
+  final List<(List<Colony>, List<Spot>, List<Colony>, Set<(int, int)>)> _undo =
+      [];
   bool _dirty = false;
 
   /// Drops of a drop plate (empty for whole plates).
@@ -99,6 +100,20 @@ class _ReviewScreenState extends State<ReviewScreen> {
   /// Dry films: the printed grid found in the photo.
   FilmGrid? _filmGrid;
 
+  /// Dry films: grid squares the user left out of the estimate.
+  Set<(int, int)> _excluded = {};
+
+  /// The grid is good enough to estimate from its squares.
+  bool get _gridOk =>
+      _filmGrid != null && _filmGrid!.strength >= kGridMinStrength;
+
+  /// Some result is above the counting range, so squares can be chosen.
+  bool get _filmAboveRange {
+    if (!_film || _plate == null) return false;
+    final max = kFilmTypes[_filmType]!.countMax;
+    return _filmTally.counts.values.any((v) => v > max);
+  }
+
   bool get _film => _format.isFilm;
   String get _filmType => _format.film!;
 
@@ -108,6 +123,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
     filmColoniesOf(_filmType, _colonies),
     _filmGrid,
     _plate!,
+    excluded: _excluded,
   );
 
   /// Whether each mark counts towards any of the film's results.
@@ -147,6 +163,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
       _format = r.format;
       _rejected = List.of(r.rejected);
       _filmGrid = r.filmGrid;
+      _excluded = r.excludedSquares.toSet();
     } else {
       final info = widget.preset?.info;
       final base = widget.laterPhotoOf;
@@ -197,6 +214,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
           _imageH = res.imageHeight;
           _plate = res.plate;
           _filmGrid = res.grid;
+          _excluded = {};
           _colonies = marksOf(_filmType, res.colonies);
           _autoCount = _colonies.fold(0, (s, c) => s + c.n);
           _flags = res.flags;
@@ -416,7 +434,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
   }
 
   void _push() {
-    _undo.add((_colonies, _spots, _rejected));
+    _undo.add((_colonies, _spots, _rejected, _excluded));
     _dirty = true;
   }
 
@@ -444,6 +462,19 @@ class _ReviewScreenState extends State<ReviewScreen> {
           ];
         });
       }
+      return;
+    }
+    if (_mode == _Mode.squares) {
+      final grid = _filmGrid, plate = _plate;
+      if (grid == null || plate == null) return;
+      final sq = squareAt(grid, p.dx, p.dy);
+      if (!completeSquares(grid, plate).contains(sq)) return;
+      setState(() {
+        _push();
+        _excluded = _excluded.contains(sq)
+            ? ({..._excluded}..remove(sq))
+            : {..._excluded, sq};
+      });
       return;
     }
     if (_mode == _Mode.colour || _mode == _Mode.gas || _mode == _Mode.yellow) {
@@ -496,7 +527,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
   void _undoLast() {
     if (_undo.isEmpty) return;
     setState(() {
-      final (colonies, spots, rejected) = _undo.removeLast();
+      final (colonies, spots, rejected, excluded) = _undo.removeLast();
+      _excluded = excluded;
       _colonies = colonies;
       _spots = spots;
       _rejected = rejected;
@@ -611,6 +643,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
               : (base.seriesId.isEmpty ? base.id : base.seriesId)),
       incubationH: existing?.incubationH ?? _suggestedHours(base),
       filmGrid: _film ? _filmGrid : null,
+      excludedSquares: _film ? _excluded.toList() : const [],
     );
     final result = await showModalBottomSheet<PlateRecord>(
       context: context,
@@ -635,6 +668,33 @@ class _ReviewScreenState extends State<ReviewScreen> {
     await widget.store.upsert(record);
     _dirty = false;
     if (mounted) Navigator.of(context).pop(record);
+  }
+
+  /// Centre of the [k]-th complete grid square, in image pixels (tests).
+  @visibleForTesting
+  Offset debugSquareCentre(int k) {
+    final pts = squareOutline(
+      _filmGrid!,
+      completeSquares(_filmGrid!, _plate!)[k],
+    );
+    return Offset(
+      pts.map((p) => p.$1).reduce((a, b) => a + b) / 4,
+      pts.map((p) => p.$2).reduce((a, b) => a + b) / 4,
+    );
+  }
+
+  /// Complete grid squares to draw over a film, when they matter: while
+  /// an estimate is used or squares are being chosen.
+  List<(List<(double, double)>, bool)> _squaresToDraw() {
+    final grid = _filmGrid, plate = _plate;
+    if (!_film || grid == null || plate == null || !_gridOk) return const [];
+    if (_mode != _Mode.squares && _filmTally.estimates == null) {
+      return const [];
+    }
+    return [
+      for (final sq in completeSquares(grid, plate))
+        (squareOutline(grid, sq), !_excluded.contains(sq)),
+    ];
   }
 
   /// [r] when it is the same kind of plate (film or not) as the one being
@@ -772,9 +832,20 @@ class _ReviewScreenState extends State<ReviewScreen> {
     if (r != null && !_drop && !_film && r.volumeMl > 0) {
       count += ' · ${sciValue(_count / (r.volumeMl * r.dilution))} CFU/mL';
     }
+    // Films whose rules use gas: every kind with and without it.
+    final gas = _film && _plate != null && filmUsesGas(_filmType)
+        ? [
+            for (final MapEntry(key: kind, value: (g, n)) in gasSplit(
+              _filmType,
+              filmColoniesOf(_filmType, _colonies),
+            ).entries)
+              '${kind[0].toUpperCase()}${kind.substring(1)} $g with gas, $n without',
+          ].join(' / ')
+        : '';
     return [
       '${sample.isEmpty ? 'Unlabelled' : sample} · $what',
       count,
+      if (gas.isNotEmpty) gas,
       [
         shortDate(r?.createdAt ?? DateTime.now()),
         if (_flags.isNotEmpty) _flags.map(flag).join(', '),
@@ -1019,15 +1090,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                                   showMarks: _showMarks,
                                   film: _film ? _filmType : null,
                                   filmCounted: _film ? _filmCounted : const [],
-                                  squares:
-                                      _film &&
-                                          _filmGrid != null &&
-                                          _filmTally.estimates != null
-                                      ? completeSquareOutlines(
-                                          _filmGrid!,
-                                          _plate!,
-                                        )
-                                      : const [],
+                                  squares: _squaresToDraw(),
                                 ),
                               ),
                             ],
@@ -1084,6 +1147,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
       if (_filmGasMode)
         (_Mode.gas, Icons.bubble_chart_outlined, tr.reviewModeGas),
       if (_filmYellowMode) (_Mode.yellow, Icons.blur_on, tr.reviewModeYellow),
+      if (_gridOk && _filmAboveRange)
+        (_Mode.squares, Icons.grid_on, tr.reviewModeSquares),
     ];
     if (!modes.any((m) => m.$1 == _mode)) _mode = _Mode.edit;
     final compact = modes.length > 3;
@@ -1199,6 +1264,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                       _Mode.colour => tr.reviewHintColour,
                       _Mode.gas => tr.reviewHintGas,
                       _Mode.yellow => tr.reviewHintYellow,
+                      _Mode.squares => tr.reviewHintSquares,
                     }, style: t.bodySmall),
                   ],
                 ),
@@ -1354,7 +1420,10 @@ class _ReviewScreenState extends State<ReviewScreen> {
           Icons.grid_on,
           cs.secondaryContainer,
           cs.onSecondaryContainer,
-          tr.reviewFilmEstimate(tally.squaresUsed),
+          _excluded.isEmpty
+              ? tr.reviewFilmEstimate(tally.squaresUsed)
+              : '${tr.reviewFilmEstimate(tally.squaresUsed)} '
+                    '${tr.reviewFilmSquaresLeftOut(_excluded.length)}',
         )
       else if (above && _filmGrid != null)
         _banner(
@@ -1389,6 +1458,21 @@ class _ReviewScreenState extends State<ReviewScreen> {
           ],
         ),
       ),
+      // Every kind with and without gas, counted or not (EC, CC, EB).
+      if (filmUsesGas(type))
+        Padding(
+          padding: const EdgeInsets.only(bottom: 4),
+          child: Text(
+            [
+              for (final MapEntry(key: kind, value: (g, n)) in gasSplit(
+                type,
+                cols,
+              ).entries)
+                tr.reviewFilmGasSplit(filmKindText(kind), g, n),
+            ].join(' · '),
+            style: t.bodyMedium,
+          ),
+        ),
       Padding(
         padding: const EdgeInsets.only(bottom: 4),
         child: Text(tr.reviewFilmAid, style: t.bodySmall),
@@ -1513,8 +1597,9 @@ class _OverlayPainter extends CustomPainter {
   final String? film;
   final List<bool> filmCounted;
 
-  /// Grid squares an estimate was made from.
-  final List<List<(double, double)>> squares;
+  /// Complete grid squares (corners in image pixels), and whether each is
+  /// used by the estimate (false: left out by the user).
+  final List<(List<(double, double)>, bool)> squares;
   final List<Spot> spots;
   final ColourMode colourMode;
   final Plate? plate;
@@ -1564,23 +1649,28 @@ class _OverlayPainter extends CustomPainter {
     if (film != null) {
       _paintFilm(canvas, px);
       // On top of the marks: on crowded films they cover the gel.
-      for (final sq in squares) {
-        final path = Path()
-          ..addPolygon([for (final (x, y) in sq) Offset(x, y)], true);
+      for (final (sq, used) in squares) {
+        final pts = [for (final (x, y) in sq) Offset(x, y)];
+        final path = Path()..addPolygon(pts, true);
         canvas.drawPath(
           path,
           Paint()
             ..style = PaintingStyle.stroke
-            ..strokeWidth = 5 * px
+            ..strokeWidth = (used ? 5 : 3) * px
             ..color = Colors.black54,
         );
-        canvas.drawPath(
-          path,
-          Paint()
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 2.5 * px
-            ..color = Colors.amberAccent,
-        );
+        final line = Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = (used ? 2.5 : 1.5) * px
+          ..color = used
+              ? Colors.amberAccent
+              : Colors.white.withValues(alpha: 0.7);
+        canvas.drawPath(path, line);
+        if (!used) {
+          // Left out of the estimate: crossed through.
+          canvas.drawLine(pts[0], pts[2], line);
+          canvas.drawLine(pts[1], pts[3], line);
+        }
       }
       return;
     }
@@ -1722,7 +1812,7 @@ class _OverlayPainter extends CustomPainter {
       old.colourMode != colourMode ||
       old.showMarks != showMarks ||
       old.film != film ||
-      old.squares.length != squares.length;
+      old.squares != squares;
 }
 
 class _ClusterDialog extends StatefulWidget {

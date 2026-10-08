@@ -59,6 +59,8 @@ String platesCsv(PlateStore store) {
       'film_counts',
       'film_estimates',
       'film_squares',
+      'film_gas',
+      'film_squares_left_out',
     ],
   ];
   String pairs(Map<String, num> m) =>
@@ -124,9 +126,22 @@ String platesCsv(PlateStore store) {
                       e.key: e.value.round(),
                   }),
             t.estimates == null ? '' : t.squaresUsed,
+            // e.g. "blue_gas=12;blue_no_gas=8;red_gas=16;red_no_gas=4"
+            filmUsesGas(r.filmType!)
+                ? [
+                    for (final MapEntry(key: k, value: (g, n)) in gasSplit(
+                      r.filmType!,
+                      filmColoniesOf(r.filmType!, r.colonies),
+                    ).entries)
+                      '${k}_gas=$g;${k}_no_gas=$n',
+                  ].join(';')
+                : '',
+            r.excludedSquares.length,
           ];
         }()
       else ...[
+        '',
+        '',
         '',
         '',
         '',

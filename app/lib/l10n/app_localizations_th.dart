@@ -552,6 +552,23 @@ class AppLocalizationsTh extends AppLocalizations {
   String get reviewModeGas => 'แก๊ส';
 
   @override
+  String get reviewModeSquares => 'ช่อง';
+
+  @override
+  String get reviewHintSquares =>
+      'แตะช่องตารางเพื่อไม่นำมาประมาณ (มีฟอง รอยพับ หรือการแผ่กระจาย) หรือแตะอีกครั้งเพื่อนำกลับมา';
+
+  @override
+  String reviewFilmSquaresLeftOut(int n) {
+    return 'ไม่นับ $n ช่อง';
+  }
+
+  @override
+  String reviewFilmGasSplit(String kind, int withGas, int without) {
+    return '$kind: มีแก๊ส $withGas ไม่มีแก๊ส $without';
+  }
+
+  @override
   String get reviewModeYellow => 'โซน';
 
   @override

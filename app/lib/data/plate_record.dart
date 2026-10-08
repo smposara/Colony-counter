@@ -37,6 +37,7 @@ class PlateRecord {
     this.seriesId = '',
     this.incubationH,
     this.filmGrid,
+    this.excludedSquares = const [],
   });
 
   final String id;
@@ -93,6 +94,9 @@ class PlateRecord {
   /// Dry films: the printed grid found in the photo (for square estimates).
   final FilmGrid? filmGrid;
 
+  /// Dry films: grid squares (i, j) the user left out of the estimate.
+  final List<(int, int)> excludedSquares;
+
   bool get isDropPlate => spots.isNotEmpty;
 
   bool get isFilm => format.isFilm;
@@ -106,6 +110,7 @@ class PlateRecord {
     filmColoniesOf(filmType!, colonies),
     filmGrid,
     plate,
+    excluded: excludedSquares.toSet(),
   );
 
   /// Whether [result] (default: the type's first) is a square estimate.
@@ -197,6 +202,7 @@ class PlateRecord {
     double? incubationH,
     bool clearIncubation = false,
     FilmGrid? filmGrid,
+    List<(int, int)>? excludedSquares,
   }) => PlateRecord(
     id: id,
     createdAt: createdAt,
@@ -224,6 +230,7 @@ class PlateRecord {
     seriesId: seriesId ?? this.seriesId,
     incubationH: clearIncubation ? null : incubationH ?? this.incubationH,
     filmGrid: filmGrid ?? this.filmGrid,
+    excludedSquares: excludedSquares ?? this.excludedSquares,
   );
 
   Map<String, dynamic> toJson() => {
@@ -253,6 +260,10 @@ class PlateRecord {
     if (seriesId.isNotEmpty) 'series_id': seriesId,
     if (incubationH != null) 'incubation_h': incubationH,
     if (filmGrid != null) 'film_grid': filmGrid!.toJson(),
+    if (excludedSquares.isNotEmpty)
+      'excluded_squares': [
+        for (final (i, j) in excludedSquares) [i, j],
+      ],
   };
 
   factory PlateRecord.fromJson(Map<String, dynamic> j) => PlateRecord(
@@ -296,6 +307,10 @@ class PlateRecord {
     filmGrid: j['film_grid'] == null
         ? null
         : FilmGrid.fromJson(j['film_grid'] as Map<String, dynamic>),
+    excludedSquares: [
+      for (final s in j['excluded_squares'] as List? ?? const [])
+        ((s as List)[0] as int, s[1] as int),
+    ],
   );
 }
 

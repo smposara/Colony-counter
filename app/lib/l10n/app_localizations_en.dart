@@ -576,6 +576,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reviewModeGas => 'Gas';
 
   @override
+  String get reviewModeSquares => 'Squares';
+
+  @override
+  String get reviewHintSquares =>
+      'Tap a grid square to leave it out of the estimate (a bubble, a fold, a spreader), or tap it again to add it back.';
+
+  @override
+  String reviewFilmSquaresLeftOut(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n squares left out.',
+      one: '1 square left out.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String reviewFilmGasSplit(String kind, int withGas, int without) {
+    return '$kind: $withGas with gas, $without without';
+  }
+
+  @override
   String get reviewModeYellow => 'Zone';
 
   @override

@@ -1028,6 +1028,30 @@ abstract class AppLocalizations {
   /// **'Gas'**
   String get reviewModeGas;
 
+  /// No description provided for @reviewModeSquares.
+  ///
+  /// In en, this message translates to:
+  /// **'Squares'**
+  String get reviewModeSquares;
+
+  /// No description provided for @reviewHintSquares.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a grid square to leave it out of the estimate (a bubble, a fold, a spreader), or tap it again to add it back.'**
+  String get reviewHintSquares;
+
+  /// No description provided for @reviewFilmSquaresLeftOut.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{1 square left out.} other{{n} squares left out.}}'**
+  String reviewFilmSquaresLeftOut(int n);
+
+  /// No description provided for @reviewFilmGasSplit.
+  ///
+  /// In en, this message translates to:
+  /// **'{kind}: {withGas} with gas, {without} without'**
+  String reviewFilmGasSplit(String kind, int withGas, int without);
+
   /// No description provided for @reviewModeYellow.
   ///
   /// In en, this message translates to:

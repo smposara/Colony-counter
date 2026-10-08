@@ -403,6 +403,30 @@
   "kindMold": "Mold",
   "reviewModeKind": "Kind",
   "reviewModeGas": "Gas",
+  "reviewModeSquares": "Squares",
+  "reviewHintSquares": "Tap a grid square to leave it out of the estimate (a bubble, a fold, a spreader), or tap it again to add it back.",
+  "reviewFilmSquaresLeftOut": "{n, plural, =1{1 square left out.} other{{n} squares left out.}}",
+  "@reviewFilmSquaresLeftOut": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "reviewFilmGasSplit": "{kind}: {withGas} with gas, {without} without",
+  "@reviewFilmGasSplit": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "withGas": {
+        "type": "int"
+      },
+      "without": {
+        "type": "int"
+      }
+    }
+  },
   "reviewModeYellow": "Zone",
   "reviewHintKind": "Tap a colony to switch it between {a} and {b}.",
   "@reviewHintKind": {

@@ -1297,8 +1297,9 @@ FilmTally tallyFilm(
   String type,
   List<FilmColony> colonies,
   FilmGrid? grid,
-  Plate area,
-) {
+  Plate area, {
+  Set<(int, int)> excluded = const {},
+}) {
   final ft = kFilmTypes[type]!;
   final counts = {
     for (final k in ft.results)
@@ -1310,7 +1311,11 @@ FilmTally tallyFilm(
       counts.values.reduce(math.max) <= ft.countMax) {
     return (counts: counts, estimates: null, squaresUsed: 0);
   }
-  final squares = _completeSquares(grid, area);
+  // The user can leave squares out (a bubble, a fold, a spreader).
+  final squares = [
+    for (final sq in completeSquares(grid, area))
+      if (!excluded.contains(sq)) sq,
+  ];
   if (squares.length < 3) {
     return (counts: counts, estimates: null, squaresUsed: squares.length);
   }
@@ -1332,18 +1337,46 @@ FilmTally tallyFilm(
   return (counts: counts, estimates: estimates, squaresUsed: squares.length);
 }
 
-/// Complete grid squares inside [area], as image-pixel corner lists (for
-/// drawing the squares an estimate used).
-List<List<(double, double)>> completeSquareOutlines(FilmGrid grid, Plate area) {
+/// Corners of grid square [sq] in image pixels (for drawing it).
+List<(double, double)> squareOutline(FilmGrid grid, (int, int) sq) {
   final p = grid.pitchPx;
   return [
-    for (final (i, j) in _completeSquares(grid, area))
-      [
-        for (final (a, b) in const [(0, 0), (1, 0), (1, 1), (0, 1)])
-          grid.toImage(grid.ox + (i + a) * p, grid.oy + (j + b) * p),
-      ],
+    for (final (a, b) in const [(0, 0), (1, 0), (1, 1), (0, 1)])
+      grid.toImage(grid.ox + (sq.$1 + a) * p, grid.oy + (sq.$2 + b) * p),
   ];
 }
+
+/// The grid square (i, j) holding image point (x, y).
+(int, int) squareAt(FilmGrid grid, double x, double y) {
+  final (gx, gy) = grid.toGrid(x, y);
+  return (
+    ((gx - grid.ox) / grid.pitchPx).floor(),
+    ((gy - grid.oy) / grid.pitchPx).floor(),
+  );
+}
+
+/// Colonies of each kind with and without a gas bubble, e.g. for EC
+/// {blue: (12, 8), red: (16, 4)} (with gas, without), in kind order and
+/// counting a cluster's colonies. Only kinds that occur are listed.
+Map<String, (int, int)> gasSplit(String type, List<FilmColony> colonies) {
+  final out = <String, (int, int)>{};
+  for (final kind in filmKinds(type)) {
+    var withGas = 0, without = 0;
+    for (final c in colonies) {
+      if (c.kind != kind) continue;
+      if (c.gas) {
+        withGas += c.n;
+      } else {
+        without += c.n;
+      }
+    }
+    if (withGas + without > 0) out[kind] = (withGas, without);
+  }
+  return out;
+}
+
+/// Whether a film type's rules use gas (EC, CC, EB).
+bool filmUsesGas(String type) => const {'ec', 'cc', 'eb'}.contains(type);
 
 double _dist(double x0, double y0, double x1, double y1) =>
     math.sqrt((x0 - x1) * (x0 - x1) + (y0 - y1) * (y0 - y1));
@@ -1525,7 +1558,7 @@ double _ringMean(GrayImage ch, double x, double y, double r0, double r1) {
 }
 
 /// Grid squares (i, j) lying wholly inside the counted area.
-List<(int, int)> _completeSquares(FilmGrid grid, Plate plate) {
+List<(int, int)> completeSquares(FilmGrid grid, Plate plate) {
   final (gx, gy) = grid.toGrid(plate.cx, plate.cy);
   final p = grid.pitchPx;
   final n = (plate.radius / p).toInt() + 2;

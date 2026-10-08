@@ -148,4 +148,64 @@ void main() {
     // The banner says it; no extra chip.
     expect(find.text('Grid not found'), findsNothing);
   });
+
+  testWidgets('crowded film: tap a grid square to leave it out', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1080, 2340);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+    final store = PlateStore(MemoryStorage());
+    await tester.runAsync(store.load);
+    final info = SampleInfo(
+      sampleId: 'C1',
+      method: PlatingMethod.film,
+      format: PlateFormat.filmAc,
+      dilutions: const [1],
+      replicates: 1,
+      volumeMl: 1,
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: ReviewScreen(
+          store: store,
+          photo: File('test/fixtures/film_ac_crowded.jpg').readAsBytesSync(),
+          preset: PlatePreset(info: info, slot: info.slots.first),
+        ),
+      ),
+    );
+    await _settleReal(
+      tester,
+      () => find.byType(CircularProgressIndicator).evaluate().isEmpty,
+    );
+    expect(find.textContaining('estimated from 8'), findsOneWidget);
+    await tester.tap(find.text('Squares'));
+    await tester.pump();
+    expect(find.textContaining('leave it out'), findsOneWidget);
+
+    // Tap the middle of the first complete square (image → screen).
+    final python =
+        jsonDecode(
+              File('test/fixtures/film_ac_crowded.json').readAsStringSync(),
+            )['python']
+            as Map<String, dynamic>;
+    expect(python['squares_used'], 8);
+    // The photo's own detector (the viewer has others): it handles long-press.
+    final photo = find.byWidgetPredicate(
+      (w) => w is GestureDetector && w.onLongPressStart != null,
+    );
+    final box = tester.renderObject<RenderBox>(photo);
+    final state = tester.state(find.byType(ReviewScreen));
+    // ignore: avoid_dynamic_calls
+    final centre = (state as dynamic).debugSquareCentre(0) as Offset;
+    await tester.tapAt(box.localToGlobal(centre));
+    await tester.pump();
+    expect(find.textContaining('estimated from 7'), findsOneWidget);
+    expect(find.textContaining('1 square left out'), findsOneWidget);
+
+    // Undo puts it back.
+    await tester.tap(find.byIcon(Icons.undo));
+    await tester.pump();
+    expect(find.textContaining('estimated from 8'), findsOneWidget);
+  });
 }
