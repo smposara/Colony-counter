@@ -90,7 +90,7 @@ String filmSummary(PlateRecord r) {
   final t = r.filmTally;
   return [
     for (final k in t.counts.keys)
-      t.estimates == null
+      t.estimates?[k] == null
           ? '${filmResultText(k)} ${t.counts[k]}'
           : '${filmResultText(k)} ≈ ${formatCount(t.estimates![k]!)}',
   ].join(' · ');

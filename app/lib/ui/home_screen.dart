@@ -537,7 +537,7 @@ class RecordTile extends StatelessWidget {
             const SizedBox(width: 6),
             Text(
               r.isFilm
-                  ? '${r.filmTally.estimates == null ? '' : '≈'}'
+                  ? '${r.filmEstimated() ? '≈' : ''}'
                         '${formatCount(r.filmValue())}'
                   : '${r.count}',
               style: Theme.of(context).textTheme.titleLarge,

@@ -1239,8 +1239,9 @@ bool filmRule(String type, String result, FilmColony c) => switch (result) {
   _ => false,
 };
 
-/// Counts per result of a film, and above the counting range an estimate
-/// from the complete grid squares (mean per square × growth area).
+/// Counts per result of a film, and for each result above the counting
+/// range an estimate from the complete grid squares (mean per square ×
+/// growth area). [FilmTally.estimates] holds only the estimated results.
 typedef FilmTally = ({
   Map<String, int> counts,
   Map<String, double>? estimates,
@@ -1265,8 +1266,11 @@ FilmTally tallyFilm(
   if (squares.length < 3) {
     return (counts: counts, estimates: null, squaresUsed: squares.length);
   }
+  // Only the results above the range are estimated; the others keep their
+  // count (an E. coli count of 8 next to 300 coliforms stays 8).
   final estimates = <String, double>{};
   for (final k in ft.results) {
+    if (counts[k]! <= ft.countMax) continue;
     var total = 0;
     for (final sq in squares) {
       for (final c in colonies) {

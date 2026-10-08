@@ -85,3 +85,27 @@ def test_type_table_is_complete():
         assert ft.count_min < ft.count_max
         assert ft.results
     assert TYPES["ac"].confirmed and (TYPES["ac"].count_min, TYPES["ac"].count_max) == (25, 250)
+
+
+def test_only_results_above_range_are_estimated():
+    """An EC film above the range for coliforms keeps its E. coli count."""
+    from colonycounter.petrifilm import FilmColony, Grid, tally_film
+    from colonycounter.plate import Plate
+    grid = Grid(120, 0, 0, 0, (600, 600))
+    area = Plate(600, 600, 303, 50.5)
+    marks = [FilmColony(600 + i * 120 + 10 + k * 3, 600 + j * 120 + 60, 1, "red", gas=True)
+             for i in range(-2, 2) for j in range(-2, 2) for k in range(20)]
+    marks += [FilmColony(615, 615, 1, "blue") for _ in range(8)]
+    counts, est, used = tally_film("ec", marks, grid, area)
+    assert counts == {"ecoli": 8, "coliform": 328}
+    assert used >= 3 and set(est) == {"coliform"}
+
+
+def test_given_grid_is_scaled_to_work_size():
+    import cv2
+    s = make_film("ac", n=30, seed=12)
+    big = cv2.resize(s.image, None, fx=2.0, fy=2.0, interpolation=cv2.INTER_LINEAR)
+    g = count_petrifilm(big, "ac").grid
+    res = count_petrifilm(big, "ac", grid=g)
+    assert abs(res.grid.pitch_px - g.pitch_px) < 0.01 * g.pitch_px
+    assert abs(res.counts["aerobic"] - 30) <= 2

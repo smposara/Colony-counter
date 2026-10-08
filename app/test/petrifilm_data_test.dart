@@ -10,7 +10,9 @@ import 'package:colony_counter/data/plate_record.dart';
 import 'package:colony_counter/data/plate_store.dart';
 import 'package:colony_counter/data/sample_info.dart';
 import 'package:colony_counter/data/storage/storage.dart';
+import 'package:colony_counter/core/stats.dart';
 import 'package:colony_counter/ui/format.dart';
+import 'package:colony_counter/ui/samples_screen.dart';
 import 'package:colony_counter/ui/sample_setup_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -236,5 +238,114 @@ void main() {
     ]) {
       expect(th[k], isA<String>(), reason: k);
     }
+  });
+
+  test('only results above the range are estimated', () {
+    // 320 coliforms (red with gas) spread over the squares, 8 E. coli.
+    final marks = <Colony>[
+      for (var i = -2; i < 2; i++)
+        for (var j = -2; j < 2; j++)
+          for (var k = 0; k < 20; k++)
+            Colony(
+              600 + i * 120 + 10 + k * 3,
+              600 + j * 120 + 60,
+              1,
+              gas: true,
+            ),
+      for (var k = 0; k < 8; k++) const Colony(615, 615, 1, cls: 1),
+    ];
+    final r = _film(PlateFormat.filmEc, marks);
+    final t = r.filmTally;
+    expect(t.counts, {'ecoli': 8, 'coliform': 328});
+    expect(t.estimates!.keys, ['coliform']);
+    expect(r.filmValue('ecoli'), 8);
+    expect(r.filmEstimated('ecoli'), isFalse);
+    expect(r.filmEstimated('coliform'), isTrue);
+    expect(filmSummary(r), startsWith('E. coli 8 · Coliforms ≈ '));
+  });
+
+  Future<PlateStore> filmDefaultStore(WidgetTester tester) async {
+    final store = PlateStore(MemoryStorage());
+    await tester.runAsync(store.load);
+    await tester.runAsync(() => store.setDefaults(format: PlateFormat.filmEc));
+    return store;
+  }
+
+  Future<SampleInfo> saveAs(
+    WidgetTester tester,
+    PlateStore store,
+    String id,
+  ) async {
+    await tester.enterText(find.widgetWithText(TextField, 'Sample ID'), id);
+    await tester.tap(find.text('Save sample'));
+    await tester.pumpAndSettle();
+    return store.sampleInfo(id);
+  }
+
+  testWidgets('film default: new sample starts at 10⁻¹–10⁻³', (tester) async {
+    tester.view.physicalSize = const Size(1080, 6000);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+    final store = await filmDefaultStore(tester);
+    await tester.pumpWidget(MaterialApp(home: SampleSetupScreen(store: store)));
+    final info = await saveAs(tester, store, 'F2');
+    expect(info.method, PlatingMethod.film);
+    expect(info.format, PlateFormat.filmEc);
+    expect(info.dilutions, [1, 2, 3]);
+    expect(info.volumeMl, 1);
+  });
+
+  testWidgets('film default does not leak into a dish sample', (tester) async {
+    tester.view.physicalSize = const Size(1080, 6000);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+    final store = await filmDefaultStore(tester);
+    await tester.pumpWidget(MaterialApp(home: SampleSetupScreen(store: store)));
+    await tester.tap(find.text('Membrane'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Spread'));
+    await tester.pumpAndSettle();
+    final info = await saveAs(tester, store, 'S9');
+    expect(info.method, PlatingMethod.spread);
+    expect(info.format.isDish, isTrue);
+    expect(info.dilutions, [4, 5, 6]);
+  });
+
+  testWidgets('switching method keeps a dilution range the user set', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1080, 6000);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+    final store = PlateStore(MemoryStorage());
+    await tester.runAsync(store.load);
+    await tester.pumpWidget(MaterialApp(home: SampleSetupScreen(store: store)));
+    // From 10⁻⁴ to 10⁻²: the "From" picker is the first dropdown of 10⁻⁴.
+    await tester.tap(find.text('10⁻⁴').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('10⁻²').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Film'));
+    await tester.pumpAndSettle();
+    final info = await saveAs(tester, store, 'F3');
+    expect(info.method, PlatingMethod.film);
+    expect(info.dilutions.first, 2);
+  });
+
+  test('sample tile keeps <, > and est. on each film result', () {
+    final info = SampleInfo(
+      sampleId: 'Q',
+      method: PlatingMethod.film,
+      format: PlateFormat.filmEc,
+      dilutions: const [1],
+      replicates: 1,
+      volumeMl: 1,
+    );
+    SampleResult res(int count) => analyseReplicates([
+      Observation(PlateCount(count, 0.1, volumeMl: 1), 1),
+    ], CountingRule.film150);
+    expect(qualifiedMean(res(0), info), startsWith('< '));
+    expect(qualifiedMean(res(40), info), isNot(contains('est.')));
+    expect(qualifiedMean(res(9), info), endsWith('est.'));
   });
 }

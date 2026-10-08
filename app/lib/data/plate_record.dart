@@ -108,6 +108,11 @@ class PlateRecord {
     plate,
   );
 
+  /// Whether [result] (default: the type's first) is a square estimate.
+  bool filmEstimated([String? result]) =>
+      filmTally.estimates?[result ?? kFilmTypes[filmType!]!.results.first] !=
+      null;
+
   /// Per-plate value of [result]: the square estimate when there is one,
   /// else the count. [result] defaults to the film type's first result.
   double filmValue([String? result]) {

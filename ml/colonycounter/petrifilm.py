@@ -110,7 +110,8 @@ class FilmResult:
     @property
     def values(self) -> dict[str, float]:
         """Per-plate result: the estimate when there is one, else the count."""
-        return dict(self.estimates) if self.estimates else {k: float(v) for k, v in self.counts.items()}
+        est = self.estimates or {}
+        return {k: float(est.get(k, v)) for k, v in self.counts.items()}
 
     def to_dict(self) -> dict:
         return {
@@ -458,13 +459,16 @@ YELLOW_MIN_DB = 10.0  # Lab b* rise in the zone around a colony
 
 def count_petrifilm(image: np.ndarray, type: str, plate: Plate | None = None,
                     grid: Grid | None = None) -> FilmResult:
-    ft = TYPES[type]
+    TYPES[type]  # unknown types fail early
     h0, w0 = image.shape[:2]
     scale = min(1.0, WORK_SHORT_SIDE / min(h0, w0))
     if scale < 1:
         image = cv2.resize(image, (round(w0 * scale), round(h0 * scale)), interpolation=cv2.INTER_AREA)
         if plate is not None:
             plate = Plate(plate.cx * scale, plate.cy * scale, plate.radius * scale, plate.diameter_mm)
+        if grid is not None:
+            grid = Grid(grid.pitch_px * scale, grid.angle_deg, grid.ox * scale, grid.oy * scale,
+                        (grid.centre[0] * scale, grid.centre[1] * scale), grid.line_half_px * scale)
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     grid = grid or find_grid(gray)
     mm = grid.mm_per_px
@@ -522,31 +526,9 @@ def count_petrifilm(image: np.ndarray, type: str, plate: Plate | None = None,
             yellow = ring_b - _disc_mean_ch(bg[2], c.x, c.y, c.radius_px) >= YELLOW_MIN_DB
         colonies.append(FilmColony(c.x, c.y, c.radius_px, kind, c.n, bool(gas), bool(yellow)))
 
-    def tally(sel) -> int:
-        return int(sum(c.n for c in colonies if sel(c)))
-
-    rules = {
-        "aerobic": lambda c: True,
-        "ecoli": lambda c: c.kind == "blue",
-        "coliform": (lambda c: c.kind == "blue" or (c.kind == "red" and c.gas)) if type == "ec"
-        else (lambda c: c.gas),
-        "enterobacteriaceae": lambda c: c.kind == "red" and (c.gas or c.yellow),
-        "yeast": lambda c: c.kind == "yeast",
-        "mold": lambda c: c.kind == "mold",
-    }
-    counts = {k: tally(rules[k]) for k in ft.results}
-
-    estimates, used = None, 0
-    if max(counts.values()) > ft.count_max:
-        squares = _complete_squares(grid, plate)
-        used = len(squares)
-        if used >= 3:
-            estimates = {}
-            for k in ft.results:
-                per = [sum(c.n for c in colonies if rules[k](c) and _in_square(grid, sq, c.x, c.y))
-                       for sq in squares]
-                estimates[k] = float(np.mean(per) * ft.area_cm2)
-            flags.append("estimated")
+    counts, estimates, used = tally_film(type, colonies, grid, plate)
+    if estimates is not None:
+        flags.append("estimated")
     if det.coverage > (0.6 if type == "ym" else 0.3):
         flags.append("tntc")
     if det.spreaders:
@@ -560,6 +542,40 @@ def count_petrifilm(image: np.ndarray, type: str, plate: Plate | None = None,
                     for c in colonies]
         bubbles = [(x * up, y * up, r * up) for x, y, r in bubbles]
     return FilmResult(type, plate, grid, colonies, bubbles, counts, estimates, used, flags)
+
+
+def film_rule(type: str, result: str, c: FilmColony) -> bool:
+    """Whether colony ``c`` counts towards ``result`` on a film of ``type``."""
+    return {
+        "aerobic": True,
+        "ecoli": c.kind == "blue",
+        "coliform": (c.kind == "blue" or (c.kind == "red" and c.gas)) if type == "ec" else c.gas,
+        "enterobacteriaceae": c.kind == "red" and (c.gas or c.yellow),
+        "yeast": c.kind == "yeast",
+        "mold": c.kind == "mold",
+    }.get(result, False)
+
+
+def tally_film(type: str, colonies, grid: Grid, plate: Plate):
+    """Counts per result, and for each result above the counting range an
+    estimate from the complete grid squares (mean per square × growth area).
+    Returns (counts, estimates or None, squares used); estimates hold only the
+    results above the range (8 E. coli next to 300 coliforms stay 8)."""
+    ft = TYPES[type]
+    counts = {k: int(sum(c.n for c in colonies if film_rule(type, k, c))) for k in ft.results}
+    if max(counts.values()) <= ft.count_max:
+        return counts, None, 0
+    squares = _complete_squares(grid, plate)
+    if len(squares) < 3:
+        return counts, None, len(squares)
+    estimates = {}
+    for k in ft.results:
+        if counts[k] <= ft.count_max:
+            continue
+        per = [sum(c.n for c in colonies if film_rule(type, k, c) and _in_square(grid, sq, c.x, c.y))
+               for sq in squares]
+        estimates[k] = float(np.mean(per) * ft.area_cm2)
+    return counts, estimates, len(squares)
 
 
 def _own_radius(marks, fg, mask, threshold):

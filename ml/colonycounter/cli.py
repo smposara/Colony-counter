@@ -202,7 +202,8 @@ def cmd_petrifilm(args) -> int:
             out.mkdir(parents=True, exist_ok=True)
             cv2.imwrite(str(out / f"{path.stem}_film.jpg"), draw_film(img, res))
         if not args.json:
-            vals = ", ".join(f"{k} {v:g}{' (est.)' if res.estimates else ''}" for k, v in res.values.items())
+            est = res.estimates or {}
+            vals = ", ".join(f"{k} {v:g}{' (est.)' if k in est else ''}" for k, v in res.values.items())
             flags = f"  [{', '.join(res.flags)}]" if res.flags else ""
             print(f"{path.name}: {vals}{flags}")
     if args.json:

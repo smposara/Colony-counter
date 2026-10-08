@@ -571,9 +571,11 @@ class _ReviewScreenState extends State<ReviewScreen> {
           base?.dilutionExp ??
           widget.preset?.slot.dilutionExp ??
           0,
+      // A plate switched between a dish and a dry film takes the new type's
+      // volume (films are 1 mL), not the one saved with the old type.
       volumeMl:
-          existing?.volumeMl ??
-          base?.volumeMl ??
+          _sameKind(existing)?.volumeMl ??
+          _sameKind(base)?.volumeMl ??
           widget.preset?.info.unitVolumeMl ??
           (_drop
               ? 0.01
@@ -631,6 +633,19 @@ class _ReviewScreenState extends State<ReviewScreen> {
     await widget.store.upsert(record);
     _dirty = false;
     if (mounted) Navigator.of(context).pop(record);
+  }
+
+  /// [r] when it is the same kind of plate (film or not) as the one being
+  /// saved, else null.
+  PlateRecord? _sameKind(PlateRecord? r) =>
+      r != null && r.isFilm == _film ? r : null;
+
+  /// [p] with radius [r]. A film's scale comes from its printed grid, so its
+  /// diameter in mm follows the radius; a dish keeps its nominal size.
+  Plate _resized(Plate p, double r) {
+    final grid = _filmGrid;
+    if (!_film || grid == null) return p.copyWith(radius: r);
+    return Plate(p.cx, p.cy, r, diameterMm: 2 * r * grid.mmPerPx);
   }
 
   /// Hours since plating for a later photo: the earlier photo's hours plus
@@ -741,7 +756,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
       final t = _filmTally;
       count = [
         for (final k in kFilmTypes[_filmType]!.results)
-          t.estimates == null
+          t.estimates?[k] == null
               ? '${names[k]} ${t.counts[k]}'
               : '${names[k]} est. ${t.estimates![k]!.round()}',
       ].join(' / ');
@@ -1197,7 +1212,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                       min: _imageW * 0.15,
                       max: _imageW * 0.7,
                       onChanged: (v) =>
-                          setState(() => _plate = _plate!.copyWith(radius: v)),
+                          setState(() => _plate = _resized(_plate!, v)),
                     ),
                     if (_plate!.isSquare)
                       Row(
@@ -1339,9 +1354,9 @@ class _ReviewScreenState extends State<ReviewScreen> {
           children: [
             for (final k in ft.results)
               Text(
-                est == null
+                est?[k] == null
                     ? '${filmResultText(k)} ${tally.counts[k]}'
-                    : '${filmResultText(k)} ≈ ${formatCount(est[k]!)} '
+                    : '${filmResultText(k)} ≈ ${formatCount(est![k]!)} '
                           '(${tally.counts[k]})',
                 style: t.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
               ),

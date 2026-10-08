@@ -141,6 +141,18 @@ String resultSummary(SampleResult r, SampleInfo info) {
   return 'log₁₀ ${fixed(log)}$sd (n = ${s.n})${r.qualified ? ' · ${tr.samplesEstimated}' : ''}';
 }
 
+/// Mean of [r] in the sample's unit with its qualifier: "< 10" or "> …" when
+/// every replicate is a bound, "est." when any replicate is an estimate.
+String qualifiedMean(SampleResult r, SampleInfo info) {
+  final s = r.stats;
+  if (s.n == 0) return '—';
+  final q = {for (final e in r.perReplicate.values) e.qualifier};
+  final v = sciValue(s.mean * info.unitFactor);
+  if (q.length == 1 && q.first == Qualifier.lessThan) return '< $v';
+  if (q.length == 1 && q.first == Qualifier.greaterThan) return '> $v';
+  return r.qualified ? '$v ${tr.samplesEstimated}' : v;
+}
+
 String hoursLabel(double h) => tr.samplesHours(fixed(h, h % 1 == 0 ? 0 : 1));
 
 /// Samples grouped by experiment, newest first.
@@ -250,7 +262,8 @@ class _SampleTile extends StatelessWidget {
     // A dry film also lists its other results (e.g. coliforms beside E. coli).
     final film = [
       for (final k in info.filmResults)
-        '${filmResultText(k)} ${sciValue(info.analyse(plates, store.rule, result: k).stats.mean * info.unitFactor)}',
+        '${filmResultText(k)} '
+            '${qualifiedMean(info.analyse(plates, store.rule, result: k), info)}',
     ];
     return ListTile(
       title: Text(info.sampleId),

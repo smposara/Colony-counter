@@ -98,8 +98,14 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
       _base?.membraneRule ?? CountingRule.membrane80;
   late DropLayout _layout = _base?.dropLayout ?? DropLayout.replicates;
   late ColourMode _colour = _base?.colourMode ?? ColourMode.none;
-  late int _from = _base?.dilutions.first ?? 4;
-  late int _to = _base?.dilutions.last ?? 6;
+  // Films are usually plated from 10⁻¹, dishes from 10⁻⁴.
+  late final bool _filmStart = _method == PlatingMethod.film;
+  late int _from = _base?.dilutions.first ?? (_filmStart ? 1 : 4);
+  late int _to = _base?.dilutions.last ?? (_filmStart ? 3 : 6);
+
+  /// The dilution range was set by the user (or comes from an existing
+  /// sample), so switching the plating method keeps it.
+  late bool _rangeSet = _base != null;
   late int _replicates = _base?.replicates ?? 3;
   String? _idError;
 
@@ -124,8 +130,9 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
         final d = widget.store.defaultFormat;
         _format = d.isFilm ? d : PlateFormat.filmAc;
         _volume.text = '1.0';
-        // Films are usually plated from the 10⁻¹ dilution.
-        if (_base == null || (_from == 0 && _to == 0)) {
+        // Films are usually plated from the 10⁻¹ dilution; keep a range the
+        // user has set.
+        if (!_rangeSet) {
           _from = 1;
           _to = 3;
         }
@@ -135,6 +142,10 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
         final d = widget.store.defaultFormat;
         _format = d.isDish ? d : PlateFormat.dish90;
         _volume.text = '${widget.store.defaultVolumeMl}';
+        if (!_rangeSet) {
+          _from = 4;
+          _to = 6;
+        }
         if (m != PlatingMethod.membrane) return;
       }
       if (m == PlatingMethod.membrane && !wasMembrane) {
@@ -145,8 +156,12 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
         _volume.text = '100';
       } else if (m != PlatingMethod.membrane && wasMembrane) {
         final d = widget.store.defaultFormat;
-        _format = d.membrane ? PlateFormat.dish90 : d;
+        _format = d.isDish ? d : PlateFormat.dish90;
         _volume.text = '${widget.store.defaultVolumeMl}';
+        if (!_rangeSet) {
+          _from = 4;
+          _to = 6;
+        }
       }
     });
   }
@@ -465,6 +480,7 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
                   tr.setupFrom,
                   _from,
                   (v) => setState(() {
+                    _rangeSet = true;
                     _from = v;
                     if (_to < v) _to = v;
                   }),
@@ -476,6 +492,7 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
                   tr.setupTo,
                   _to,
                   (v) => setState(() {
+                    _rangeSet = true;
                     _to = v;
                     if (_from > v) _from = v;
                   }),
