@@ -7,7 +7,7 @@ answer to each form. Work through the checklist from top to bottom.
 |---|---|
 | App name | Colony Counter – CFU counting (en) · Colony Counter: นับโคโลนี (th) |
 | Package name | `th.in.amphur.colonycounter` (permanent) |
-| Version | 0.6.1 (version code 9) |
+| Version | 0.6.2 (version code 10) |
 | Default language | English (United States) – en-US, plus Thai – th-TH |
 | App or game | App |
 | Free or paid | Free |

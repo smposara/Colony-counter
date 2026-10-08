@@ -54,13 +54,13 @@ Reads Neogen® Petrifilm® plates. Petrifilm and Neogen are trademarks of Neogen
 Intended use: for research and teaching. Colony Counter is not a medical or diagnostic device. Always check the automatic count.
 ```
 
-## Release notes (What's new) (480/500 characters)
+## Release notes (What's new) (417/500 characters)
 
 ```
-Version 0.6.1
-• Petrifilm: on a crowded film only the result above the counting range is estimated from the grid squares; the other results keep their count
-• A plate changed to or from a Petrifilm type uses the right volume (1 mL for films)
-• Resizing a film's growth area keeps the scale from its printed grid
-• New Petrifilm samples start at 10⁻¹–10⁻³, and changing the plating method keeps the dilutions you set
-• The samples list shows <, > and est. for each Petrifilm result
+Version 0.6.2
+• Petrifilm: tap grid squares to leave them out of an estimate (a bubble, a fold, a spreader)
+• Colonies with and without gas are listed for each colour, on screen, on the shared photo and in the CSV
+• A warning when the printed grid is not found (glare, blur, or not a Petrifilm plate)
+• No estimate from a grid that was not found
+• Fixes for film dilutions after Membrane, volumes and the samples list
 ```
