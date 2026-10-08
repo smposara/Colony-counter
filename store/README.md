@@ -7,7 +7,7 @@ answer to each form. Work through the checklist from top to bottom.
 |---|---|
 | App name | Colony Counter – CFU counting (en) · Colony Counter: นับโคโลนี (th) |
 | Package name | `th.in.amphur.colonycounter` (permanent) |
-| Version | 0.5.2 (version code 7) |
+| Version | 0.6.0 (version code 8) |
 | Default language | English (United States) – en-US, plus Thai – th-TH |
 | App or game | App |
 | Free or paid | Free |
@@ -32,6 +32,12 @@ plates in one photo. They come from the web build with demo data and look the sa
 as the Android app (same Flutter interface).
 
 Tablet screenshots are optional; without them the listing is shown as a phone app.
+
+`screenshots/release-0.6.0/` shows the 0.6.0 feature, Petrifilm dry films, in English and
+Thai: film setup, an EC film in Gas mode, a yeast & mold film, a crowded film estimated from
+grid squares, and a sample's E. coli and coliform results, plus one overview image per
+language for testers. The listing's full description and What's new carry the Neogen
+trademark notice; keep it whenever Petrifilm is named.
 
 `screenshots/release-0.5.2/` shows the 0.5.2 feature (marks on and off, English and Thai,
 plus a side-by-side image for sharing with testers). It is not part of the listing, which

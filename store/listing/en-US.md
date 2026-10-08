@@ -12,7 +12,7 @@ Colony Counter – CFU counting
 Count bacterial colonies (CFU) on agar plates with your phone camera.
 ```
 
-## Full description (2074/4000 characters)
+## Full description (2350/4000 characters)
 
 ```
 Colony Counter counts bacterial and fungal colonies on agar plates from a photo, and turns plate counts into CFU/mL, CFU/g or CFU/100 mL. Built for microbiology research and teaching labs.
@@ -33,6 +33,7 @@ MORE PLATE TYPES
 • 60, 90, 100 and 150 mm dishes, square plates and 47 mm gridded membrane filters.
 • Several plates in one photo.
 • Time-lapse: photograph the same plate over time to see when colonies appear and how fast they grow.
+• Petrifilm® dry films: AC, EC (E. coli and coliforms), CC, EB and YM, with gas bubbles, yellow zones and estimates from the grid squares.
 
 TRUST THE COUNT
 • "Check this count" warnings for crowded plates, touching or faint colonies.
@@ -48,13 +49,18 @@ Counting runs on your phone. No account, no ads, no tracking, and no internet ac
 
 Thai and English. Light and dark themes. Free and open source (GNU AGPL-3.0).
 
+Reads Neogen® Petrifilm® plates. Petrifilm and Neogen are trademarks of Neogen Corporation; this app is not made or endorsed by Neogen.
+
 Intended use: for research and teaching. Colony Counter is not a medical or diagnostic device. Always check the automatic count.
 ```
 
-## Release notes (What's new) (234/500 characters)
+## Release notes (What's new) (438/500 characters)
 
 ```
-Version 0.5.2
-• New eye button on the photo: hide the colony marks to look over the plate unmarked, then show them again to compare and find areas that need a closer look
-• The Review count title is no longer cut off on smaller phones
+Version 0.6.0
+• New: count Neogen® Petrifilm® dry films – AC, EC, CC, EB and YM. Choose Film in a sample plan, or as the plate type
+• Results per film: E. coli and coliforms, Enterobacteriaceae, yeasts and molds, with gas bubbles and yellow zones
+• Tap to correct a colony's colour, gas or zone
+• Crowded films are estimated from the grid squares
+• Petrifilm and Neogen are trademarks of Neogen Corporation; not made or endorsed by Neogen
 ```

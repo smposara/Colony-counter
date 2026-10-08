@@ -1,3 +1,6 @@
-Version 0.5.2
-• New eye button on the photo: hide the colony marks to look over the plate unmarked, then show them again to compare and find areas that need a closer look
-• The Review count title is no longer cut off on smaller phones
+Version 0.6.0
+• New: count Neogen® Petrifilm® dry films – AC, EC, CC, EB and YM. Choose Film in a sample plan, or as the plate type
+• Results per film: E. coli and coliforms, Enterobacteriaceae, yeasts and molds, with gas bubbles and yellow zones
+• Tap to correct a colony's colour, gas or zone
+• Crowded films are estimated from the grid squares
+• Petrifilm and Neogen are trademarks of Neogen Corporation; not made or endorsed by Neogen

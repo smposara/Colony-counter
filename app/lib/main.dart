@@ -42,8 +42,8 @@ class ColonyCounterApp extends StatelessWidget {
       listenable: store,
       builder: (context, _) => MaterialApp(
         onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
-        theme: _theme(Brightness.light),
-        darkTheme: _theme(Brightness.dark),
+        theme: appTheme(Brightness.light),
+        darkTheme: appTheme(Brightness.dark),
         themeMode: switch (store.theme) {
           'light' => ThemeMode.light,
           'dark' => ThemeMode.dark,
@@ -86,7 +86,7 @@ const kBrandOrange = Color(0xFFFF9800);
 /// Text uses the bundled Roboto, with IBM Plex Sans Thai for Thai and a
 /// small symbol font for superscripts (10⁻⁵) that Roboto lacks, so text never
 /// depends on downloaded or system fonts.
-ThemeData _theme(Brightness brightness) {
+ThemeData appTheme(Brightness brightness) {
   final dark = brightness == Brightness.dark;
   final orange = ColorScheme.fromSeed(
     seedColor: kBrandOrange,

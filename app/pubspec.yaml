@@ -1,7 +1,7 @@
 name: colony_counter
 description: "Colony Counter: count colonies (CFU) on agar plates with a phone camera."
 publish_to: 'none'
-version: 0.5.2+7
+version: 0.6.0+8
 
 environment:
   sdk: ^3.13.5

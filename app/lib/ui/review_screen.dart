@@ -1124,13 +1124,13 @@ class _ReviewScreenState extends State<ReviewScreen> {
                     if (_colourMode != ColourMode.none && !_film)
                       _classSummary(t),
                     if (_drop) _dropSummary(t),
-                    if (_flags.any((f) => f != 'estimated'))
+                    if (_flags.any(_showFlag))
                       Wrap(
                         spacing: 6,
                         children: [
                           // The estimate has its own banner.
                           for (final f in _flags)
-                            if (f != 'estimated')
+                            if (_showFlag(f))
                               Chip(
                                 label: Text(flagLabel(f)),
                                 visualDensity: VisualDensity.compact,
@@ -1247,6 +1247,12 @@ class _ReviewScreenState extends State<ReviewScreen> {
       ),
     );
   }
+
+  /// Flag chips: a film estimated from grid squares has its own banner and
+  /// is counted, so neither "estimated" nor "too many to count" applies.
+  bool _showFlag(String f) =>
+      f != 'estimated' &&
+      !(f == 'tntc' && _film && _plate != null && _filmTally.estimates != null);
 
   Widget _banner(TextTheme t, IconData icon, Color bg, Color fg, String text) =>
       Container(
