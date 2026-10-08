@@ -1,6 +1,6 @@
-Version 0.6.0
-• New: count Neogen® Petrifilm® dry films – AC, EC, CC, EB and YM. Choose Film in a sample plan, or as the plate type
-• Results per film: E. coli and coliforms, Enterobacteriaceae, yeasts and molds, with gas bubbles and yellow zones
-• Tap to correct a colony's colour, gas or zone
-• Crowded films are estimated from the grid squares
-• Petrifilm and Neogen are trademarks of Neogen Corporation; not made or endorsed by Neogen
+Version 0.6.1
+• Petrifilm: on a crowded film only the result above the counting range is estimated from the grid squares; the other results keep their count
+• A plate changed to or from a Petrifilm type uses the right volume (1 mL for films)
+• Resizing a film's growth area keeps the scale from its printed grid
+• New Petrifilm samples start at 10⁻¹–10⁻³, and changing the plating method keeps the dilutions you set
+• The samples list shows <, > and est. for each Petrifilm result
