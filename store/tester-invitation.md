@@ -8,6 +8,11 @@ the Google Group, becoming a tester and installing, in Thai or English, and
 explains the "App not available" message. Use it as [OPT-IN LINK] below and delete
 the group step.
 
+**iPhone and iPad users** can't join the Play test. Send them
+**https://cc.amphur.in.th/ios.html** (`app/web/ios.html`): it shows, with a video, how
+to add the web app to the Home Screen and how to send feedback. join.html links to it.
+Web testers do not count towards Google Play's 12 testers.
+
 Otherwise replace the parts in [brackets]:
 
 - **[OPT-IN LINK]**: Play Console → Test and release → Testing → Closed testing →
