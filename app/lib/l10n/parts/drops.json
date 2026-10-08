@@ -240,5 +240,29 @@
     "type": "int"
    }
   }
+ },
+ "noteNoDropColonies": {
+  "en": "no colonies in any drop",
+  "th": "ไม่มีโคโลนีในหยดใดเลย"
+ },
+ "noteNoDilutionInWindow": {
+  "en": "no dilution in the counting window ({range}): the closest one",
+  "th": "ไม่มีระดับการเจือจางใดอยู่ในช่วงที่นับได้ ({range}): ใช้ระดับที่ใกล้ที่สุด"
+ },
+ "noteNoDrops": {
+  "en": "no drops",
+  "th": "ไม่มีหยด"
+ },
+ "dropUsedFrom": {
+  "en": "From {dilutions} ({n, plural, =1{1 drop} other{{n} drops}})",
+  "th": "จาก {dilutions} ({n} หยด)",
+  "placeholders": {
+   "dilutions": {
+    "type": "String"
+   },
+   "n": {
+    "type": "int"
+   }
+  }
  }
 }

@@ -274,6 +274,22 @@ class AppLocalizationsTh extends AppLocalizations {
   }
 
   @override
+  String get noteNoDropColonies => 'ไม่มีโคโลนีในหยดใดเลย';
+
+  @override
+  String noteNoDilutionInWindow(Object range) {
+    return 'ไม่มีระดับการเจือจางใดอยู่ในช่วงที่นับได้ ($range): ใช้ระดับที่ใกล้ที่สุด';
+  }
+
+  @override
+  String get noteNoDrops => 'ไม่มีหยด';
+
+  @override
+  String dropUsedFrom(String dilutions, int n) {
+    return 'จาก $dilutions ($n หยด)';
+  }
+
+  @override
   String get homeSamples => 'ตัวอย่าง';
 
   @override

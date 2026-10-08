@@ -140,6 +140,19 @@ def estimate_drops(rows: list[DilutionRow], volume_ul: float, mode: str = "poole
             e.cfu_per_ml = 1 / vd
             return e
         return make(r.total, vd, [r.dilution_exp], n, "estimated", f"below the counting window ({lo}–{hi})")
+    # The series straddles the window (a dilution above it, the next below):
+    # the dilution whose mean is closest to it on a ratio scale (36 per drop is
+    # nearer 30 than 0.7 is to 3, and far more precise).
+    rows_below = [r for r in usable if not r.tntc and r.counts and r.mean < lo]
+    if rows_below and len(rows_below) < len(usable):
+        def gap(r):
+            if r.mean <= 0:
+                return float("inf")
+            return np.log(lo / r.mean) if r.mean < lo else (np.log(r.mean / hi) if r.mean > hi else 0.0)
+        r = min((r for r in usable if r.counts and not r.tntc), key=gap)
+        n = len(r.counts)
+        return make(r.total, n * v * 10.0 ** -r.dilution_exp, [r.dilution_exp], n, "estimated",
+                    f"no dilution in the counting window ({lo}–{hi})")
     r = usable[-1]  # most diluted
     if r.tntc or not r.counts:
         n = r.tntc + len(r.counts)

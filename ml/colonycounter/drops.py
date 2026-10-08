@@ -26,6 +26,7 @@ from .plate import DEFAULT_PLATE_DIAMETER_MM, Plate, find_plate
 REFERENCE_DROP_MM = 7.0  # a 10 µL drop on dried agar
 CONFLUENT_COVER = 0.6  # foreground over this fraction of the drop: confluent
 CROWDED_COVER = 0.35  # colonies over this fraction of the drop: crowded
+MAX_ANCHORS = 40  # candidates that propose layout translations
 
 
 @dataclass(frozen=True)
@@ -204,7 +205,7 @@ def _cover(binary, x, y, r) -> float:
 
 
 def fit_layout(cands: list[Candidate], layout: Layout, dilutions, plate: Plate, mm: float,
-               diameter_mm: float, keep: float = 1.0) -> list[tuple[np.ndarray, LayoutFit, float]]:
+               diameter_mm: float, keep: float = 3.0) -> list[tuple[np.ndarray, LayoutFit, float]]:
     """Place the template on the candidates: rotation, translation and scale that put
     the most candidates on planned positions, inside the plate and near its centre.
 
@@ -239,10 +240,13 @@ def fit_layout(cands: list[Candidate], layout: Layout, dilutions, plate: Plate, 
         r = np.deg2rad(th)
         return np.array([[np.cos(r), -np.sin(r)], [np.sin(r), np.cos(r)]])
 
+    # Translations come from the strongest candidates only, so a photo with
+    # many specks does not blow up the search (candidates x positions x angles).
+    strong = sorted(range(len(C)), key=lambda i: (-wts[i], -cands[i].n, i))[:MAX_ANCHORS]
     hyps = []
     for th in np.arange(0, span, 3.0):
         RP = P @ rot(th).T
-        for t in [centre] + [C[i] - RP[j] for i in range(len(C)) for j in anchors]:
+        for t in [centre] + [C[i] - RP[j] for i in strong for j in anchors]:
             hyps.append((score(RP + t), th, t))
     hyps.sort(key=lambda h: -h[0])
     top = hyps[0][0]
@@ -394,7 +398,11 @@ def count_drop_plate(image: np.ndarray, layout: Layout, dilutions: list[int], vo
         _, T, fit, owner, conf, counts, order = best
         if fit.outside > 0:
             flags.append("colonies_outside_drops")
-        if fit.matched < max(1, len([c for c in cands if c.n >= 3 or c.confluent]) // 2):
+        # Few strong groups on planned positions, or more colonies between the
+        # drops than there are drops (specks or contamination can pull the
+        # layout off by a row): check the drops by eye.
+        if (fit.matched < max(1, len([c for c in cands if c.n >= 3 or c.confluent]) // 2)
+                or int((owner < 0).sum()) > len(T)):
             flags.append("layout_uncertain")
 
     # Merged colonies in a crowded drop are undercounted by the detector: also count

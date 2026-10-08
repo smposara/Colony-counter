@@ -346,6 +346,45 @@ void main() {
       expect(e.cfuPerMl, closeTo(30 * 2 / (2 * 0.01e-4), 1e-3));
     });
 
+    test('a series straddling the window uses the closest dilution', () {
+      for (final mode in DropMode.values) {
+        final e = estimateDrops(
+          dilutionTable(
+            _counts([
+              (5, [40, 45, 38]),
+              (6, [2, 1, 2]),
+            ]),
+          ),
+          10,
+          mode: mode,
+        );
+        expect(e.qualifier, 'estimated');
+        expect(e.dilutionsUsed, [5]);
+        expect(e.note, startsWith('no dilution in the counting window'));
+        expect(e.cfuPerMl, closeTo(123 / (3 * 0.01e-5), 1));
+      }
+      final above = estimateDrops(
+        dilutionTable(
+          _counts([
+            (5, [35, 36, 37]),
+            (6, [1, 0, 1]),
+          ]),
+        ),
+        10,
+      );
+      expect(above.dilutionsUsed, [5]);
+      final below = estimateDrops(
+        dilutionTable(
+          _counts([
+            (5, [60, 65, 58]),
+            (6, [2, 1, 2]),
+          ]),
+        ),
+        10,
+      );
+      expect(below.dilutionsUsed, [6]);
+    });
+
     test('χ² tail and gamma function', () {
       expect(logGamma(5), closeTo(math.log(24), 1e-12));
       expect(chi2Sf(3.841458820694124, 1), closeTo(0.05, 1e-10));

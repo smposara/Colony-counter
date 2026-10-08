@@ -128,7 +128,10 @@ String estimateNote(Estimate e) {
   final n = e.note;
   if (n.isEmpty) return '';
   if (n.startsWith('all plates')) return tr.noteAllSpreaders;
+  if (n == 'no colonies in any drop') return tr.noteNoDropColonies;
   if (n.startsWith('no colonies')) return tr.noteNoColonies;
+  if (n.startsWith('no dilution')) return tr.noteNoDilutionInWindow(range);
+  if (n == 'no drops') return tr.noteNoDrops;
   if (n.startsWith('below')) return tr.noteBelowRange(range);
   if (n.startsWith('above')) return tr.noteAboveRange(range);
   if (n.startsWith('too numerous')) return tr.noteTntc;

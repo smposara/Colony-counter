@@ -330,6 +330,26 @@ placeholders alphabetically, so `dropCi` now declares them), and the drop labels
 photo used no font (bundled Roboto now); "1 drops" and "1 colonies" are now plural forms,
 and the setup diagram names each dilution once beside its drops.
 
+**Review after 0.7.0 (fixed in Python and Dart):**
+- **A series straddling the window** (one dilution above it, the next below, none inside)
+  fell through to "above the counting window" from the most diluted row. On the 5 × 5
+  fixture in First countable mode (10⁻⁴ mean 31.4, 10⁻⁵ mean 2.0) that reported
+  **0 CFU/mL** from the empty 10⁻⁷ drops. Now the dilution whose mean is closest to the
+  window on a ratio scale is used (3.1 × 10⁷ there), noted "no dilution in the counting
+  window"; a ratio scale because 36 per drop is nearer 30, and far more precise, than 0.7
+  is to 3.
+- **Stray colonies pulled grids off by a row:** with 60 or more colonies between the
+  drops, a placement one row off matched more candidate weight (the near-empty rows look
+  like specks), and only placements within 1 point of the best were judged by the dilution
+  series. Placements within 3 points are now judged (benchmark unchanged: 80/80 plates);
+  on 27 stray-heavy plates 17 are right instead of 10, and `layout_uncertain` is raised
+  whenever colonies between the drops outnumber the drops, so the rest are flagged.
+- **Search size:** translations come from the 40 strongest candidates only
+  (`MAX_ANCHORS` / `kMaxAnchors`), so a photo with many specks stays fast.
+- **Text:** the "Pooled from" / "first countable" line is shown only for results inside the
+  window ("From 10⁻² (5 drops)" for "<" and estimates); the new notes are translated; the
+  `rule` column of `samples.csv` names a drop sample's own window and calculation.
+
 The decisions below were built with the plan's defaults (pooled by default with `first` as
 an option; 3–30 for every volume; sectors and grids; confluent detection on).
 

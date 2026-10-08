@@ -162,3 +162,20 @@ def test_plate_estimate_near_truth():
     est = estimate_drops(dilution_table(drop_counts(r)), 10)
     assert est.qualifier == truth.qualifier == "exact"
     assert est.cfu_per_ml == pytest.approx(truth.cfu_per_ml, rel=0.15)
+
+
+def test_series_straddling_the_window():
+    # 10⁻⁵ above the window, 10⁻⁶ below it: the closest dilution on a ratio
+    # scale (41 is 1.4× above 30, 1.7 is 1.8× below 3), not "above the
+    # window" from the most diluted.
+    rows = dilution_table(_drops([(5, [40, 45, 38]), (6, [2, 1, 2])]))
+    for mode in ("first", "pooled"):
+        e = estimate_drops(rows, 10, mode=mode)
+        assert e.qualifier == "estimated"
+        assert e.dilutions_used == [5]
+        assert e.note.startswith("no dilution in the counting window")
+        assert e.cfu_per_ml == pytest.approx(123 / (3 * 0.01e-5))
+    rows = dilution_table(_drops([(5, [60, 65, 58]), (6, [2, 1, 2])]))
+    assert estimate_drops(rows, 10).dilutions_used == [6]
+    rows = dilution_table(_drops([(5, [35, 36, 37]), (6, [1, 0, 1])]))
+    assert estimate_drops(rows, 10).dilutions_used == [5]

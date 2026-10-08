@@ -251,7 +251,10 @@ String samplesCsv(PlateStore store) {
         info.tags.join('; '),
         info.method.name,
         info.format.name,
-        info.ruleFor(store.rule).label,
+        // Drop samples: their own window and calculation.
+        info.isDrop
+            ? 'Drop ${info.dropWindow.$1}–${info.dropWindow.$2} ${info.dropMode.name}'
+            : info.ruleFor(store.rule).label,
         plates.length,
         st.n,
         st.mean,

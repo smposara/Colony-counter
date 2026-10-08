@@ -563,12 +563,12 @@
    "drops_used": 3
   },
   "first": {
-   "cfu_per_ml": 0.0,
+   "cfu_per_ml": 31399999.999999996,
    "qualifier": "estimated",
-   "low": 0.0,
-   "high": 737775890.822787,
+   "low": 26680429.270440634,
+   "high": 36713884.61205595,
    "dilutions_used": [
-    7
+    4
    ],
    "drops_used": 5
   }

@@ -37,6 +37,9 @@ const double kConfluentCover = 0.6;
 /// Colonies over this fraction of the drop: crowded.
 const double kCrowdedCover = 0.35;
 
+/// Candidates that propose layout translations (the strongest ones).
+const int kMaxAnchors = 40;
+
 /// Colonies belong to the nearest drop within this many drop radii.
 const double kAssignRadius = 1.1;
 
@@ -457,7 +460,7 @@ List<_Placement> _fitLayout(
   List<int> dilutions,
   Plate plate,
   double diameterMm, {
-  double keep = 1.0,
+  double keep = 3.0,
 }) {
   final mm = plate.mmPerPx;
   final p = [
@@ -517,12 +520,22 @@ List<_Placement> _fitLayout(
     ];
   }
 
+  // Translations come from the strongest candidates only, so a photo with
+  // many specks does not blow up the search (candidates × positions × angles).
+  final strong = List.generate(c.length, (i) => i)
+    ..sort((a, b) {
+      var d = wts[b].compareTo(wts[a]);
+      if (d != 0) return d;
+      d = cands[b].n.compareTo(cands[a].n);
+      return d != 0 ? d : a.compareTo(b);
+    });
+  if (strong.length > kMaxAnchors) strong.length = kMaxAnchors;
   final hyps = <({double score, double th, _Pt t, int i})>[];
   for (var th = 0.0; th < span; th += 3.0) {
     final rp = rotate(p, th);
     final ts = <_Pt>[
       centre,
-      for (var i = 0; i < c.length; i++)
+      for (final i in strong)
         for (final j in anchors) (c[i].$1 - rp[j].$1, c[i].$2 - rp[j].$2),
     ];
     for (final t in ts) {
@@ -855,8 +868,14 @@ DropPlateResult countDropPlate(
     counts = best.counts;
     order = best.o;
     if (fit.outside > 0) flags.add('colonies_outside_drops');
+    // Few strong groups on planned positions, or more colonies between the
+    // drops than there are drops (specks or contamination can pull the
+    // layout off by a row): check the drops by eye.
     final strong = cands.where((k) => k.n >= 3 || k.confluent).length;
-    if (fit.matched < math.max(1, strong ~/ 2)) flags.add('layout_uncertain');
+    final outside = owner.where((o) => o < 0).length;
+    if (fit.matched < math.max(1, strong ~/ 2) || outside > t.length) {
+      flags.add('layout_uncertain');
+    }
   }
 
   // Merged colonies in a crowded drop are undercounted by the detector: also

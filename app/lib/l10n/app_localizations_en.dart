@@ -286,6 +286,28 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get noteNoDropColonies => 'no colonies in any drop';
+
+  @override
+  String noteNoDilutionInWindow(Object range) {
+    return 'no dilution in the counting window ($range): the closest one';
+  }
+
+  @override
+  String get noteNoDrops => 'no drops';
+
+  @override
+  String dropUsedFrom(String dilutions, int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n drops',
+      one: '1 drop',
+    );
+    return 'From $dilutions ($_temp0)';
+  }
+
+  @override
   String get homeSamples => 'Samples';
 
   @override

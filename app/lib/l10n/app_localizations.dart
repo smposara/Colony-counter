@@ -542,6 +542,30 @@ abstract class AppLocalizations {
   /// **'The drops do not match the plan ({found} found, {planned} planned): check their labels.'**
   String dropWarnNotAsPlanned(int found, int planned);
 
+  /// No description provided for @noteNoDropColonies.
+  ///
+  /// In en, this message translates to:
+  /// **'no colonies in any drop'**
+  String get noteNoDropColonies;
+
+  /// No description provided for @noteNoDilutionInWindow.
+  ///
+  /// In en, this message translates to:
+  /// **'no dilution in the counting window ({range}): the closest one'**
+  String noteNoDilutionInWindow(Object range);
+
+  /// No description provided for @noteNoDrops.
+  ///
+  /// In en, this message translates to:
+  /// **'no drops'**
+  String get noteNoDrops;
+
+  /// No description provided for @dropUsedFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From {dilutions} ({n, plural, =1{1 drop} other{{n} drops}})'**
+  String dropUsedFrom(String dilutions, int n);
+
   /// No description provided for @homeSamples.
   ///
   /// In en, this message translates to:

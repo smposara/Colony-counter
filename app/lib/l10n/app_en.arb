@@ -175,6 +175,25 @@
       }
     }
   },
+  "noteNoDropColonies": "no colonies in any drop",
+  "noteNoDilutionInWindow": "no dilution in the counting window ({range}): the closest one",
+  "@noteNoDilutionInWindow": {
+    "placeholders": {
+      "range": {}
+    }
+  },
+  "noteNoDrops": "no drops",
+  "dropUsedFrom": "From {dilutions} ({n, plural, =1{1 drop} other{{n} drops}})",
+  "@dropUsedFrom": {
+    "placeholders": {
+      "dilutions": {
+        "type": "String"
+      },
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "homeSamples": "Samples",
   "homeCompare": "Compare",
   "homePlates": "Plates",

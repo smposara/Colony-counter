@@ -261,6 +261,35 @@ DropEstimate estimateDrops(
       'below the counting window ($lo–$hi)',
     );
   }
+  // The series straddles the window (a dilution above it, the next below):
+  // the dilution whose mean is closest to it on a ratio scale (36 per drop is
+  // nearer 30 than 0.7 is to 3, and far more precise).
+  final rowsBelow = [
+    for (final r in usable)
+      if (r.tntc == 0 && r.counts.isNotEmpty && r.mean < lo) r,
+  ];
+  if (rowsBelow.isNotEmpty && rowsBelow.length < usable.length) {
+    double gap(DilutionRow r) => r.mean <= 0
+        ? double.infinity
+        : r.mean < lo
+        ? math.log(lo / r.mean)
+        : r.mean > hi
+        ? math.log(r.mean / hi)
+        : 0.0;
+    final r = [
+      for (final r in usable)
+        if (r.counts.isNotEmpty && r.tntc == 0) r,
+    ].reduce((a, b) => gap(b) < gap(a) ? b : a);
+    final n = r.counts.length;
+    return make(
+      r.total,
+      vd(r.dilutionExp, n),
+      [r.dilutionExp],
+      n,
+      'estimated',
+      'no dilution in the counting window ($lo–$hi)',
+    );
+  }
   final r = usable.last; // most diluted
   if (r.tntc > 0 || r.counts.isEmpty) {
     final n = r.tntc + r.counts.length;

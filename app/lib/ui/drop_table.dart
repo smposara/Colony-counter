@@ -27,7 +27,10 @@ String dropRowText(DilutionRow r) => [
 String dropUsedText(DropEstimate e, DropMode mode) {
   if (e.dilutionsUsed.isEmpty) return '';
   final dils = e.dilutionsUsed.map(dilutionLabel).join(', ');
-  return mode == DropMode.first && e.qualifier == 'exact'
+  // Outside the window (an estimate, a "<" limit or a ">" bound) neither
+  // calculation applies: just which drops it came from.
+  if (e.qualifier != 'exact') return tr.dropUsedFrom(dils, e.dropsUsed);
+  return mode == DropMode.first
       ? tr.dropUsedFirst(dils, e.dropsUsed)
       : tr.dropUsedPooled(dils, e.dropsUsed);
 }
