@@ -9,6 +9,8 @@
     colonycounter petrifilm photos/*.jpg --type ec --overlay out/
     colonycounter evaluate-petrifilm data/petrifilm_labelled/
     colonycounter synth-petrifilm out/ --type ec --n 10
+    colonycounter drops photos/*.jpg --layout sectors --n 8 --dilutions 3-10 --overlay out/
+    colonycounter synth-drops out/ --layout grid --rows 4 --cols 3 --dilutions 4-7
 """
 
 from __future__ import annotations
@@ -21,10 +23,13 @@ from pathlib import Path
 import cv2
 import numpy as np
 
+from .drop_stats import dilution_table, drop_counts, estimate_drops
+from .drops import Layout, count_drop_plate
 from .metrics import count_metrics, match_points, match_zones, zone_metrics
 from .pipeline import count_colonies, draw_overlay
 from .synth import make_plate
 from .petrifilm import TYPES as FILM_TYPES, count_petrifilm, draw_film
+from .synth_drops import make_drop_plate
 from .synth_petrifilm import make_film
 from .synth_zones import make_zone_plate
 from .zones import draw_zones, measure_plate
@@ -251,6 +256,91 @@ def cmd_synth_petrifilm(args) -> int:
     return 0
 
 
+def _dilutions(text: str) -> list[int]:
+    """"3-10" or "4,5,6" → exponents (5 means 10^-5)."""
+    if "-" in text:
+        a, b = (int(x) for x in text.split("-", 1))
+        return list(range(a, b + 1))
+    return [int(x) for x in text.split(",")]
+
+
+def _layout(args) -> Layout:
+    return Layout(args.layout, n=args.n_drops, ring_mm=args.ring_mm, drops_per_dilution=args.per_dilution,
+                  rows=args.rows, cols=args.cols, pitch_mm=args.pitch_mm)
+
+
+def _draw_drops(img: np.ndarray, res) -> np.ndarray:
+    out = img.copy()
+    for d in res.drops:
+        colour = (0, 0, 255) if d.confluent else (0, 165, 255) if d.crowded else (0, 220, 0)
+        cv2.circle(out, (int(d.x), int(d.y)), int(d.radius_px), colour, 2)
+        label = f"1e-{d.dilution_exp} r{d.replicate}: {'TNTC' if d.tntc else d.count}"
+        cv2.putText(out, label, (int(d.x - d.radius_px), int(d.y - d.radius_px - 4)),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.45, colour, 1, cv2.LINE_AA)
+    for i in res.strays:
+        c = res.colonies[i]
+        cv2.circle(out, (int(c.x), int(c.y)), max(3, int(c.radius_px)), (255, 0, 255), 1)
+    return out
+
+
+def cmd_drops(args) -> int:
+    layout, dils = _layout(args), _dilutions(args.dilutions)
+    rows_out = []
+    for path in map(Path, args.images):
+        img = _read(path)
+        res = count_drop_plate(img, layout, dils, volume_ul=args.volume, plate_diameter_mm=args.plate_mm)
+        table = dilution_table(drop_counts(res))
+        est = estimate_drops(table, args.volume, mode=args.mode)
+        if args.overlay:
+            out = Path(args.overlay)
+            out.mkdir(parents=True, exist_ok=True)
+            cv2.imwrite(str(out / f"{path.stem}_drops.jpg"), _draw_drops(img, res))
+        rows_out.append({
+            "image": str(path),
+            "drops": [{"dilution_exp": d.dilution_exp, "replicate": d.replicate, "count": d.count,
+                       "confluent": d.confluent, "crowded": d.crowded, "x": round(d.x, 1), "y": round(d.y, 1)}
+                      for d in res.drops],
+            "dilutions": [{"dilution_exp": r.dilution_exp, "counts": r.counts, "tntc": r.tntc,
+                           "mean": r.mean, "sd": r.sd, "vmr": r.vmr, "p": r.p, "flags": r.flags} for r in table],
+            "cfu_per_ml": est.cfu_per_ml, "qualifier": est.qualifier, "ci95": [est.low, est.high],
+            "dilutions_used": est.dilutions_used, "note": est.note, "strays": len(res.strays), "flags": res.flags,
+        })
+        if not args.json:
+            print(f"{path.name}:")
+            for r in table:
+                cs = " ".join(map(str, r.counts)) + " TNTC" * r.tntc
+                extra = f"  [{', '.join(r.flags)}]" if r.flags else ""
+                stats_ = f"mean {r.mean:6.1f}  VMR {r.vmr:4.2f}" if len(r.counts) > 1 else \
+                    f"mean {r.mean:6.1f}" if r.counts else ""
+                print(f"  1e-{r.dilution_exp}: {cs.strip():<24} {stats_}{extra}".rstrip())
+            q = "" if est.qualifier == "exact" else f"{est.qualifier} " if est.qualifier in "<>" else "est. "
+            flags = f"  [{', '.join(res.flags)}]" if res.flags else ""
+            print(f"  CFU/mL {q}{est.cfu_per_ml:.3g} (95 % {est.low:.3g}–{est.high:.3g}){flags}")
+    if args.json:
+        json.dump(rows_out, sys.stdout, indent=2)
+        print()
+    return 0
+
+
+def cmd_synth_drops(args) -> int:
+    out = Path(args.out)
+    out.mkdir(parents=True, exist_ok=True)
+    layout, dils = _layout(args), _dilutions(args.dilutions)
+    rng = np.random.default_rng(args.seed)
+    for i in range(args.n):
+        cfu = 10 ** rng.uniform(6.5, 8.5)
+        s = make_drop_plate(layout, dils, cfu_per_ml=cfu, volume_ul=args.volume, seed=args.seed + i,
+                            overdispersion=args.overdispersion)
+        name = f"drops_{args.layout}_{i:03d}"
+        cv2.imwrite(str(out / f"{name}.jpg"), s.image, [cv2.IMWRITE_JPEG_QUALITY, 92])
+        (out / f"{name}.json").write_text(json.dumps({
+            "cfu_per_ml": cfu, "volume_ul": args.volume,
+            "drops": [{"dilution_exp": t.dilution_exp, "replicate": t.replicate, "count": t.count,
+                       "confluent": t.confluent, "x": t.x, "y": t.y} for t in s.drops]}))
+    print(f"Wrote {args.n} drop plates to {out}")
+    return 0
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="colonycounter")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -324,6 +414,35 @@ def main(argv=None) -> int:
     p.add_argument("--n", type=int, default=10)
     p.add_argument("--seed", type=int, default=0)
     p.set_defaults(func=cmd_synth_petrifilm)
+
+    def drop_common(p):
+        p.add_argument("--layout", choices=["sectors", "grid", "free"], default="sectors")
+        p.add_argument("--dilutions", default="3-10", help='exponents, "3-10" or "4,5,6" (5 = 10^-5)')
+        p.add_argument("--n-drops", type=int, default=8, help="sectors: drops around the ring")
+        p.add_argument("--per-dilution", type=int, default=1, help="sectors: drops of each dilution")
+        p.add_argument("--ring-mm", type=float, default=25.0, help="sectors: ring radius")
+        p.add_argument("--rows", type=int, default=4, help="grid: one row per dilution")
+        p.add_argument("--cols", type=int, default=3, help="grid: replicates per dilution")
+        p.add_argument("--pitch-mm", type=float, default=11.0, help="grid: drop spacing")
+        p.add_argument("--volume", type=float, default=10.0, help="drop volume in µL")
+
+    p = sub.add_parser("drops", help="count drop plates (Miles–Misra, spot plates)")
+    p.add_argument("images", nargs="+")
+    p.add_argument("--mode", choices=["pooled", "first"], default="pooled",
+                   help="pool all drops in the window, or use the first countable dilution")
+    p.add_argument("--plate-mm", type=float, default=90.0, help="dish diameter in mm")
+    p.add_argument("--overlay", help="folder for annotated images")
+    p.add_argument("--json", action="store_true", help="print full results as JSON")
+    drop_common(p)
+    p.set_defaults(func=cmd_drops)
+
+    p = sub.add_parser("synth-drops", help="write synthetic labelled drop plates")
+    p.add_argument("out")
+    p.add_argument("--n", type=int, default=10)
+    p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--overdispersion", type=float, default=0.0)
+    drop_common(p)
+    p.set_defaults(func=cmd_synth_drops)
 
     args = ap.parse_args(argv)
     return args.func(args)

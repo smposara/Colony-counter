@@ -25,7 +25,10 @@ photo → find_plate (Hough circle, 90 mm gives the mm/px scale)
 | `synth_zones.py` | Synthetic disk and well diffusion plates with known zone diameters |
 | `petrifilm.py` | Petrifilm-style dry films: grid scale, grid removal, colonies, gas, yellow zones, yeast/mold (`count_petrifilm`) |
 | `synth_petrifilm.py` | Synthetic AC / EC / CC / EB / YM films with known colonies, gas and halos |
-| `cli.py` | `colonycounter count / evaluate / synth / zones / evaluate-zones / synth-zones / petrifilm / evaluate-petrifilm / synth-petrifilm` |
+| `drops.py` | Drop plates (Miles–Misra, spot plates): layout fit, empty and confluent drops, per-drop counts (`count_drop_plate`) |
+| `drop_stats.py` | Per-dilution drop table (mean, SD, VMR, χ² dispersion, outliers, tenfold check) and CFU/mL (`estimate_drops`) |
+| `synth_drops.py` | Synthetic drop plates (sectors or grid) with known drops, counts, confluent drops and strays |
+| `cli.py` | `colonycounter count / evaluate / synth / zones / evaluate-zones / synth-zones / petrifilm / evaluate-petrifilm / synth-petrifilm / drops / synth-drops` |
 
 ```python
 import cv2
@@ -151,3 +154,51 @@ than the plate average.
 Synthetic colours are approximations of the guides: they test the method, not the
 thresholds. Blue/red, yellow-zone, bubble and mold thresholds must be set from real photos.
 
+## Drop plates (in development, see `docs/DROP_PLATE_IMPLEMENTATION.md`)
+
+Miles–Misra and spot plates: drops of a tenfold dilution series laid out as **sectors**
+(a ring of drops, clockwise from the top) or a **grid** (a row per dilution, a column per
+replicate), or **free** (drops found from their colonies only, as the app does today).
+
+```
+photo → dish → background (15 mm kernel) → colonies (classical detector)
+      → drop candidates: colony groups (single linkage, 0.35 × drop diameter) and
+        confluent blobs (one component ≥ 60 % of a drop disc)
+      → layout fit: rotation over the layout's symmetry, translations from candidate
+        pairs, Procrustes refinement (scale 0.8–1.25); positions off the plate and far
+        from the centre are penalised; empty drops come from the layout
+      → labels: among near-best placements and the layout's symmetric orientations, the
+        one whose counts best follow the dilution series (Poisson likelihood)
+      → per drop: colonies within 1.1 radii; confluent → TNTC; crowded (cover > 35 % or a
+        merged cluster) → also counted by area, the larger count kept
+      → drop table (mean, SD, VMR, χ² test, outlier drops, tenfold check) and CFU/mL:
+        pooled ΣC / Σ(V·d) over drops in 3–30, or the first countable dilution;
+        Garwood 95 % interval; "<" 1 / (N·V·d) when nothing grew; ">" when all TNTC
+```
+
+Drop diameter scales with volume: 7 mm × (V / 10 µL)^⅓.
+
+```
+colonycounter drops photos/*.jpg --layout sectors --n-drops 8 --dilutions 3-10 --overlay out/
+colonycounter drops photos/*.jpg --layout grid --rows 4 --cols 3 --pitch-mm 12 --dilutions 4-7 --mode first
+colonycounter synth-drops synth/ --layout grid --rows 4 --cols 3 --pitch-mm 12 --dilutions 4-7
+python scripts/drop_benchmark.py --n 12 --seed0 200
+```
+
+**Synthetic benchmark** (`scripts/drop_benchmark.py`, 80 plates over two seed sets; random
+rotation, CFU 10^6.5–10^8.5, half the plates overdispersed, 2 stray colonies each):
+
+| Layout | Layout found and labelled | In-window drops within ±2 / 10 % | Confluent recall | CFU/mL error vs true counts |
+|---|---|---|---|---|
+| 8 sectors, 1 per dilution | 100 % | 100 % | 100 % | 3–5 % |
+| 6 sectors, 2 per dilution | 100 % | 93–100 % | 100 % | 2–7 % |
+| 4 × 3 grid | 100 % | 93–96 % | 100 % | 6–7 % |
+| 5 × 5 grid | 100 % | 95 % | 100 % | 4–5 % |
+
+"Found" means every planned drop placed within 0.4 drop diameters (2.8 mm for 10 µL).
+Which drop of a dilution is replicate 1 cannot be seen on the plate, so replicates are
+numbered in reading order and only the dilution is checked. The remaining count errors are
+crowded drops near 30 colonies, where merged colonies are counted by area.
+
+Synthetic drops test the geometry and statistics, not the thresholds: confluent and
+crowded limits must be set from real photos (Step 0 of `docs/DROP_PLATE.md`).

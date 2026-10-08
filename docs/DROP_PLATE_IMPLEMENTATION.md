@@ -1,6 +1,6 @@
 # Drop plates (Options A + B): implementation plan
 
-Status: **plan only** (October 2026). Study and options: [DROP_PLATE.md](DROP_PLATE.md). Same
+Status: **M1 and M2 done in Python** (October 2026; see Progress below). Study and options: [DROP_PLATE.md](DROP_PLATE.md). Same
 approach as Petrifilm and AST: Python reference first, Dart port checked against golden
 fixtures, then data, UI and export.
 
@@ -209,6 +209,30 @@ the terms for drop plate (ดรอปเพลต), dispersion (การกร
 | M6 | Tests, docs, screenshots, release | 0.5 week |
 
 **Total: about 6 weeks** (A ≈ 4, B ≈ 2).
+
+## Progress
+
+**M1 + M2 (Python reference), done:** `ml/colonycounter/drops.py`, `drop_stats.py`,
+`synth_drops.py`, `scripts/drop_benchmark.py`, `tests/test_drops.py`, CLI `drops` and
+`synth-drops`. Synthetic benchmark on 80 plates (sectors 8 × 1 and 6 × 2, grids 4 × 3 and
+5 × 5): every layout found and labelled (100 %), in-window drop counts within ±2 / 10 % on
+93–100 % of drops, confluent recall 100 % with no false TNTC on countable drops, CFU/mL
+within 2–7 % of the estimate from the true counts. That passes the study's gate on synthetic
+plates; the real-photo gate (Step 0) is still open.
+
+What M1 needed beyond the plan:
+- Labels by **dilution-series likelihood** over near-best placements and the layout's
+  symmetric orientations (including transposes of square grids): geometry alone cannot tell
+  a grid shifted by one row, or a sector ring turned by one sector.
+- An off-plate penalty and a plate-centre prior in the layout score.
+- Replicates numbered in reading order within a dilution.
+- **Crowded drops also counted by area** (colony pixels ÷ the pixels of an isolated colony),
+  keeping the larger count: merged colonies in a ~30-colony drop were undercounted by up to
+  half, and such a drop fell inside the window and pulled the pooled estimate down by up to
+  60 % on overdispersed plates.
+
+The decisions below were built with the plan's defaults (pooled by default with `first` as
+an option; 3–30 for every volume; sectors and grids; confluent detection on).
 
 ## Risks and mitigations
 
