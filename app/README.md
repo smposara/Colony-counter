@@ -196,6 +196,8 @@ modern browser:
 ```
 app/tool/package_web.sh        # → dist/colony-counter-web.zip (about 6 MB)
 ```
+CI builds the same files on every push: download the **colony-counter-web**
+artifact from the run's page. It is a single zip with `index.html` at the top.
 **Hosting:** unzip into any folder on a static web host. No server code and no
 rewrite rules are needed, and the app works from a subfolder. Requirements:
 - **HTTPS.** The browser only allows the camera on secure pages (`localhost` is

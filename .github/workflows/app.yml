@@ -104,7 +104,11 @@ jobs:
           channel: stable
           cache: true
       - run: tool/package_web.sh
+      # Upload the site folder, not the zip: GitHub zips every artifact on
+      # download, so this gives one colony-counter-web.zip with index.html
+      # and the rest at its top level, ready to upload to the web host.
       - uses: actions/upload-artifact@v4
         with:
           name: colony-counter-web
-          path: dist/colony-counter-web.zip
+          path: app/build/web/
+          if-no-files-found: error
