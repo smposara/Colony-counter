@@ -45,6 +45,8 @@ String flagLabel(String flag) => switch (flag) {
   'estimated' => tr.flagEstimated,
   'area_size_unexpected' => tr.flagAreaSize,
   'grid_not_found' => tr.flagGridNotFound,
+  'colonies_outside_drops' => tr.flagOutsideDrops,
+  'layout_uncertain' => tr.flagLayoutUncertain,
   _ => flag,
 };
 

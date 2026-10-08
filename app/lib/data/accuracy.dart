@@ -95,7 +95,7 @@ class AccuracyReport {
   AccuracyReport(List<PlateRecord> records)
     : points = [
         for (final r in records)
-          if (r.verified && !r.isDropPlate) AccuracyPoint(r),
+          if (r.verified) AccuracyPoint(r),
       ];
 
   final List<AccuracyPoint> points;

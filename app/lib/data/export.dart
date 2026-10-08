@@ -109,7 +109,7 @@ String platesCsv(PlateStore store) {
       // e.g. "1e-5/r1:12; 1e-5/r2:9"
       [
         for (final s in r.spots)
-          '1e-${s.dilutionExp}/r${s.replicate}:${countInSpot(s, r.colonies)}${s.tntc ? ' TNTC' : ''}',
+          '1e-${s.dilutionExp}/r${s.replicate}:${countInSpot(s, r.colonies)}${s.tntc ? ' TNTC' : ''}${s.isExcluded ? ' excluded (${s.excluded!.name})' : ''}',
       ].join('; '),
       r.notes,
       r.imagePath,

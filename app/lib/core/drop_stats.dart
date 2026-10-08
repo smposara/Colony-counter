@@ -5,7 +5,7 @@ import 'dart:math' as math;
 ///
 /// For each dilution: the drop counts, mean, SD and the index of dispersion
 /// (VMR). Drops of a well-mixed suspension are Poisson, so
-/// χ² = Σ(x − x̄)²/x̄ with N − 1 degrees of freedom tests whether they agree
+/// χ² = Σ(x − m)²/m (m the mean) with N − 1 degrees of freedom tests whether they agree
 /// (Miles & Misra 1938). Then CFU/mL:
 /// - [DropMode.pooled]: ΣC / Σ(V·d) over the drops inside the counting window;
 /// - [DropMode.first]: the mean of the first (least diluted) countable

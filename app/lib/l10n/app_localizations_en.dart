@@ -101,6 +101,95 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get setupDropArrangement => 'Where the drops are';
+
+  @override
+  String get dropArrangementFree => 'Free';
+
+  @override
+  String get dropArrangementSectors => 'Ring';
+
+  @override
+  String get dropArrangementGrid => 'Rows';
+
+  @override
+  String get setupDropFreeHelp =>
+      'Drops are found from their colonies and numbered in reading order. Empty and confluent drops must be added by hand.';
+
+  @override
+  String get setupDropSectorsHelp =>
+      'Drops evenly round a ring, clockwise from the top: the first dilution at 12 o\'clock. Empty and confluent drops are found from the ring.';
+
+  @override
+  String get setupDropGridHelp =>
+      'A row per dilution, top to bottom, with its drops side by side. Empty and confluent drops are found from the rows.';
+
+  @override
+  String get setupDropGridRowHelp =>
+      'One row of drops, left to right. Empty and confluent drops are found from the row.';
+
+  @override
+  String get setupDropsPerDilution => 'Drops of each dilution';
+
+  @override
+  String get setupDropPitch => 'Distance between drops';
+
+  @override
+  String get setupDropLayoutPreview => 'How the drops sit on each plate';
+
+  @override
+  String get reviewFindDrops => 'Find drops again';
+
+  @override
+  String get reviewTurnLabels => 'Turn labels by one drop';
+
+  @override
+  String get reviewHintDropsLayout =>
+      'Tap a drop to change its label, mark it TNTC or leave it out; tap empty agar to add one. Drag a drop to move it, or drag the agar to move them all.';
+
+  @override
+  String get reviewLeaveOut => 'Leave this drop out';
+
+  @override
+  String get reviewLeaveOutHelp =>
+      'It stays on the photo, crossed out, and does not count towards CFU/mL.';
+
+  @override
+  String get reviewLeaveOutWhy => 'Why';
+
+  @override
+  String get dropExclusionSplash => 'Splashed or smeared';
+
+  @override
+  String get dropExclusionMerged => 'Ran into a neighbour';
+
+  @override
+  String get dropExclusionBubble => 'Bubble or scratch';
+
+  @override
+  String get dropExclusionContaminated => 'Contaminant';
+
+  @override
+  String get dropExclusionOther => 'Other';
+
+  @override
+  String get reviewDropLeftOut => 'left out';
+
+  @override
+  String get reviewDropCrowded =>
+      'Crowded: merged colonies are partly counted by their area. Check the count, or read the plate earlier next time.';
+
+  @override
+  String get reviewDropUnplanned =>
+      'More drops than the plan: check this drop\'s label.';
+
+  @override
+  String get flagOutsideDrops => 'Colonies between drops (not counted)';
+
+  @override
+  String get flagLayoutUncertain => 'Drop layout uncertain: check the drops';
+
+  @override
   String get homeSamples => 'Samples';
 
   @override

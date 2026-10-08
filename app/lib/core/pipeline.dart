@@ -101,6 +101,7 @@ const kCheckFlags = {
   'low_contrast',
   'area_size_unexpected',
   'grid_not_found',
+  'layout_uncertain',
 };
 
 /// Colonies per cm² above which neighbours start to merge (about 220 on a

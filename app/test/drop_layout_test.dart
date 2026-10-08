@@ -44,6 +44,7 @@ DropPlateResult _count(String name, Map<String, dynamic> label) =>
       [for (final d in label['dilutions'] as List) d as int],
       _num(label['volume_ul']),
       PlateFormat.dish90,
+      null,
     ));
 
 FoundDrop _nearest(List<FoundDrop> drops, double x, double y) => drops.reduce(

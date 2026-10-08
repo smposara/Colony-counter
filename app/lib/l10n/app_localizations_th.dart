@@ -101,6 +101,95 @@ class AppLocalizationsTh extends AppLocalizations {
   }
 
   @override
+  String get setupDropArrangement => 'ตำแหน่งของหยดบนจาน';
+
+  @override
+  String get dropArrangementFree => 'อิสระ';
+
+  @override
+  String get dropArrangementSectors => 'วงรอบจาน';
+
+  @override
+  String get dropArrangementGrid => 'เป็นแถว';
+
+  @override
+  String get setupDropFreeHelp =>
+      'หาหยดจากโคโลนีที่อยู่ในหยด และเรียงลำดับจากบนลงล่าง ซ้ายไปขวา หยดที่ว่างหรือเจริญเต็มหยดต้องเพิ่มเอง';
+
+  @override
+  String get setupDropSectorsHelp =>
+      'หยดเรียงเป็นวงรอบจานตามเข็มนาฬิกา เริ่มจากด้านบน (ตำแหน่ง 12 นาฬิกา) คือระดับการเจือจางแรก หยดที่ว่างหรือเจริญเต็มหยดจะหาได้จากตำแหน่งในวง';
+
+  @override
+  String get setupDropGridHelp =>
+      'หนึ่งแถวต่อหนึ่งระดับการเจือจาง เรียงจากบนลงล่าง หยดของแต่ละระดับวางเรียงกันในแถว หยดที่ว่างหรือเจริญเต็มหยดจะหาได้จากตำแหน่งในแถว';
+
+  @override
+  String get setupDropGridRowHelp =>
+      'หยดเรียงเป็นแถวเดียวจากซ้ายไปขวา หยดที่ว่างหรือเจริญเต็มหยดจะหาได้จากตำแหน่งในแถว';
+
+  @override
+  String get setupDropsPerDilution => 'จำนวนหยดต่อระดับการเจือจาง';
+
+  @override
+  String get setupDropPitch => 'ระยะห่างระหว่างหยด';
+
+  @override
+  String get setupDropLayoutPreview => 'ตำแหน่งของหยดบนแต่ละจาน';
+
+  @override
+  String get reviewFindDrops => 'หาหยดใหม่';
+
+  @override
+  String get reviewTurnLabels => 'เลื่อนป้ายกำกับไปหนึ่งหยด';
+
+  @override
+  String get reviewHintDropsLayout =>
+      'แตะหยดเพื่อเปลี่ยนป้ายกำกับ ทำเครื่องหมาย TNTC หรือไม่นำมาคำนวณ แตะบนอาหารเลี้ยงเชื้อที่ว่างเพื่อเพิ่มหยด ลากหยดเพื่อย้าย หรือลากบนอาหารเลี้ยงเชื้อเพื่อย้ายทุกหยด';
+
+  @override
+  String get reviewLeaveOut => 'ไม่นำหยดนี้มาคำนวณ';
+
+  @override
+  String get reviewLeaveOutHelp =>
+      'หยดยังแสดงบนภาพโดยมีกากบาท และไม่นำมาคำนวณ CFU/mL';
+
+  @override
+  String get reviewLeaveOutWhy => 'เหตุผล';
+
+  @override
+  String get dropExclusionSplash => 'หยดกระเด็นหรือเลอะ';
+
+  @override
+  String get dropExclusionMerged => 'ไหลรวมกับหยดข้างเคียง';
+
+  @override
+  String get dropExclusionBubble => 'มีฟองอากาศหรือรอยขีดข่วน';
+
+  @override
+  String get dropExclusionContaminated => 'มีการปนเปื้อน';
+
+  @override
+  String get dropExclusionOther => 'อื่น ๆ';
+
+  @override
+  String get reviewDropLeftOut => 'ไม่นำมาคำนวณ';
+
+  @override
+  String get reviewDropCrowded =>
+      'หยดแน่น: โคโลนีที่รวมกันนับบางส่วนจากพื้นที่ ควรตรวจสอบจำนวน หรืออ่านผลเร็วขึ้นในครั้งต่อไป';
+
+  @override
+  String get reviewDropUnplanned =>
+      'จำนวนหยดมากกว่าแผน: ตรวจสอบป้ายกำกับของหยดนี้';
+
+  @override
+  String get flagOutsideDrops => 'มีโคโลนีอยู่นอกหยด (ไม่นับ)';
+
+  @override
+  String get flagLayoutUncertain => 'ไม่แน่ใจตำแหน่งของหยด: ตรวจสอบหยด';
+
+  @override
   String get homeSamples => 'ตัวอย่าง';
 
   @override

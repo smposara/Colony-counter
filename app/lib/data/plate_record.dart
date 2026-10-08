@@ -147,23 +147,28 @@ class PlateRecord {
     tntc: tntc,
   );
 
-  /// The countable units of this plate: the whole plate, or each drop. For a
+  /// The countable units of this plate: the whole plate, or each drop that
+  /// was not left out. For a
   /// dry film, the plate's [result] (default: the type's first result).
   List<Observation> observations({String? result}) {
     if (!isDropPlate) {
       return [Observation(toPlateCount(result: result), replicate)];
     }
+    // Drops the user left out do not count; a spreader on the plate affects
+    // every drop on it.
     return [
       for (final s in spots)
-        Observation(
-          PlateCount(
-            countInSpot(s, colonies),
-            math.pow(10, -s.dilutionExp).toDouble(),
-            volumeMl: volumeMl,
-            tntc: s.tntc,
+        if (!s.isExcluded)
+          Observation(
+            PlateCount(
+              countInSpot(s, colonies),
+              math.pow(10, -s.dilutionExp).toDouble(),
+              volumeMl: volumeMl,
+              spreader: spreader,
+              tntc: s.tntc,
+            ),
+            s.replicate,
           ),
-          s.replicate,
-        ),
     ];
   }
 

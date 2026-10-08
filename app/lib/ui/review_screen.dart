@@ -7,6 +7,7 @@ import '../core/annotate.dart';
 import '../core/background.dart';
 import '../core/classical.dart';
 import '../core/colour.dart';
+import '../core/drop_layout.dart';
 import '../core/petrifilm.dart';
 import '../core/pipeline.dart';
 import '../core/plate.dart';
@@ -91,6 +92,9 @@ class _ReviewScreenState extends State<ReviewScreen> {
   bool _drop = false;
   ColourMode _colourMode = ColourMode.none;
   int? _dragSpot;
+
+  /// Dragging the agar in Drops mode moves every drop.
+  bool _dragAllSpots = false;
   PlateFormat _format = PlateFormat.dish90;
   bool _spotsMoved = false;
 
@@ -226,6 +230,10 @@ class _ReviewScreenState extends State<ReviewScreen> {
         });
         return;
       }
+      if (_drop && _spots.isEmpty && _dropTemplate is! FreeTemplate) {
+        await _countWithLayout(plate);
+        return;
+      }
       final res = await countPhotoInBackground(
         _photo!,
         CountOptions(
@@ -320,15 +328,12 @@ class _ReviewScreenState extends State<ReviewScreen> {
         replicate: i + 1,
       );
     }
-    if (info.dropLayout == DropLayout.replicates) {
-      return s.copyWith(
-        dilutionExp: preset!.slot.dilutionExp ?? info.dilutions.first,
-        replicate: i % info.replicates + 1,
-      );
-    }
+    // Drops beyond the plan are flagged rather than wrapped round.
+    final l = info.dropLabel(preset!.slot, i);
     return s.copyWith(
-      dilutionExp: info.dilutions[i % info.dilutions.length],
-      replicate: preset!.slot.replicate ?? 1,
+      dilutionExp: l.dilutionExp,
+      replicate: l.replicate,
+      flags: [...s.flags, if (l.unplanned) 'unplanned'],
     );
   }
 
@@ -341,6 +346,84 @@ class _ReviewScreenState extends State<ReviewScreen> {
       dropDiameterMm: kDropDiameterMm,
     );
     return [for (var i = 0; i < found.length; i++) _labelSpot(found[i], i)];
+  }
+
+  /// The sample's drop plan, when this plate belongs to one.
+  SampleInfo? get _dropPlan {
+    final info = widget.preset?.info;
+    return info != null && info.isDrop ? info : null;
+  }
+
+  DropTemplate get _dropTemplate =>
+      _dropPlan?.dropTemplate ?? const FreeTemplate();
+
+  /// Counts the plate by fitting the planned layout to it: every planned
+  /// drop is found, empty and confluent ones included.
+  Future<void> _countWithLayout(Plate? plate) async {
+    final info = _dropPlan!;
+    final slot = widget.preset!.slot;
+    final res = await countDropPlateInBackground((
+      _photo!,
+      _dropTemplate,
+      info.dropDilutions(slot),
+      info.dropVolumeUl,
+      _format,
+      plate,
+    ));
+    if (!mounted) return;
+    final (colonies, spots) = res.toSpots();
+    setState(() {
+      _imageW = res.imageWidth;
+      _imageH = res.imageHeight;
+      _plate = res.plate;
+      _colonies = _classified(colonies, _colourMode);
+      _autoCount = _colonies.fold(0, (s, c) => s + c.n);
+      _flags = [
+        ...res.flags,
+        if (_colonies.any((c) => c.n > 1)) 'clusters_estimated',
+      ];
+      _rejected = [];
+      // All dilutions on one plate: the plate is the replicate.
+      _spots = info.dropLayout == DropLayout.dilutions
+          ? [for (final s in spots) s.copyWith(replicate: slot.replicate ?? 1)]
+          : spots;
+      _undo.clear();
+      _dirty = true;
+    });
+  }
+
+  /// Finds the drops again from the photo (the layout fit, or colony groups).
+  Future<void> _findDropsAgain() async {
+    if (!await _confirmDiscardEdits()) return;
+    setState(() => _spots = []);
+    await _recount(plate: _plate);
+  }
+
+  /// Ring layouts: moves every label one drop round, for when the first
+  /// dilution was put somewhere else than the app chose.
+  void _turnLabels() {
+    final placed = [
+      for (var i = 0; i < _spots.length; i++)
+        if (_spots[i].position != null) i,
+    ];
+    if (placed.length < 2) return;
+    final n = placed.length;
+    final byPos = {for (final i in placed) _spots[i].position!: _spots[i]};
+    final positions = byPos.keys.toList()..sort();
+    setState(() {
+      _push();
+      final next = [..._spots];
+      for (final i in placed) {
+        final p = positions.indexOf(_spots[i].position!);
+        final from = byPos[positions[(p - 1 + n) % n]]!;
+        next[i] = _spots[i].copyWith(
+          dilutionExp: from.dilutionExp,
+          replicate: from.replicate,
+          position: from.position,
+        );
+      }
+      _spots = next;
+    });
   }
 
   int? _hitSpot(Offset p) {
@@ -538,11 +621,21 @@ class _ReviewScreenState extends State<ReviewScreen> {
   void _panStart(Offset p) {
     if (_mode != _Mode.spots || !_showMarks) return;
     _dragSpot = _hitSpot(p);
-    if (_dragSpot != null) _push();
+    _dragAllSpots = _dragSpot == null && _spots.isNotEmpty;
+    if (_dragSpot != null || _dragAllSpots) _push();
   }
 
   void _panUpdate(Offset delta) {
     if (_mode == _Mode.plate) return _movePlate(delta);
+    if (_dragAllSpots) {
+      setState(
+        () => _spots = [
+          for (final s in _spots)
+            s.copyWith(cx: s.cx + delta.dx, cy: s.cy + delta.dy),
+        ],
+      );
+      return;
+    }
     final i = _dragSpot;
     if (i == null) return;
     setState(() {
@@ -796,6 +889,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
       'grid_not_found' => en.flagGridNotFound,
       'estimated' => en.flagEstimated,
       'area_size_unexpected' => en.flagAreaSize,
+      'colonies_outside_drops' => en.flagOutsideDrops,
+      'layout_uncertain' => en.flagLayoutUncertain,
       _ => f,
     };
     final r = widget.record;
@@ -953,6 +1048,10 @@ class _ReviewScreenState extends State<ReviewScreen> {
                     )
                   : v == 'timelapse'
                   ? _openTimelapse()
+                  : v == 'find_drops'
+                  ? _findDropsAgain()
+                  : v == 'turn_labels'
+                  ? _turnLabels()
                   : _setDrop(!_drop),
               itemBuilder: (_) => [
                 PopupMenuItem(
@@ -995,6 +1094,19 @@ class _ReviewScreenState extends State<ReviewScreen> {
                     checked: _drop,
                     child: Text(tr.reviewDropPlate),
                   ),
+                  if (_drop) ...[
+                    PopupMenuItem(
+                      value: 'find_drops',
+                      enabled: !_busy && _photo != null,
+                      child: Text(tr.reviewFindDrops),
+                    ),
+                    if (_spots.where((s) => s.position != null).length > 1 &&
+                        _dropTemplate is SectorTemplate)
+                      PopupMenuItem(
+                        value: 'turn_labels',
+                        child: Text(tr.reviewTurnLabels),
+                      ),
+                  ],
                   const PopupMenuDivider(),
                   for (final m in ColourMode.values)
                     CheckedPopupMenuItem(
@@ -1070,7 +1182,12 @@ class _ReviewScreenState extends State<ReviewScreen> {
                           onPanUpdate: lockView
                               ? (d) => _panUpdate(d.delta)
                               : null,
-                          onPanEnd: lockView ? (_) => _dragSpot = null : null,
+                          onPanEnd: lockView
+                              ? (_) {
+                                  _dragSpot = null;
+                                  _dragAllSpots = false;
+                                }
+                              : null,
                           child: Stack(
                             fit: StackFit.expand,
                             children: [
@@ -1256,7 +1373,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                         _plate?.isSquare ?? false
                             ? tr.reviewHintSquare
                             : tr.reviewHintCircle,
-                      _Mode.spots => tr.reviewHintDrops,
+                      _Mode.spots => tr.reviewHintDropsLayout,
                       _Mode.colour when _film => tr.reviewHintKind(
                         filmKindText(filmKinds(_filmType)[0]).toLowerCase(),
                         filmKindText(filmKinds(_filmType).last).toLowerCase(),
@@ -1531,9 +1648,16 @@ class _ReviewScreenState extends State<ReviewScreen> {
           for (var i = 0; i < _spots.length; i++)
             ActionChip(
               visualDensity: VisualDensity.compact,
+              avatar: _spots[i].flags.isEmpty || _spots[i].isExcluded
+                  ? null
+                  : const Icon(Icons.warning_amber_rounded, size: 16),
               label: Text(
                 '${i + 1}: ${dilutionLabel(_spots[i].dilutionExp)} R${_spots[i].replicate} · '
-                '${_spots[i].tntc ? 'TNTC' : countInSpot(_spots[i], _colonies)}',
+                '${_spots[i].tntc ? 'TNTC' : countInSpot(_spots[i], _colonies)}'
+                '${_spots[i].isExcluded ? ' · ${tr.reviewDropLeftOut}' : ''}',
+                style: _spots[i].isExcluded
+                    ? const TextStyle(decoration: TextDecoration.lineThrough)
+                    : null,
               ),
               onPressed: () => _editSpot(i),
             ),
@@ -1676,20 +1800,38 @@ class _OverlayPainter extends CustomPainter {
     }
     for (var i = 0; i < spots.length; i++) {
       final sp = spots[i];
-      canvas.drawCircle(
-        Offset(sp.cx, sp.cy),
-        sp.radius,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 2 * px
-          ..color = sp.tntc ? Colors.redAccent : Colors.amberAccent,
-      );
+      // Left out: grey and crossed through; confluent: red; crowded: orange.
+      final colour = sp.isExcluded
+          ? Colors.grey
+          : sp.tntc
+          ? Colors.redAccent
+          : sp.flags.isNotEmpty
+          ? Colors.orangeAccent
+          : Colors.amberAccent;
+      final ring = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2 * px
+        ..color = colour;
+      canvas.drawCircle(Offset(sp.cx, sp.cy), sp.radius, ring);
+      if (sp.isExcluded) {
+        final d = sp.radius * math.sqrt1_2;
+        canvas.drawLine(
+          Offset(sp.cx - d, sp.cy - d),
+          Offset(sp.cx + d, sp.cy + d),
+          ring,
+        );
+        canvas.drawLine(
+          Offset(sp.cx - d, sp.cy + d),
+          Offset(sp.cx + d, sp.cy - d),
+          ring,
+        );
+      }
       final label = TextPainter(
         text: TextSpan(
           text: '${i + 1} · ${sp.tntc ? 'TNTC' : countInSpot(sp, colonies)}',
           style: TextStyle(
             color: Colors.black,
-            backgroundColor: sp.tntc ? Colors.redAccent : Colors.amberAccent,
+            backgroundColor: colour,
             fontSize: 13 * px,
             fontWeight: FontWeight.bold,
           ),
@@ -1943,66 +2085,126 @@ class _SpotDialogState extends State<_SpotDialog> {
     final diameterMm = _s.radius * 2 * widget.mmPerPx;
     return AlertDialog(
       title: Text(tr.reviewDropTitle(widget.index + 1, widget.count)),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+      content: SizedBox(
+        width: double.maxFinite,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: DropdownButtonFormField<int>(
-                  initialValue: _s.dilutionExp,
-                  decoration: InputDecoration(
-                    labelText: tr.reviewDilution,
-                    border: const OutlineInputBorder(),
+              Row(
+                children: [
+                  Expanded(
+                    child: DropdownButtonFormField<int>(
+                      isExpanded: true,
+                      initialValue: _s.dilutionExp,
+                      decoration: InputDecoration(
+                        labelText: tr.reviewDilution,
+                        border: const OutlineInputBorder(),
+                      ),
+                      items: [
+                        for (var e = 0; e <= 10; e++)
+                          DropdownMenuItem(
+                            value: e,
+                            child: Text(dilutionLabel(e)),
+                          ),
+                      ],
+                      onChanged: (v) =>
+                          setState(() => _s = _s.copyWith(dilutionExp: v)),
+                    ),
                   ),
-                  items: [
-                    for (var e = 0; e <= 10; e++)
-                      DropdownMenuItem(value: e, child: Text(dilutionLabel(e))),
-                  ],
-                  onChanged: (v) =>
-                      setState(() => _s = _s.copyWith(dilutionExp: v)),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: DropdownButtonFormField<int>(
+                      isExpanded: true,
+                      initialValue: _s.replicate,
+                      decoration: InputDecoration(
+                        labelText: tr.reviewReplicate,
+                        border: const OutlineInputBorder(),
+                      ),
+                      items: [
+                        for (var r = 1; r <= 12; r++)
+                          DropdownMenuItem(value: r, child: Text('R$r')),
+                      ],
+                      onChanged: (v) =>
+                          setState(() => _s = _s.copyWith(replicate: v)),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(tr.reviewTntc),
+                subtitle: Text(tr.reviewConfluent),
+                value: _s.tntc,
+                onChanged: (v) => setState(() => _s = _s.copyWith(tntc: v)),
+              ),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(tr.reviewLeaveOut),
+                subtitle: Text(tr.reviewLeaveOutHelp),
+                value: _s.isExcluded,
+                onChanged: (v) => setState(
+                  () => _s = v
+                      ? _s.copyWith(excluded: DropExclusion.splash)
+                      : _s.copyWith(include: true),
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: DropdownButtonFormField<int>(
-                  initialValue: _s.replicate,
+              if (_s.isExcluded) ...[
+                const SizedBox(height: 4),
+                DropdownButtonFormField<DropExclusion>(
+                  isExpanded: true,
+                  initialValue: _s.excluded,
                   decoration: InputDecoration(
-                    labelText: tr.reviewReplicate,
+                    labelText: tr.reviewLeaveOutWhy,
                     border: const OutlineInputBorder(),
                   ),
                   items: [
-                    for (var r = 1; r <= 12; r++)
-                      DropdownMenuItem(value: r, child: Text('R$r')),
+                    for (final e in DropExclusion.values)
+                      DropdownMenuItem(value: e, child: Text(e.text)),
                   ],
                   onChanged: (v) =>
-                      setState(() => _s = _s.copyWith(replicate: v)),
+                      setState(() => _s = _s.copyWith(excluded: v)),
+                ),
+                const SizedBox(height: 8),
+              ],
+              for (final f in _s.flags)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(Icons.warning_amber_rounded, size: 18),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          f == 'crowded'
+                              ? tr.reviewDropCrowded
+                              : f == 'unplanned'
+                              ? tr.reviewDropUnplanned
+                              : f,
+                          style: t.bodySmall,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              Text(
+                tr.reviewDropSize(diameterMm.toStringAsFixed(1)),
+                style: t.bodySmall,
+              ),
+              Slider(
+                value: diameterMm.clamp(2, 20),
+                min: 2,
+                max: 20,
+                onChanged: (v) => setState(
+                  () => _s = _s.copyWith(radius: v / 2 / widget.mmPerPx),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            title: Text(tr.reviewTntc),
-            subtitle: Text(tr.reviewConfluent),
-            value: _s.tntc,
-            onChanged: (v) => setState(() => _s = _s.copyWith(tntc: v)),
-          ),
-          Text(
-            tr.reviewDropSize(diameterMm.toStringAsFixed(1)),
-            style: t.bodySmall,
-          ),
-          Slider(
-            value: diameterMm.clamp(2, 20),
-            min: 2,
-            max: 20,
-            onChanged: (v) => setState(
-              () => _s = _s.copyWith(radius: v / 2 / widget.mmPerPx),
-            ),
-          ),
-        ],
+        ),
       ),
       actions: [
         TextButton(

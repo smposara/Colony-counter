@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:image/image.dart' as img;
 
 import 'classical.dart';
+import 'colour.dart';
 import 'drop_stats.dart';
 import 'gray_image.dart';
 import 'normalize.dart';
@@ -35,6 +36,9 @@ const double kConfluentCover = 0.6;
 
 /// Colonies over this fraction of the drop: crowded.
 const double kCrowdedCover = 0.35;
+
+/// Colonies belong to the nearest drop within this many drop radii.
+const double kAssignRadius = 1.1;
 
 /// How the drops were placed.
 sealed class DropTemplate {
@@ -159,13 +163,17 @@ class FoundDrop {
 
   bool get tntc => confluent;
 
+  /// As a drop of the review screen: the circle that held its colonies
+  /// (1.1 drop radii), its layout position and flags.
   Spot toSpot() => Spot(
     x,
     y,
-    radiusPx,
+    radiusPx * kAssignRadius,
     dilutionExp: dilutionExp,
     replicate: replicate,
     tntc: tntc,
+    position: position,
+    flags: [if (crowded) 'crowded'],
   );
 
   DropCount toCount() => DropCount(dilutionExp, replicate, count, tntc: tntc);
@@ -219,6 +227,8 @@ class DropPlateResult {
     required this.strays,
     required this.fit,
     required this.flags,
+    this.imageWidth = 0,
+    this.imageHeight = 0,
   });
 
   final Plate plate;
@@ -231,19 +241,47 @@ class DropPlateResult {
 
   /// `colonies_outside_drops`, `layout_uncertain`.
   final List<String> flags;
+  final int imageWidth;
+  final int imageHeight;
 
   double get mmPerPx => plate.mmPerPx;
 
   List<DropCount> get counts => [for (final d in drops) d.toCount()];
 
-  DropPlateResult scaled(double s) => DropPlateResult(
+  DropPlateResult _copy({
+    double s = 1,
+    List<Colony>? colonies,
+    int? imageWidth,
+    int? imageHeight,
+  }) => DropPlateResult(
     plate: plate.scaled(s),
     drops: [for (final d in drops) d.scaled(s)],
-    colonies: [for (final c in colonies) c.scaled(s)],
+    colonies: colonies ?? [for (final c in this.colonies) c.scaled(s)],
     strays: strays,
     fit: fit?.scaled(s),
     flags: flags,
+    imageWidth: imageWidth ?? this.imageWidth,
+    imageHeight: imageHeight ?? this.imageHeight,
   );
+
+  DropPlateResult scaled(double s) => _copy(s: s);
+
+  /// The drops as the review screen keeps them, and the colonies to go with
+  /// them. Where a crowded drop was counted by area above its marks, the
+  /// largest mark in it stands for the difference (a merged cluster), so the
+  /// drop's count can still be edited mark by mark.
+  (List<Colony>, List<Spot>) toSpots() {
+    final cols = List.of(colonies);
+    for (final d in drops) {
+      final marks = d.colonies.fold(0, (s, i) => s + cols[i].n);
+      if (d.confluent || d.count <= marks || d.colonies.isEmpty) continue;
+      final big = d.colonies.reduce(
+        (a, b) => cols[a].radiusPx >= cols[b].radiusPx ? a : b,
+      );
+      cols[big] = cols[big].withN(cols[big].n + d.count - marks);
+    }
+    return (cols, [for (final d in drops) d.toSpot()]);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -734,7 +772,7 @@ DropPlateResult countDropPlate(
             best = k;
           }
         }
-        if (bd <= rDrop * 1.1) owner[i] = best;
+        if (bd <= rDrop * kAssignRadius) owner[i] = best;
       }
     }
     final conf = [
@@ -890,17 +928,29 @@ DropPlateResult countDropPlate(
     ],
     fit: fit,
     flags: flags,
+    imageWidth: w,
+    imageHeight: h,
   );
 }
 
 /// A drop-plate photo to count: bytes, template, dilutions, drop volume (µL),
-/// dish format. A record so it can run in a background isolate.
-typedef DropJob = (Uint8List, DropTemplate, List<int>, double, PlateFormat);
+/// dish format, and the plate circle in the photo's pixels when the user has
+/// set it (else it is searched for). A record so it can run in a background
+/// isolate.
+typedef DropJob = (
+  Uint8List,
+  DropTemplate,
+  List<int>,
+  double,
+  PlateFormat,
+  Plate?,
+);
 
 /// Decodes a photo, applies its EXIF rotation, counts a downscaled copy and
-/// returns the drops in the photo's full-resolution pixels.
+/// returns the drops in the photo's full-resolution pixels, with each
+/// colony's colour.
 DropPlateResult countDropPlateInPhoto(DropJob job) {
-  final (bytes, template, dilutions, volumeUl, format) = job;
+  final (bytes, template, dilutions, volumeUl, format, plate) = job;
   final decoded = img.decodeImage(bytes);
   if (decoded == null) throw const FormatException('Unsupported image');
   final photo = img.bakeOrientation(decoded);
@@ -920,8 +970,18 @@ DropPlateResult countDropPlateInPhoto(DropJob job) {
     dilutions,
     volumeUl: volumeUl,
     format: format,
+    plate: plate?.scaled(scale),
   );
-  return scale < 1 ? res.scaled(1 / scale) : res;
+  final full = scale < 1 ? res.scaled(1 / scale) : res;
+  final colours = colonyColours(photo, full.colonies);
+  return full._copy(
+    colonies: [
+      for (var i = 0; i < full.colonies.length; i++)
+        full.colonies[i].withColour(colours[i]),
+    ],
+    imageWidth: photo.width,
+    imageHeight: photo.height,
+  );
 }
 
 double _hypot(double x, double y) => math.sqrt(x * x + y * y);

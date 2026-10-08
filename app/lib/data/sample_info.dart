@@ -1,5 +1,8 @@
+import 'dart:math' as math;
+
 import '../core/calculator.dart';
 import '../core/colour.dart';
+import '../core/drop_layout.dart';
 import '../core/petrifilm.dart';
 import '../core/plate.dart';
 import '../core/stats.dart';
@@ -27,6 +30,20 @@ enum DropLayout {
 
   const DropLayout(this.label);
   final String label;
+}
+
+/// Where the drops sit on a drop plate.
+enum DropArrangement {
+  /// Found from their colonies, numbered in reading order (as before 0.7).
+  free,
+
+  /// Evenly round a ring, clockwise from the top (the classic Miles–Misra
+  /// sectors).
+  sectors,
+
+  /// Rows and columns: a row per dilution, a column per drop of it (or one
+  /// row of replicates).
+  grid,
 }
 
 /// One plate still to be photographed (or already done) in a sample's plan.
@@ -57,6 +74,9 @@ class SampleInfo {
     this.volumeMl = 0.1,
     this.dropVolumeUl = 10,
     this.dropLayout = DropLayout.replicates,
+    this.dropArrangement = DropArrangement.free,
+    this.dropsPerDilution = 1,
+    this.dropPitchMm = 11,
     this.colourMode = ColourMode.none,
     this.notes = '',
     this.strain = '',
@@ -112,6 +132,74 @@ class SampleInfo {
   /// Volume of one drop on a drop plate.
   final double dropVolumeUl;
   final DropLayout dropLayout;
+
+  /// Where the drops sit on each plate.
+  final DropArrangement dropArrangement;
+
+  /// All dilutions on one plate: drops of each dilution.
+  final int dropsPerDilution;
+
+  /// Grid: centre-to-centre distance between neighbouring drops.
+  final double dropPitchMm;
+
+  /// Drops planned on each plate.
+  int get dropsPerPlate => dropLayout == DropLayout.replicates
+      ? replicates
+      : dilutions.length * dropsPerDilution;
+
+  /// Dilutions on the plate of [slot], in layout order (one for the
+  /// replicates layout).
+  List<int> dropDilutions(Slot slot) => dropLayout == DropLayout.replicates
+      ? [slot.dilutionExp ?? dilutions.first]
+      : dilutions;
+
+  /// The layout to fit to a plate's photo; [FreeTemplate] when the drops are
+  /// found from their colonies alone.
+  DropTemplate get dropTemplate {
+    final n = dropsPerPlate;
+    final replicates = dropLayout == DropLayout.replicates;
+    return switch (dropArrangement) {
+      DropArrangement.free => const FreeTemplate(),
+      // Drops half-way between the centre and the rim of the dish.
+      DropArrangement.sectors => SectorTemplate(
+        n: n,
+        ringMm: 0.28 * format.sizeMm,
+        dropsPerDilution: replicates ? n : dropsPerDilution,
+      ),
+      DropArrangement.grid => GridTemplate(
+        rows: replicates ? 1 : dilutions.length,
+        cols: replicates ? n : dropsPerDilution,
+        pitchMm: dropPitchMm,
+      ),
+    };
+  }
+
+  /// Dilution, replicate and flags of the [i]-th drop of [slot]'s plate when
+  /// drops are numbered in reading order: drops beyond the plan keep the last
+  /// dilution and are flagged `unplanned` (they used to wrap round silently).
+  ({int dilutionExp, int replicate, bool unplanned}) dropLabel(
+    Slot slot,
+    int i,
+  ) {
+    final unplanned = i >= dropsPerPlate;
+    if (dropLayout == DropLayout.replicates) {
+      return (
+        dilutionExp: slot.dilutionExp ?? dilutions.first,
+        replicate: i + 1,
+        unplanned: unplanned,
+      );
+    }
+    final k = math.min(
+      i ~/ math.max(1, dropsPerDilution),
+      dilutions.length - 1,
+    );
+    return (
+      dilutionExp: dilutions[k],
+      replicate: slot.replicate ?? 1,
+      unplanned: unplanned,
+    );
+  }
+
   final ColourMode colourMode;
   final String notes;
 
@@ -233,6 +321,9 @@ class SampleInfo {
     'volume_ml': volumeMl,
     'drop_volume_ul': dropVolumeUl,
     'drop_layout': dropLayout.name,
+    'drop_arrangement': dropArrangement.name,
+    'drops_per_dilution': dropsPerDilution,
+    'drop_pitch_mm': dropPitchMm,
     'colour_mode': colourMode.name,
     'notes': notes,
     'strain': strain,
@@ -270,6 +361,12 @@ class SampleInfo {
       (m) => m.name == j['drop_layout'],
       orElse: () => DropLayout.replicates,
     ),
+    dropArrangement: DropArrangement.values.firstWhere(
+      (m) => m.name == j['drop_arrangement'],
+      orElse: () => DropArrangement.free,
+    ),
+    dropsPerDilution: (j['drops_per_dilution'] as num?)?.toInt() ?? 1,
+    dropPitchMm: (j['drop_pitch_mm'] as num?)?.toDouble() ?? 11,
     colourMode: ColourMode.values.firstWhere(
       (m) => m.name == j['colour_mode'],
       orElse: () => ColourMode.none,
@@ -295,11 +392,25 @@ class SampleInfo {
 
   /// A plan inferred from plates saved without one (older versions, quick counts).
   factory SampleInfo.inferred(String id, List<PlateRecord> plates) {
-    final ds = {for (final p in plates) p.dilutionExp}.toList()..sort();
+    // A drop plate's dilutions are on its drops.
+    final ds = {
+      for (final p in plates)
+        if (p.isDropPlate)
+          for (final s in p.spots) s.dilutionExp
+        else
+          p.dilutionExp,
+    }.toList()..sort();
     final reps = plates
         .map((p) => p.replicate)
         .fold(1, (a, b) => a > b ? a : b);
     final drop = plates.any((p) => p.isDropPlate);
+    // Drops of several dilutions on one plate: the dilutions layout.
+    final mixed = plates.any(
+      (p) => {for (final s in p.spots) s.dilutionExp}.length > 1,
+    );
+    final perPlate = plates
+        .map((p) => p.spots.length)
+        .fold(0, (a, b) => a > b ? a : b);
     final membrane = !drop && plates.any((p) => p.format.membrane);
     final film = !drop && plates.any((p) => p.isFilm);
     return SampleInfo(
@@ -313,9 +424,15 @@ class SampleInfo {
           : PlatingMethod.spread,
       format: plates.isEmpty ? PlateFormat.dish90 : plates.first.format,
       dilutions: ds.isEmpty ? const [0] : ds,
-      replicates: reps,
+      replicates: drop && !mixed ? math.max(reps, perPlate) : reps,
       volumeMl: plates.isEmpty || drop ? 0.1 : plates.first.volumeMl,
-      dropVolumeUl: drop ? plates.first.volumeMl * 1000 : 10,
+      dropVolumeUl: drop
+          ? plates.firstWhere((p) => p.isDropPlate).volumeMl * 1000
+          : 10,
+      dropLayout: mixed ? DropLayout.dilutions : DropLayout.replicates,
+      dropsPerDilution: mixed && ds.isNotEmpty
+          ? math.max(1, (perPlate / ds.length).round())
+          : 1,
       createdAt: plates.isEmpty
           ? null
           : plates

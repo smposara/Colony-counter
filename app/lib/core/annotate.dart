@@ -77,6 +77,7 @@ Uint8List annotatePhoto(AnnotationJob job) {
   final amber = img.ColorRgb8(255, 215, 64);
   final black = img.ColorRgb8(0, 0, 0);
   final white = img.ColorRgb8(255, 255, 255);
+  final grey = img.ColorRgb8(158, 158, 158);
   final font = photo.width >= 1400 ? img.arial48 : img.arial24;
 
   final p = job.plate;
@@ -124,9 +125,11 @@ Uint8List annotatePhoto(AnnotationJob job) {
 
   for (var i = 0; i < job.spots.length; i++) {
     final sp = job.spots[i];
-    ring(sp.cx, sp.cy, sp.radius, sp.tntc ? pink : amber);
+    final colour = sp.isExcluded ? grey : (sp.tntc ? pink : amber);
+    ring(sp.cx, sp.cy, sp.radius, colour);
     final text =
-        '${i + 1}: ${sp.tntc ? 'TNTC' : countInSpot(sp, job.colonies)}';
+        '${i + 1}: ${sp.tntc ? 'TNTC' : countInSpot(sp, job.colonies)}'
+        '${sp.isExcluded ? ' (out)' : ''}';
     final x = ((sp.cx - sp.radius) * s).round();
     final y = ((sp.cy - sp.radius) * s).round() - font.lineHeight - 4;
     img.fillRect(
@@ -135,7 +138,7 @@ Uint8List annotatePhoto(AnnotationJob job) {
       y1: y - 2,
       x2: x + text.length * font.base ~/ 2 + 8,
       y2: y + font.lineHeight + 2,
-      color: sp.tntc ? pink : amber,
+      color: colour,
     );
     img.drawString(photo, text, font: font, x: x, y: y, color: black);
   }

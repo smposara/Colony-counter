@@ -2,6 +2,9 @@ import 'dart:math' as math;
 
 import 'classical.dart';
 
+/// Why the user left a drop out of the result.
+enum DropExclusion { splash, merged, bubble, contaminated, other }
+
 /// One drop on a drop plate (Miles–Misra), in photo pixels.
 class Spot {
   const Spot(
@@ -11,6 +14,9 @@ class Spot {
     this.dilutionExp = 0,
     this.replicate = 1,
     this.tntc = false,
+    this.position,
+    this.excluded,
+    this.flags = const [],
   });
 
   final double cx;
@@ -24,6 +30,19 @@ class Spot {
   /// Confluent / too many to count; excluded unless no other drop is usable.
   final bool tntc;
 
+  /// Index in the sample's drop layout (sector or grid position); null for a
+  /// drop found or added without a layout.
+  final int? position;
+
+  /// Left out of the result by the user, and why; null when counted.
+  final DropExclusion? excluded;
+
+  /// What the app noticed: `crowded` (merged colonies, partly counted by
+  /// area), `unplanned` (more drops than the plan has).
+  final List<String> flags;
+
+  bool get isExcluded => excluded != null;
+
   bool contains(double x, double y) =>
       (x - cx) * (x - cx) + (y - cy) * (y - cy) <= radius * radius;
 
@@ -34,6 +53,10 @@ class Spot {
     int? dilutionExp,
     int? replicate,
     bool? tntc,
+    int? position,
+    DropExclusion? excluded,
+    bool include = false,
+    List<String>? flags,
   }) => Spot(
     cx ?? this.cx,
     cy ?? this.cy,
@@ -41,6 +64,9 @@ class Spot {
     dilutionExp: dilutionExp ?? this.dilutionExp,
     replicate: replicate ?? this.replicate,
     tntc: tntc ?? this.tntc,
+    position: position ?? this.position,
+    excluded: include ? null : excluded ?? this.excluded,
+    flags: flags ?? this.flags,
   );
 
   Map<String, dynamic> toJson() => {
@@ -50,6 +76,9 @@ class Spot {
     'd': dilutionExp,
     'rep': replicate,
     if (tntc) 'tntc': true,
+    if (position != null) 'pos': position,
+    if (excluded != null) 'excluded': excluded!.name,
+    if (flags.isNotEmpty) 'flags': flags,
   };
 
   factory Spot.fromJson(Map<String, dynamic> j) => Spot(
@@ -59,6 +88,14 @@ class Spot {
     dilutionExp: (j['d'] as num?)?.toInt() ?? 0,
     replicate: (j['rep'] as num?)?.toInt() ?? 1,
     tntc: j['tntc'] as bool? ?? false,
+    position: (j['pos'] as num?)?.toInt(),
+    excluded: j['excluded'] == null
+        ? null
+        : DropExclusion.values.firstWhere(
+            (e) => e.name == j['excluded'],
+            orElse: () => DropExclusion.other,
+          ),
+    flags: [for (final f in j['flags'] as List? ?? const []) f as String],
   );
 }
 

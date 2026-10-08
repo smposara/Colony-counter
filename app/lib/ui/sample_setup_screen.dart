@@ -1,8 +1,11 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../core/calculator.dart';
 import '../core/colour.dart';
+import '../core/drop_layout.dart';
 import '../core/petrifilm.dart';
 import '../core/plate.dart';
 import '../data/plate_store.dart';
@@ -97,6 +100,17 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
   late CountingRule _membraneRule =
       _base?.membraneRule ?? CountingRule.membrane80;
   late DropLayout _layout = _base?.dropLayout ?? DropLayout.replicates;
+
+  /// New samples start with the classic ring; older ones keep "free".
+  late DropArrangement _arrangement =
+      _base?.dropArrangement ?? DropArrangement.sectors;
+  late int _perDilution = _base?.dropsPerDilution ?? 1;
+  late final _pitch = TextEditingController(
+    text: fixed(
+      _base?.dropPitchMm ?? 11,
+      _base?.dropPitchMm == null || _base!.dropPitchMm % 1 == 0 ? 0 : 1,
+    ),
+  );
   late ColourMode _colour = _base?.colourMode ?? ColourMode.none;
   // Films are usually plated from 10⁻¹, dishes from 10⁻⁴.
   late final bool _filmStart = _method == PlatingMethod.film;
@@ -215,6 +229,9 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
       volumeMl: _num(_volume) ?? 0.1,
       dropVolumeUl: _num(_dropVolume) ?? 10,
       dropLayout: _layout,
+      dropArrangement: _arrangement,
+      dropsPerDilution: _perDilution,
+      dropPitchMm: _num(_pitch) ?? 11,
       colourMode: _method == PlatingMethod.film ? ColourMode.none : _colour,
       notes: _notes.text.trim(),
       strain: _strain.text.trim(),
@@ -253,6 +270,7 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
       _time,
       _volume,
       _dropVolume,
+      _pitch,
       _weight,
       _diluent,
       _notes,
@@ -292,6 +310,98 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
     ),
   );
 
+  /// The plan as it stands in the form, for the layout preview.
+  SampleInfo get _draftDrops => SampleInfo(
+    sampleId: '',
+    method: PlatingMethod.drop,
+    dilutions: [for (var d = _from; d <= _to; d++) d],
+    replicates: _replicates,
+    dropVolumeUl: _num(_dropVolume) ?? 10,
+    dropLayout: _layout,
+    dropArrangement: _arrangement,
+    dropsPerDilution: _perDilution,
+    dropPitchMm: _num(_pitch) ?? 11,
+    format: _format,
+  );
+
+  List<Widget> _arrangementSection(TextTheme t) {
+    final row = _layout == DropLayout.replicates;
+    return [
+      const SizedBox(height: 8),
+      Text(tr.setupDropArrangement, style: t.titleSmall),
+      const SizedBox(height: 8),
+      SegmentedButton<DropArrangement>(
+        showSelectedIcon: false,
+        segments: [
+          for (final a in DropArrangement.values)
+            ButtonSegment(value: a, label: Text(a.text)),
+        ],
+        selected: {_arrangement},
+        onSelectionChanged: (v) => setState(() => _arrangement = v.first),
+      ),
+      const SizedBox(height: 4),
+      Text(switch (_arrangement) {
+        DropArrangement.free => tr.setupDropFreeHelp,
+        DropArrangement.sectors => tr.setupDropSectorsHelp,
+        DropArrangement.grid when row => tr.setupDropGridRowHelp,
+        DropArrangement.grid => tr.setupDropGridHelp,
+      }, style: t.bodySmall),
+      if (!row) ...[
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(child: Text(tr.setupDropsPerDilution)),
+            IconButton(
+              onPressed: _perDilution > 1
+                  ? () => setState(() => _perDilution--)
+                  : null,
+              icon: const Icon(Icons.remove),
+            ),
+            Text('$_perDilution', style: t.titleMedium),
+            IconButton(
+              onPressed: _perDilution < 6
+                  ? () => setState(() => _perDilution++)
+                  : null,
+              icon: const Icon(Icons.add),
+            ),
+          ],
+        ),
+      ],
+      if (_arrangement == DropArrangement.grid) ...[
+        const SizedBox(height: 8),
+        TextField(
+          controller: _pitch,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          inputFormatters: [
+            FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+          ],
+          onChanged: (_) => setState(() {}),
+          decoration: InputDecoration(
+            labelText: tr.setupDropPitch,
+            suffixText: 'mm',
+            border: const OutlineInputBorder(),
+          ),
+        ),
+      ],
+      if (_arrangement != DropArrangement.free) ...[
+        const SizedBox(height: 12),
+        Semantics(
+          label: tr.setupDropLayoutPreview,
+          child: SizedBox(
+            height: 180,
+            child: CustomPaint(
+              painter: _DropLayoutPreview(
+                _draftDrops,
+                Theme.of(context).colorScheme,
+              ),
+              size: Size.infinite,
+            ),
+          ),
+        ),
+      ],
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context).textTheme;
@@ -310,7 +420,7 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
         : (_layout == DropLayout.replicates ? dilutionCount : _replicates);
     final dropsPerPlate = _layout == DropLayout.replicates
         ? _replicates
-        : dilutionCount;
+        : dilutionCount * _perDilution;
     const gap = SizedBox(height: 16);
 
     return Scaffold(
@@ -575,6 +685,7 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
                 ],
               ),
             ),
+            ..._arrangementSection(t),
           ],
           const SizedBox(height: 8),
           Text(
@@ -739,4 +850,68 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
     ],
     onChanged: (v) => onChanged(v ?? value),
   );
+}
+
+/// A plate seen from above with the planned drops, each labelled with its
+/// dilution; the first drop is filled.
+class _DropLayoutPreview extends CustomPainter {
+  _DropLayoutPreview(this.info, this.colours);
+
+  final SampleInfo info;
+  final ColorScheme colours;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final slot = info.slots.isEmpty ? const Slot() : info.slots.first;
+    final drops = templatePositionsMm(
+      info.dropTemplate,
+      info.dropDilutions(slot),
+    );
+    final plateMm = info.format.sizeMm;
+    final k = math.min(size.width, size.height) / plateMm;
+    final c = size.center(Offset.zero);
+    final rim = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5
+      ..color = colours.outline;
+    final half = plateMm / 2 * k;
+    if (info.format.shape == PlateShape.square) {
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromCenter(center: c, width: 2 * half, height: 2 * half),
+          Radius.circular(half * kSquareCorner),
+        ),
+        rim,
+      );
+    } else {
+      canvas.drawCircle(c, half, rim);
+    }
+    final r = dropDiameterMm(info.dropVolumeUl) / 2 * k;
+    for (var i = 0; i < drops.length; i++) {
+      final d = drops[i];
+      final p = c + Offset(d.x * k, d.y * k);
+      canvas.drawCircle(
+        p,
+        r,
+        Paint()
+          ..style = i == 0 ? PaintingStyle.fill : PaintingStyle.stroke
+          ..strokeWidth = 1.5
+          ..color = i == 0 ? colours.primaryContainer : colours.primary,
+      );
+      final label = TextPainter(
+        text: TextSpan(
+          text: dilutionLabel(d.dilutionExp),
+          style: TextStyle(
+            fontSize: math.max(8, math.min(11, r * 0.75)),
+            color: colours.onSurface,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      label.paint(canvas, p - Offset(label.width / 2, label.height / 2));
+    }
+  }
+
+  @override
+  bool shouldRepaint(_DropLayoutPreview old) => true;
 }

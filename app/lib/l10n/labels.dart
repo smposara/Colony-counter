@@ -1,6 +1,7 @@
 import '../core/calculator.dart';
 import '../core/colour.dart';
 import '../core/plate.dart';
+import '../core/spots.dart';
 import '../data/sample_info.dart';
 import '../data/training_export.dart';
 import 'l10n.dart';
@@ -21,6 +22,24 @@ extension DropLayoutText on DropLayout {
   String get text => switch (this) {
     DropLayout.replicates => tr.layoutReplicates,
     DropLayout.dilutions => tr.layoutDilutions,
+  };
+}
+
+extension DropArrangementText on DropArrangement {
+  String get text => switch (this) {
+    DropArrangement.free => tr.dropArrangementFree,
+    DropArrangement.sectors => tr.dropArrangementSectors,
+    DropArrangement.grid => tr.dropArrangementGrid,
+  };
+}
+
+extension DropExclusionText on DropExclusion {
+  String get text => switch (this) {
+    DropExclusion.splash => tr.dropExclusionSplash,
+    DropExclusion.merged => tr.dropExclusionMerged,
+    DropExclusion.bubble => tr.dropExclusionBubble,
+    DropExclusion.contaminated => tr.dropExclusionContaminated,
+    DropExclusion.other => tr.dropExclusionOther,
   };
 }
 

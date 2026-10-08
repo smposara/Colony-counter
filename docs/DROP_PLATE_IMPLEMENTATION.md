@@ -1,6 +1,6 @@
 # Drop plates (Options A + B): implementation plan
 
-Status: **M1–M2 done in Python, M3 core port done in Dart** (October 2026; see Progress below). Study and options: [DROP_PLATE.md](DROP_PLATE.md). Same
+Status: **M1–M4 done** (Python reference, Dart port, data model and Drops mode; October 2026; see Progress below). M5–M6 to do. Study and options: [DROP_PLATE.md](DROP_PLATE.md). Same
 approach as Petrifilm and AST: Python reference first, Dart port checked against golden
 fixtures, then data, UI and export.
 
@@ -231,7 +231,7 @@ What M1 needed beyond the plan:
   half, and such a drop fell inside the window and pulled the pooled estimate down by up to
   60 % on overdispersed plates.
 
-**M3 (Dart port of layout and statistics), core done:** `app/lib/core/drop_layout.dart`
+**M3 (Dart port of layout and statistics), done:** `app/lib/core/drop_layout.dart`
 (`DropTemplate` = `SectorTemplate` / `GridTemplate` / `FreeTemplate`, `dropDiameterMm`,
 `templatePositionsMm`, `countDropPlate`, `countDropPlateInPhoto` for a background isolate,
 `countDropPlateInBackground` in `background.dart`, `FoundDrop.toSpot()` for the review screen) and `app/lib/core/drop_stats.dart`
@@ -249,8 +249,41 @@ drops, 5 × 5 grid, a mostly empty ring) in `app/test/drop_layout_test.dart`:
 - 1.2–2.2 s per 1200 px plate in the test VM.
 
 Differences from Python: the 2-D Procrustes rotation is solved in closed form (no SVD), and
-sorts break ties by order found (Dart's sort is not stable). The `Spot` changes
-(`position`, `excluded`, `reason`, `flags`) are left for the data model in M4.
+sorts break ties by order found (Dart's sort is not stable).
+
+**M4 (data model, setup, Drops mode, fixes), done:**
+
+- **`Spot`:** `position` (layout index), `excluded` (a `DropExclusion` reason: splash,
+  merged, bubble, contaminant, other; one field instead of `excluded` + `reason`) and
+  `flags` (`crowded`, `unplanned`). Older drops load unchanged.
+- **`SampleInfo`:** `dropArrangement` (`free`, `sectors`, `grid`; older samples load as
+  `free`, new drop samples start as `sectors`), `dropsPerDilution`, `dropPitchMm`, and
+  `dropTemplate`, `dropsPerPlate`, `dropDilutions(slot)` and `dropLabel(slot, i)` built on
+  them. The ring radius is 0.28 × the dish size (25 mm on a 90 mm dish).
+- **Setup:** "Where the drops are" (Free / Ring / Rows) with a one-line explanation, drops
+  of each dilution (all dilutions on one plate), the grid spacing, and a diagram of the
+  plate with every planned drop labelled with its dilution.
+- **Review, Drops mode:** a plate of a sample with a ring or rows is counted with the layout
+  fit (`countDropPlateInBackground`): every planned drop appears, empty ones as "0",
+  confluent ones red and TNTC, crowded ones orange. A crowded drop counted by area keeps the
+  extra colonies on its largest mark (`DropPlateResult.toSpots`), so it can still be edited
+  mark by mark. Drag a drop to move it or the agar to move them all; "Find drops again" and
+  (ring) "Turn labels by one drop" are in the menu; tap a drop to **leave it out** with a
+  reason (crossed out, grey, "left out" in the list, not counted).
+- **Fixes:** left-out drops are skipped in `observations()`; the plate's spreader flag goes
+  with every drop; free-layout labels no longer wrap (extra drops keep the last dilution and
+  are flagged `unplanned`); `SampleInfo.inferred` reads the layout, dilutions and drops per
+  dilution from the drops of older plates; checked drop plates join the accuracy check (at
+  plate level); `layout_uncertain` is a check-this flag; the drop dialog no longer
+  overflows on narrow phones.
+- **Tests:** `drop_data_test.dart` (fields, templates, labels, inference, results) and
+  `drop_review_test.dart` (the 4 × 3 golden plate through the review screen, matching
+  Python per drop; leaving a drop out; turning ring labels; the setup picker).
+
+Moved to M5: the counting window and the calculation choice (first countable or pooled) in
+setup, so they arrive together with the drop table and the results that use them. Not done:
+two-finger rotate and scale of the layout (the fit sets them; dragging moves it) and the
+camera outline; per-drop accuracy (plate level only).
 
 The decisions below were built with the plan's defaults (pooled by default with `first` as
 an option; 3–30 for every volume; sectors and grids; confluent detection on).

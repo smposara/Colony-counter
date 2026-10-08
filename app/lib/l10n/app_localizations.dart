@@ -254,6 +254,168 @@ abstract class AppLocalizations {
   /// **'The initial suspension is 1:{ratio}. Label plates as if it were the 10⁻¹ dilution; results are corrected by ×{factor}.'**
   String solidOther(String ratio, String factor);
 
+  /// No description provided for @setupDropArrangement.
+  ///
+  /// In en, this message translates to:
+  /// **'Where the drops are'**
+  String get setupDropArrangement;
+
+  /// No description provided for @dropArrangementFree.
+  ///
+  /// In en, this message translates to:
+  /// **'Free'**
+  String get dropArrangementFree;
+
+  /// No description provided for @dropArrangementSectors.
+  ///
+  /// In en, this message translates to:
+  /// **'Ring'**
+  String get dropArrangementSectors;
+
+  /// No description provided for @dropArrangementGrid.
+  ///
+  /// In en, this message translates to:
+  /// **'Rows'**
+  String get dropArrangementGrid;
+
+  /// No description provided for @setupDropFreeHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Drops are found from their colonies and numbered in reading order. Empty and confluent drops must be added by hand.'**
+  String get setupDropFreeHelp;
+
+  /// No description provided for @setupDropSectorsHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Drops evenly round a ring, clockwise from the top: the first dilution at 12 o\'clock. Empty and confluent drops are found from the ring.'**
+  String get setupDropSectorsHelp;
+
+  /// No description provided for @setupDropGridHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'A row per dilution, top to bottom, with its drops side by side. Empty and confluent drops are found from the rows.'**
+  String get setupDropGridHelp;
+
+  /// No description provided for @setupDropGridRowHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'One row of drops, left to right. Empty and confluent drops are found from the row.'**
+  String get setupDropGridRowHelp;
+
+  /// No description provided for @setupDropsPerDilution.
+  ///
+  /// In en, this message translates to:
+  /// **'Drops of each dilution'**
+  String get setupDropsPerDilution;
+
+  /// No description provided for @setupDropPitch.
+  ///
+  /// In en, this message translates to:
+  /// **'Distance between drops'**
+  String get setupDropPitch;
+
+  /// No description provided for @setupDropLayoutPreview.
+  ///
+  /// In en, this message translates to:
+  /// **'How the drops sit on each plate'**
+  String get setupDropLayoutPreview;
+
+  /// No description provided for @reviewFindDrops.
+  ///
+  /// In en, this message translates to:
+  /// **'Find drops again'**
+  String get reviewFindDrops;
+
+  /// No description provided for @reviewTurnLabels.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn labels by one drop'**
+  String get reviewTurnLabels;
+
+  /// No description provided for @reviewHintDropsLayout.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a drop to change its label, mark it TNTC or leave it out; tap empty agar to add one. Drag a drop to move it, or drag the agar to move them all.'**
+  String get reviewHintDropsLayout;
+
+  /// No description provided for @reviewLeaveOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave this drop out'**
+  String get reviewLeaveOut;
+
+  /// No description provided for @reviewLeaveOutHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'It stays on the photo, crossed out, and does not count towards CFU/mL.'**
+  String get reviewLeaveOutHelp;
+
+  /// No description provided for @reviewLeaveOutWhy.
+  ///
+  /// In en, this message translates to:
+  /// **'Why'**
+  String get reviewLeaveOutWhy;
+
+  /// No description provided for @dropExclusionSplash.
+  ///
+  /// In en, this message translates to:
+  /// **'Splashed or smeared'**
+  String get dropExclusionSplash;
+
+  /// No description provided for @dropExclusionMerged.
+  ///
+  /// In en, this message translates to:
+  /// **'Ran into a neighbour'**
+  String get dropExclusionMerged;
+
+  /// No description provided for @dropExclusionBubble.
+  ///
+  /// In en, this message translates to:
+  /// **'Bubble or scratch'**
+  String get dropExclusionBubble;
+
+  /// No description provided for @dropExclusionContaminated.
+  ///
+  /// In en, this message translates to:
+  /// **'Contaminant'**
+  String get dropExclusionContaminated;
+
+  /// No description provided for @dropExclusionOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get dropExclusionOther;
+
+  /// No description provided for @reviewDropLeftOut.
+  ///
+  /// In en, this message translates to:
+  /// **'left out'**
+  String get reviewDropLeftOut;
+
+  /// No description provided for @reviewDropCrowded.
+  ///
+  /// In en, this message translates to:
+  /// **'Crowded: merged colonies are partly counted by their area. Check the count, or read the plate earlier next time.'**
+  String get reviewDropCrowded;
+
+  /// No description provided for @reviewDropUnplanned.
+  ///
+  /// In en, this message translates to:
+  /// **'More drops than the plan: check this drop\'s label.'**
+  String get reviewDropUnplanned;
+
+  /// No description provided for @flagOutsideDrops.
+  ///
+  /// In en, this message translates to:
+  /// **'Colonies between drops (not counted)'**
+  String get flagOutsideDrops;
+
+  /// No description provided for @flagLayoutUncertain.
+  ///
+  /// In en, this message translates to:
+  /// **'Drop layout uncertain: check the drops'**
+  String get flagLayoutUncertain;
+
   /// No description provided for @homeSamples.
   ///
   /// In en, this message translates to:
