@@ -142,7 +142,7 @@ def test_detection_limit_when_nothing_grew():
     rows = dilution_table(_drops([(2, [0, 0, 0, 0, 0]), (3, [0, 0, 0, 0, 0])]))
     e = estimate_drops(rows, 10)
     assert e.qualifier == "<"
-    assert e.cfu_per_ml == pytest.approx(1 / (5 * 0.01 * 1e-2))  # 20 CFU/mL
+    assert e.cfu_per_ml == pytest.approx(1 / (5 * 0.01 * 1e-2))  # 2000 CFU/mL
 
 
 def test_below_and_above_window():

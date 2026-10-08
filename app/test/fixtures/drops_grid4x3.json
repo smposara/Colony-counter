@@ -1,0 +1,326 @@
+{
+ "layout": {
+  "kind": "grid",
+  "n": 8,
+  "ring_mm": 25.0,
+  "drops_per_dilution": 1,
+  "rows": 4,
+  "cols": 3,
+  "pitch_mm": 12
+ },
+ "dilutions": [
+  4,
+  5,
+  6,
+  7
+ ],
+ "volume_ul": 10.0,
+ "cfu_per_ml": 46773514.128719814,
+ "px_per_mm": 11.2,
+ "true_drops": [
+  {
+   "x": 533.0,
+   "y": 832.8,
+   "dilution_exp": 4,
+   "count": 62,
+   "confluent": false
+  },
+  {
+   "x": 446.1,
+   "y": 730.3,
+   "dilution_exp": 4,
+   "count": 66,
+   "confluent": false
+  },
+  {
+   "x": 359.3,
+   "y": 627.7,
+   "dilution_exp": 4,
+   "count": 59,
+   "confluent": false
+  },
+  {
+   "x": 635.5,
+   "y": 746.0,
+   "dilution_exp": 5,
+   "count": 3,
+   "confluent": false
+  },
+  {
+   "x": 548.7,
+   "y": 643.4,
+   "dilution_exp": 5,
+   "count": 4,
+   "confluent": false
+  },
+  {
+   "x": 461.9,
+   "y": 540.8,
+   "dilution_exp": 5,
+   "count": 4,
+   "confluent": false
+  },
+  {
+   "x": 738.1,
+   "y": 659.2,
+   "dilution_exp": 6,
+   "count": 0,
+   "confluent": false
+  },
+  {
+   "x": 651.3,
+   "y": 556.6,
+   "dilution_exp": 6,
+   "count": 0,
+   "confluent": false
+  },
+  {
+   "x": 564.5,
+   "y": 454.0,
+   "dilution_exp": 6,
+   "count": 1,
+   "confluent": false
+  },
+  {
+   "x": 840.7,
+   "y": 572.3,
+   "dilution_exp": 7,
+   "count": 0,
+   "confluent": false
+  },
+  {
+   "x": 753.9,
+   "y": 469.7,
+   "dilution_exp": 7,
+   "count": 1,
+   "confluent": false
+  },
+  {
+   "x": 667.0,
+   "y": 367.2,
+   "dilution_exp": 7,
+   "count": 1,
+   "confluent": false
+  }
+ ],
+ "true_estimate": {
+  "cfu_per_ml": 36666666.666666664,
+  "qualifier": "exact",
+  "low": 18303867.890789464,
+  "high": 65606795.044339836,
+  "dilutions_used": [
+   5
+  ],
+  "drops_used": 3
+ },
+ "python": {
+  "plate": {
+   "cx": 601.875,
+   "cy": 599.625,
+   "radius": 506.8499755859375
+  },
+  "colonies": 19,
+  "rotation_deg": 49.39,
+  "scale": 0.9766,
+  "drops": [
+   {
+    "x": 358.2,
+    "y": 630.4,
+    "position": 0,
+    "dilution_exp": 4,
+    "replicate": 1,
+    "count": 1,
+    "confluent": true,
+    "crowded": false
+   },
+   {
+    "x": 444.1,
+    "y": 730.6,
+    "position": 1,
+    "dilution_exp": 4,
+    "replicate": 2,
+    "count": 1,
+    "confluent": true,
+    "crowded": false
+   },
+   {
+    "x": 530.0,
+    "y": 830.8,
+    "position": 2,
+    "dilution_exp": 4,
+    "replicate": 3,
+    "count": 1,
+    "confluent": true,
+    "crowded": false
+   },
+   {
+    "x": 458.4,
+    "y": 544.5,
+    "position": 3,
+    "dilution_exp": 5,
+    "replicate": 1,
+    "count": 4,
+    "confluent": false,
+    "crowded": false
+   },
+   {
+    "x": 544.3,
+    "y": 644.7,
+    "position": 4,
+    "dilution_exp": 5,
+    "replicate": 2,
+    "count": 4,
+    "confluent": false,
+    "crowded": false
+   },
+   {
+    "x": 630.2,
+    "y": 744.9,
+    "position": 5,
+    "dilution_exp": 5,
+    "replicate": 3,
+    "count": 3,
+    "confluent": false,
+    "crowded": false
+   },
+   {
+    "x": 558.6,
+    "y": 458.6,
+    "position": 6,
+    "dilution_exp": 6,
+    "replicate": 1,
+    "count": 1,
+    "confluent": false,
+    "crowded": false
+   },
+   {
+    "x": 644.5,
+    "y": 558.8,
+    "position": 7,
+    "dilution_exp": 6,
+    "replicate": 2,
+    "count": 0,
+    "confluent": false,
+    "crowded": false
+   },
+   {
+    "x": 730.4,
+    "y": 659.0,
+    "position": 8,
+    "dilution_exp": 6,
+    "replicate": 3,
+    "count": 0,
+    "confluent": false,
+    "crowded": false
+   },
+   {
+    "x": 658.8,
+    "y": 372.6,
+    "position": 9,
+    "dilution_exp": 7,
+    "replicate": 1,
+    "count": 1,
+    "confluent": false,
+    "crowded": false
+   },
+   {
+    "x": 744.7,
+    "y": 472.8,
+    "position": 10,
+    "dilution_exp": 7,
+    "replicate": 2,
+    "count": 1,
+    "confluent": false,
+    "crowded": false
+   },
+   {
+    "x": 830.6,
+    "y": 573.0,
+    "position": 11,
+    "dilution_exp": 7,
+    "replicate": 3,
+    "count": 0,
+    "confluent": false,
+    "crowded": false
+   }
+  ],
+  "strays": 2,
+  "flags": [
+   "colonies_outside_drops"
+  ],
+  "table": [
+   {
+    "dilution_exp": 4,
+    "counts": [],
+    "tntc": 3,
+    "mean": 0.0,
+    "vmr": 1.0,
+    "chi2": 0.0,
+    "p": 1.0,
+    "flags": []
+   },
+   {
+    "dilution_exp": 5,
+    "counts": [
+     4,
+     4,
+     3
+    ],
+    "tntc": 0,
+    "mean": 3.6666666666666665,
+    "vmr": 0.09090909090909094,
+    "chi2": 0.18181818181818185,
+    "p": 0.9131007162822623,
+    "flags": []
+   },
+   {
+    "dilution_exp": 6,
+    "counts": [
+     1,
+     0,
+     0
+    ],
+    "tntc": 0,
+    "mean": 0.3333333333333333,
+    "vmr": 1.0000000000000004,
+    "chi2": 2.0000000000000004,
+    "p": 0.3678794411714423,
+    "flags": []
+   },
+   {
+    "dilution_exp": 7,
+    "counts": [
+     1,
+     1,
+     0
+    ],
+    "tntc": 0,
+    "mean": 0.6666666666666666,
+    "vmr": 0.5000000000000002,
+    "chi2": 1.0000000000000002,
+    "p": 0.6065306597126334,
+    "flags": []
+   }
+  ],
+  "pooled": {
+   "cfu_per_ml": 36666666.666666664,
+   "qualifier": "exact",
+   "low": 18303867.890789464,
+   "high": 65606795.044339836,
+   "dilutions_used": [
+    5
+   ],
+   "drops_used": 3
+  },
+  "first": {
+   "cfu_per_ml": 36666666.666666664,
+   "qualifier": "exact",
+   "low": 18303867.890789464,
+   "high": 65606795.044339836,
+   "dilutions_used": [
+    5
+   ],
+   "drops_used": 3
+  }
+ }
+}

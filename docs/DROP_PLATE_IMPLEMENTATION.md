@@ -1,6 +1,6 @@
 # Drop plates (Options A + B): implementation plan
 
-Status: **M1 and M2 done in Python** (October 2026; see Progress below). Study and options: [DROP_PLATE.md](DROP_PLATE.md). Same
+Status: **M1–M2 done in Python, M3 core port done in Dart** (October 2026; see Progress below). Study and options: [DROP_PLATE.md](DROP_PLATE.md). Same
 approach as Petrifilm and AST: Python reference first, Dart port checked against golden
 fixtures, then data, UI and export.
 
@@ -230,6 +230,27 @@ What M1 needed beyond the plan:
   keeping the larger count: merged colonies in a ~30-colony drop were undercounted by up to
   half, and such a drop fell inside the window and pulled the pooled estimate down by up to
   60 % on overdispersed plates.
+
+**M3 (Dart port of layout and statistics), core done:** `app/lib/core/drop_layout.dart`
+(`DropTemplate` = `SectorTemplate` / `GridTemplate` / `FreeTemplate`, `dropDiameterMm`,
+`templatePositionsMm`, `countDropPlate`, `countDropPlateInPhoto` for a background isolate,
+`countDropPlateInBackground` in `background.dart`, `FoundDrop.toSpot()` for the review screen) and `app/lib/core/drop_stats.dart`
+(`dilutionTable`, `estimateDrops(mode)`, `poissonInterval`, `chi2Sf`; the χ² p-value and the
+Garwood limits come from a regularised incomplete gamma, no dependency). Golden fixtures
+from `make_app_fixtures.py --drops` (8 sectors, 6 sectors × 2, 4 × 3 grid with crowded
+drops, 5 × 5 grid, a mostly empty ring) in `app/test/drop_layout_test.dart`:
+
+- Every drop where Python puts it (< 1 mm), same dilution and confluent flag; per-drop
+  counts within one colony of Python (46 of 50 countable drops exact).
+- Same flags; rotation and scale equal up to the layout's symmetry.
+- CFU/mL within 3 % of Python and within 15 % of the estimate from the true counts.
+- On Python's counts the drop table (mean, VMR, χ², p, flags) and both estimates (value,
+  interval, dilutions and drops used) agree with Python to rounding.
+- 1.2–2.2 s per 1200 px plate in the test VM.
+
+Differences from Python: the 2-D Procrustes rotation is solved in closed form (no SVD), and
+sorts break ties by order found (Dart's sort is not stable). The `Spot` changes
+(`position`, `excluded`, `reason`, `flags`) are left for the data model in M4.
 
 The decisions below were built with the plan's defaults (pooled by default with `first` as
 an option; 3–30 for every volume; sectors and grids; confluent detection on).

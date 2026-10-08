@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import 'drop_layout.dart';
 import 'petrifilm.dart';
 import 'pipeline.dart';
 
@@ -28,4 +29,14 @@ Future<FilmResult> countFilmInBackground(FilmJob job) async {
     return countFilmJob(job);
   }
   return compute(countFilmJob, job);
+}
+
+/// Counts a drop-plate photo with its layout off the UI thread (on the web,
+/// after a frame so the progress indicator shows).
+Future<DropPlateResult> countDropPlateInBackground(DropJob job) async {
+  if (kIsWeb) {
+    await Future<void>.delayed(const Duration(milliseconds: 60));
+    return countDropPlateInPhoto(job);
+  }
+  return compute(countDropPlateInPhoto, job);
 }

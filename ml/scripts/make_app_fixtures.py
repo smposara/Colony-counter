@@ -3,7 +3,7 @@
 Each fixture is a synthetic JPEG plus a JSON label with the true colony positions
 and the Python pipeline's count on that same JPEG, so the Dart port can be checked
 against both. Run from the repo root:  python ml/scripts/make_app_fixtures.py
-(add --zones or --petrifilm for the zone plates or dry films only).
+(add --zones, --petrifilm or --drops for the zone plates, dry films or drop layouts only).
 """
 
 import json
@@ -13,8 +13,11 @@ import cv2
 import numpy as np
 
 from colonycounter import count_colonies
+from colonycounter.drop_stats import DropCount, dilution_table, drop_counts, estimate_drops
+from colonycounter.drops import Layout, count_drop_plate
 from colonycounter.petrifilm import count_petrifilm
 from colonycounter.synth import make_plate
+from colonycounter.synth_drops import make_drop_plate as make_layout_drop_plate
 from colonycounter.synth_petrifilm import make_film
 from colonycounter.synth_zones import make_zone_plate
 from colonycounter.zones import measure_plate
@@ -191,11 +194,78 @@ def make_petrifilm_fixtures() -> None:
         print(name, s.image.shape[:2], "true", s.truth(), "python", res.counts, res.estimates, res.flags)
 
 
+# Drop plates with a layout, for the Dart port of drops.py / drop_stats.py:
+# name, layout, dilutions, CFU/mL, seed, overdispersion.
+DROP_CASES = [
+    ("drops_sectors8", Layout("sectors", n=8, ring_mm=25), list(range(3, 11)), 3e7, 1, 0.0),
+    ("drops_sectors6x2", Layout("sectors", n=6, ring_mm=25, drops_per_dilution=2), [4, 5, 6], 2e7, 8, 0.0),
+    ("drops_grid4x3", Layout("grid", rows=4, cols=3, pitch_mm=12), [4, 5, 6, 7], 10 ** 7.67, 105, 0.25),
+    ("drops_grid5x5", Layout("grid", rows=5, cols=5, pitch_mm=11), [3, 4, 5, 6, 7], 3e7, 3, 0.0),
+    ("drops_sparse", Layout("sectors", n=8, ring_mm=25), list(range(3, 11)), 1e6, 4, 0.0),
+]
+
+
+def _layout_json(layout: Layout) -> dict:
+    return {"kind": layout.kind, "n": layout.n, "ring_mm": layout.ring_mm,
+            "drops_per_dilution": layout.drops_per_dilution, "rows": layout.rows,
+            "cols": layout.cols, "pitch_mm": layout.pitch_mm}
+
+
+def _estimate_json(e) -> dict:
+    return {"cfu_per_ml": e.cfu_per_ml, "qualifier": e.qualifier, "low": e.low, "high": e.high,
+            "dilutions_used": e.dilutions_used, "drops_used": e.drops_used}
+
+
+def make_drop_layout_fixtures() -> None:
+    """Drop plates with a layout: the truth plus the Python result on the same JPEG."""
+    OUT.mkdir(parents=True, exist_ok=True)
+    for name, layout, dils, cfu, seed, over in DROP_CASES:
+        s = make_layout_drop_plate(layout, dils, cfu_per_ml=cfu, seed=seed, overdispersion=over)
+        path = OUT / f"{name}.jpg"
+        cv2.imwrite(str(path), s.image, [cv2.IMWRITE_JPEG_QUALITY, 90])
+        r = count_drop_plate(cv2.imread(str(path)), layout, dils)
+        table = dilution_table(drop_counts(r))
+        truth = [DropCount(t.dilution_exp, t.replicate, t.count, t.confluent) for t in s.drops]
+        label = {
+            "layout": _layout_json(layout),
+            "dilutions": dils,
+            "volume_ul": s.volume_ul,
+            "cfu_per_ml": cfu,
+            "px_per_mm": s.px_per_mm,
+            "true_drops": [{"x": round(t.x, 1), "y": round(t.y, 1), "dilution_exp": t.dilution_exp,
+                            "count": t.count, "confluent": t.confluent} for t in s.drops],
+            "true_estimate": _estimate_json(estimate_drops(dilution_table(truth), s.volume_ul)),
+            "python": {
+                "plate": _plate(r.plate),
+                "colonies": len(r.colonies),
+                "rotation_deg": None if r.fit is None else round(r.fit.rotation_deg, 2),
+                "scale": None if r.fit is None else round(r.fit.scale, 4),
+                "drops": [{"x": round(d.x, 1), "y": round(d.y, 1), "position": d.position,
+                           "dilution_exp": d.dilution_exp, "replicate": d.replicate,
+                           "count": d.count, "confluent": d.confluent, "crowded": d.crowded}
+                          for d in r.drops],
+                "strays": len(r.strays),
+                "flags": r.flags,
+                "table": [{"dilution_exp": t.dilution_exp, "counts": t.counts, "tntc": t.tntc,
+                           "mean": t.mean, "vmr": t.vmr, "chi2": t.chi2, "p": t.p, "flags": t.flags}
+                          for t in table],
+                "pooled": _estimate_json(estimate_drops(table, s.volume_ul, mode="pooled")),
+                "first": _estimate_json(estimate_drops(table, s.volume_ul, mode="first")),
+            },
+        }
+        (OUT / f"{name}.json").write_text(json.dumps(label, indent=1))
+        est = label["python"]["pooled"]
+        print(f"{name}: true {label['true_estimate']['cfu_per_ml']:.3g}, python {est['cfu_per_ml']:.3g} "
+              f"{est['qualifier']} {r.flags}")
+
+
 if __name__ == "__main__":
     import sys
     if sys.argv[1:] == ["--zones"]:
         make_zone_fixtures()
     elif sys.argv[1:] == ["--petrifilm"]:
         make_petrifilm_fixtures()
+    elif sys.argv[1:] == ["--drops"]:
+        make_drop_layout_fixtures()
     else:
         main()

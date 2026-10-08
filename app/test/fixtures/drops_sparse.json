@@ -1,0 +1,306 @@
+{
+ "layout": {
+  "kind": "sectors",
+  "n": 8,
+  "ring_mm": 25,
+  "drops_per_dilution": 1,
+  "rows": 4,
+  "cols": 3,
+  "pitch_mm": 11.0
+ },
+ "dilutions": [
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10
+ ],
+ "volume_ul": 10.0,
+ "cfu_per_ml": 1000000.0,
+ "px_per_mm": 11.2,
+ "true_drops": [
+  {
+   "x": 501.9,
+   "y": 337.7,
+   "dilution_exp": 3,
+   "count": 9,
+   "confluent": false
+  },
+  {
+   "x": 716.1,
+   "y": 345.2,
+   "dilution_exp": 4,
+   "count": 0,
+   "confluent": false
+  },
+  {
+   "x": 862.3,
+   "y": 501.9,
+   "dilution_exp": 5,
+   "count": 0,
+   "confluent": false
+  },
+  {
+   "x": 854.8,
+   "y": 716.1,
+   "dilution_exp": 6,
+   "count": 0,
+   "confluent": false
+  },
+  {
+   "x": 698.1,
+   "y": 862.3,
+   "dilution_exp": 7,
+   "count": 0,
+   "confluent": false
+  },
+  {
+   "x": 483.9,
+   "y": 854.8,
+   "dilution_exp": 8,
+   "count": 0,
+   "confluent": false
+  },
+  {
+   "x": 337.7,
+   "y": 698.1,
+   "dilution_exp": 9,
+   "count": 0,
+   "confluent": false
+  },
+  {
+   "x": 345.2,
+   "y": 483.9,
+   "dilution_exp": 10,
+   "count": 0,
+   "confluent": false
+  }
+ ],
+ "true_estimate": {
+  "cfu_per_ml": 899999.9999999999,
+  "qualifier": "exact",
+  "low": 411537.30973783333,
+  "high": 1708480.3451419165,
+  "dilutions_used": [
+   3
+  ],
+  "drops_used": 1
+ },
+ "python": {
+  "plate": {
+   "cx": 601.875,
+   "cy": 599.625,
+   "radius": 506.8499755859375
+  },
+  "colonies": 11,
+  "rotation_deg": 24.0,
+  "scale": 1.0,
+  "drops": [
+   {
+    "x": 501.0,
+    "y": 336.7,
+    "position": 0,
+    "dilution_exp": 3,
+    "replicate": 1,
+    "count": 9,
+    "confluent": false,
+    "crowded": false
+   },
+   {
+    "x": 716.4,
+    "y": 342.4,
+    "position": 1,
+    "dilution_exp": 4,
+    "replicate": 1,
+    "count": 0,
+    "confluent": false,
+    "crowded": false
+   },
+   {
+    "x": 864.8,
+    "y": 498.7,
+    "position": 2,
+    "dilution_exp": 5,
+    "replicate": 1,
+    "count": 0,
+    "confluent": false,
+    "crowded": false
+   },
+   {
+    "x": 859.1,
+    "y": 714.2,
+    "position": 3,
+    "dilution_exp": 6,
+    "replicate": 1,
+    "count": 0,
+    "confluent": false,
+    "crowded": false
+   },
+   {
+    "x": 702.8,
+    "y": 862.5,
+    "position": 4,
+    "dilution_exp": 7,
+    "replicate": 1,
+    "count": 0,
+    "confluent": false,
+    "crowded": false
+   },
+   {
+    "x": 487.3,
+    "y": 856.9,
+    "position": 5,
+    "dilution_exp": 8,
+    "replicate": 1,
+    "count": 0,
+    "confluent": false,
+    "crowded": false
+   },
+   {
+    "x": 339.0,
+    "y": 700.5,
+    "position": 6,
+    "dilution_exp": 9,
+    "replicate": 1,
+    "count": 0,
+    "confluent": false,
+    "crowded": false
+   },
+   {
+    "x": 344.6,
+    "y": 485.1,
+    "position": 7,
+    "dilution_exp": 10,
+    "replicate": 1,
+    "count": 0,
+    "confluent": false,
+    "crowded": false
+   }
+  ],
+  "strays": 2,
+  "flags": [
+   "colonies_outside_drops"
+  ],
+  "table": [
+   {
+    "dilution_exp": 3,
+    "counts": [
+     9
+    ],
+    "tntc": 0,
+    "mean": 9.0,
+    "vmr": 1.0,
+    "chi2": 0.0,
+    "p": 1.0,
+    "flags": []
+   },
+   {
+    "dilution_exp": 4,
+    "counts": [
+     0
+    ],
+    "tntc": 0,
+    "mean": 0.0,
+    "vmr": 1.0,
+    "chi2": 0.0,
+    "p": 1.0,
+    "flags": []
+   },
+   {
+    "dilution_exp": 5,
+    "counts": [
+     0
+    ],
+    "tntc": 0,
+    "mean": 0.0,
+    "vmr": 1.0,
+    "chi2": 0.0,
+    "p": 1.0,
+    "flags": []
+   },
+   {
+    "dilution_exp": 6,
+    "counts": [
+     0
+    ],
+    "tntc": 0,
+    "mean": 0.0,
+    "vmr": 1.0,
+    "chi2": 0.0,
+    "p": 1.0,
+    "flags": []
+   },
+   {
+    "dilution_exp": 7,
+    "counts": [
+     0
+    ],
+    "tntc": 0,
+    "mean": 0.0,
+    "vmr": 1.0,
+    "chi2": 0.0,
+    "p": 1.0,
+    "flags": []
+   },
+   {
+    "dilution_exp": 8,
+    "counts": [
+     0
+    ],
+    "tntc": 0,
+    "mean": 0.0,
+    "vmr": 1.0,
+    "chi2": 0.0,
+    "p": 1.0,
+    "flags": []
+   },
+   {
+    "dilution_exp": 9,
+    "counts": [
+     0
+    ],
+    "tntc": 0,
+    "mean": 0.0,
+    "vmr": 1.0,
+    "chi2": 0.0,
+    "p": 1.0,
+    "flags": []
+   },
+   {
+    "dilution_exp": 10,
+    "counts": [
+     0
+    ],
+    "tntc": 0,
+    "mean": 0.0,
+    "vmr": 1.0,
+    "chi2": 0.0,
+    "p": 1.0,
+    "flags": []
+   }
+  ],
+  "pooled": {
+   "cfu_per_ml": 899999.9999999999,
+   "qualifier": "exact",
+   "low": 411537.30973783333,
+   "high": 1708480.3451419165,
+   "dilutions_used": [
+    3
+   ],
+   "drops_used": 1
+  },
+  "first": {
+   "cfu_per_ml": 899999.9999999999,
+   "qualifier": "exact",
+   "low": 411537.30973783333,
+   "high": 1708480.3451419165,
+   "dilutions_used": [
+    3
+   ],
+   "drops_used": 1
+  }
+ }
+}
