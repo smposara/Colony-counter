@@ -17,13 +17,23 @@ const double kMaxGlare = 0.005;
 /// Camera with a plate guide and live checks (level, focus, glare).
 /// Pops with the path of the captured photo.
 class CaptureScreen extends StatefulWidget {
-  const CaptureScreen({super.key, this.square = false, this.film = false});
+  const CaptureScreen({
+    super.key,
+    this.square = false,
+    this.film = false,
+    this.tip,
+  });
 
   /// Show a square guide (square plates) instead of a circle.
   final bool square;
 
   /// Show a dry-film guide: the film's outline with its round growth area.
   final bool film;
+
+  /// A line over the preview on how to take the photo (films have their own).
+  final String? tip;
+
+  String? get _tip => tip ?? (film ? tr.captureFilmTip : null);
 
   @override
   State<CaptureScreen> createState() => _CaptureScreenState();
@@ -228,13 +238,13 @@ class _CaptureScreenState extends State<CaptureScreen>
                                   film: widget.film,
                                 ),
                               ),
-                              if (widget.film)
+                              if (widget._tip != null)
                                 Positioned(
                                   left: 12,
                                   right: 12,
                                   top: 8,
                                   child: Text(
-                                    tr.captureFilmTip,
+                                    widget._tip!,
                                     textAlign: TextAlign.center,
                                     style: const TextStyle(
                                       color: Colors.white,

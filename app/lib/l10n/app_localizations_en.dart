@@ -1808,4 +1808,229 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noEstimate => 'no estimate';
+
+  @override
+  String get homeZones => 'Zones';
+
+  @override
+  String get zonesMeasure => 'Measure zones';
+
+  @override
+  String get zonesNone => 'No zone plates yet';
+
+  @override
+  String get zonesEmptyHint =>
+      'Measure inhibition zones around paper disks or agar wells: tap Measure zones and photograph the plate with its lid off.';
+
+  @override
+  String get zoneSetupTitle => 'Zone plate';
+
+  @override
+  String get zoneAssay => 'Method';
+
+  @override
+  String get zoneAssayDisk => 'Paper disks';
+
+  @override
+  String get zoneAssayWell => 'Agar wells';
+
+  @override
+  String get zoneDiskSize => 'Disk diameter (mm)';
+
+  @override
+  String get zoneWellSize => 'Well diameter (mm)';
+
+  @override
+  String get zoneSizeInvalid => 'Enter 3 to 15 mm';
+
+  @override
+  String get zoneOrganism => 'Test organism';
+
+  @override
+  String get zoneOrganismHint => 'e.g. S. aureus ATCC 25923';
+
+  @override
+  String get zoneExperiment => 'Experiment';
+
+  @override
+  String get zoneReplicate => 'Replicate';
+
+  @override
+  String get zonePanel => 'Test item labels';
+
+  @override
+  String get zonePanelNone => 'None: label the disks later';
+
+  @override
+  String get zonePanelNew => 'New label list';
+
+  @override
+  String get zonePanelHelp =>
+      'Labels go clockwise from 12 o\'clock; a disk in the centre comes last.';
+
+  @override
+  String get zonePanelName => 'Name of the list';
+
+  @override
+  String get zonePanelLabels => 'Labels, one per line';
+
+  @override
+  String get zoneTakePhoto => 'Take photo';
+
+  @override
+  String get zoneFromGallery => 'From gallery';
+
+  @override
+  String get zoneCaptureTip =>
+      'Lid off, plate on a dark background, camera straight overhead.';
+
+  @override
+  String get zoneMeasuring => 'Measuring zones…';
+
+  @override
+  String zoneNZones(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n zones',
+      one: '1 zone',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String zoneNToCheck(int n) {
+    return '$n to check';
+  }
+
+  @override
+  String get zoneAllChecked => 'All checked';
+
+  @override
+  String zoneRep(int n) {
+    return 'Rep $n';
+  }
+
+  @override
+  String get zoneHint =>
+      'Tap a disk to check it. Drag a zone\'s edge to resize it. Long-press to add a disk the app missed.';
+
+  @override
+  String get zoneHintWell =>
+      'Tap a well to check it. Drag a zone\'s edge to resize it. Long-press to add a well the app missed.';
+
+  @override
+  String get zoneHintPlate =>
+      'Drag to move the circle onto the plate edge, use the slider to resize it, then measure again.';
+
+  @override
+  String get zoneFixPlate => 'Fix plate circle';
+
+  @override
+  String get zoneMeasureAgain => 'Measure again';
+
+  @override
+  String get zoneRemeasureTitle => 'Measure again?';
+
+  @override
+  String get zoneRemeasureBody =>
+      'Your changes to the zones are replaced by a new measurement.';
+
+  @override
+  String get zoneNoDisks =>
+      'No disks found. Long-press each disk to add it, or fix the plate circle.';
+
+  @override
+  String get zoneNoWells =>
+      'No wells found. Long-press each well to add it, or fix the plate circle.';
+
+  @override
+  String zoneDiskN(int n) {
+    return 'Disk $n';
+  }
+
+  @override
+  String zoneWellN(int n) {
+    return 'Well $n';
+  }
+
+  @override
+  String get zoneLabel => 'Label';
+
+  @override
+  String get zoneDiameter => 'Zone diameter';
+
+  @override
+  String zoneMm(Object mm) {
+    return '$mm mm';
+  }
+
+  @override
+  String get zoneNotMeasured => 'Not measured';
+
+  @override
+  String get zoneSmaller => '1 mm smaller';
+
+  @override
+  String get zoneLarger => '1 mm larger';
+
+  @override
+  String get zoneNoZone => 'No zone';
+
+  @override
+  String zoneNoZoneHelp(Object mm) {
+    return 'Reported as the disk size, $mm mm.';
+  }
+
+  @override
+  String zoneNoZoneHelpWell(Object mm) {
+    return 'Reported as the well size, $mm mm.';
+  }
+
+  @override
+  String zoneAutoWas(Object mm) {
+    return 'The app measured $mm mm.';
+  }
+
+  @override
+  String get zoneAdded => 'Added by hand.';
+
+  @override
+  String get zoneDeletePlate => 'Delete zone plate?';
+
+  @override
+  String get zoneDeletePlateBody => 'The photo and its zones are deleted.';
+
+  @override
+  String get zoneDetails => 'Details';
+
+  @override
+  String get zoneFlagNoZone => 'No clear zone found.';
+
+  @override
+  String get zoneFlagOverlap => 'Overlaps a neighbouring zone.';
+
+  @override
+  String get zoneFlagHitsRim => 'Reaches the plate edge.';
+
+  @override
+  String get zoneFlagHazy => 'Hazy edge: check where growth starts.';
+
+  @override
+  String get zoneFlagColonies => 'Colonies inside the zone.';
+
+  @override
+  String get zoneFlagLowConfidence => 'The edge is unclear.';
+
+  @override
+  String get zoneFlagUnmeasured =>
+      'Could not be measured: set the size by hand.';
+
+  @override
+  String get zoneScaleMismatch =>
+      'The disks and the plate disagree on size: check the plate type and the plate circle.';
+
+  @override
+  String get zoneScaleUnchecked =>
+      'Sizes are from the plate edge only: no disk could be measured.';
 }

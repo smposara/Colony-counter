@@ -1700,4 +1700,222 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get noEstimate => 'คำนวณไม่ได้';
+
+  @override
+  String get homeZones => 'โซนยับยั้ง';
+
+  @override
+  String get zonesMeasure => 'วัดโซนยับยั้ง';
+
+  @override
+  String get zonesNone => 'ยังไม่มีเพลตวัดโซนยับยั้ง';
+
+  @override
+  String get zonesEmptyHint =>
+      'วัดโซนยับยั้งรอบแผ่นกระดาษหรือหลุมวุ้น: แตะ วัดโซนยับยั้ง แล้วถ่ายภาพเพลตโดยเปิดฝา';
+
+  @override
+  String get zoneSetupTitle => 'เพลตวัดโซนยับยั้ง';
+
+  @override
+  String get zoneAssay => 'วิธี';
+
+  @override
+  String get zoneAssayDisk => 'แผ่นกระดาษ';
+
+  @override
+  String get zoneAssayWell => 'หลุมวุ้น';
+
+  @override
+  String get zoneDiskSize => 'เส้นผ่านศูนย์กลางแผ่นกระดาษ (มม.)';
+
+  @override
+  String get zoneWellSize => 'เส้นผ่านศูนย์กลางหลุม (มม.)';
+
+  @override
+  String get zoneSizeInvalid => 'ใส่ 3 ถึง 15 มม.';
+
+  @override
+  String get zoneOrganism => 'เชื้อทดสอบ';
+
+  @override
+  String get zoneOrganismHint => 'เช่น S. aureus ATCC 25923';
+
+  @override
+  String get zoneExperiment => 'การทดลอง';
+
+  @override
+  String get zoneReplicate => 'ซ้ำที่';
+
+  @override
+  String get zonePanel => 'ชื่อสารทดสอบ';
+
+  @override
+  String get zonePanelNone => 'ไม่ใช้: ใส่ชื่อทีหลัง';
+
+  @override
+  String get zonePanelNew => 'สร้างรายการชื่อใหม่';
+
+  @override
+  String get zonePanelHelp =>
+      'ชื่อเรียงตามเข็มนาฬิกาเริ่มจากตำแหน่ง 12 นาฬิกา แผ่นที่อยู่ตรงกลางเป็นลำดับสุดท้าย';
+
+  @override
+  String get zonePanelName => 'ชื่อรายการ';
+
+  @override
+  String get zonePanelLabels => 'ชื่อสารทดสอบ บรรทัดละหนึ่งชื่อ';
+
+  @override
+  String get zoneTakePhoto => 'ถ่ายภาพ';
+
+  @override
+  String get zoneFromGallery => 'จากคลังภาพ';
+
+  @override
+  String get zoneCaptureTip =>
+      'เปิดฝา วางเพลตบนพื้นสีเข้ม ถือกล้องตรงเหนือเพลต';
+
+  @override
+  String get zoneMeasuring => 'กำลังวัดโซนยับยั้ง…';
+
+  @override
+  String zoneNZones(int n) {
+    return '$n โซน';
+  }
+
+  @override
+  String zoneNToCheck(int n) {
+    return 'ต้องตรวจ $n';
+  }
+
+  @override
+  String get zoneAllChecked => 'ตรวจครบแล้ว';
+
+  @override
+  String zoneRep(int n) {
+    return 'ซ้ำที่ $n';
+  }
+
+  @override
+  String get zoneHint =>
+      'แตะแผ่นเพื่อตรวจ ลากขอบโซนเพื่อปรับขนาด กดค้างเพื่อเพิ่มแผ่นที่แอปหาไม่พบ';
+
+  @override
+  String get zoneHintWell =>
+      'แตะหลุมเพื่อตรวจ ลากขอบโซนเพื่อปรับขนาด กดค้างเพื่อเพิ่มหลุมที่แอปหาไม่พบ';
+
+  @override
+  String get zoneHintPlate =>
+      'ลากวงกลมให้ตรงขอบเพลต ใช้แถบเลื่อนปรับขนาด แล้ววัดใหม่';
+
+  @override
+  String get zoneFixPlate => 'แก้วงขอบเพลต';
+
+  @override
+  String get zoneMeasureAgain => 'วัดใหม่';
+
+  @override
+  String get zoneRemeasureTitle => 'วัดใหม่?';
+
+  @override
+  String get zoneRemeasureBody =>
+      'การแก้ไขโซนทั้งหมดจะถูกแทนที่ด้วยผลการวัดใหม่';
+
+  @override
+  String get zoneNoDisks =>
+      'ไม่พบแผ่นกระดาษ กดค้างที่แต่ละแผ่นเพื่อเพิ่ม หรือแก้วงขอบเพลต';
+
+  @override
+  String get zoneNoWells =>
+      'ไม่พบหลุม กดค้างที่แต่ละหลุมเพื่อเพิ่ม หรือแก้วงขอบเพลต';
+
+  @override
+  String zoneDiskN(int n) {
+    return 'แผ่นที่ $n';
+  }
+
+  @override
+  String zoneWellN(int n) {
+    return 'หลุมที่ $n';
+  }
+
+  @override
+  String get zoneLabel => 'ชื่อสารทดสอบ';
+
+  @override
+  String get zoneDiameter => 'เส้นผ่านศูนย์กลางโซน';
+
+  @override
+  String zoneMm(Object mm) {
+    return '$mm มม.';
+  }
+
+  @override
+  String get zoneNotMeasured => 'วัดไม่ได้';
+
+  @override
+  String get zoneSmaller => 'เล็กลง 1 มม.';
+
+  @override
+  String get zoneLarger => 'ใหญ่ขึ้น 1 มม.';
+
+  @override
+  String get zoneNoZone => 'ไม่มีโซนยับยั้ง';
+
+  @override
+  String zoneNoZoneHelp(Object mm) {
+    return 'รายงานเป็นขนาดของแผ่น $mm มม.';
+  }
+
+  @override
+  String zoneNoZoneHelpWell(Object mm) {
+    return 'รายงานเป็นขนาดของหลุม $mm มม.';
+  }
+
+  @override
+  String zoneAutoWas(Object mm) {
+    return 'แอปวัดได้ $mm มม.';
+  }
+
+  @override
+  String get zoneAdded => 'เพิ่มเอง';
+
+  @override
+  String get zoneDeletePlate => 'ลบเพลตวัดโซนยับยั้ง?';
+
+  @override
+  String get zoneDeletePlateBody => 'ภาพและโซนทั้งหมดจะถูกลบ';
+
+  @override
+  String get zoneDetails => 'รายละเอียด';
+
+  @override
+  String get zoneFlagNoZone => 'ไม่พบโซนยับยั้งที่ชัดเจน';
+
+  @override
+  String get zoneFlagOverlap => 'ซ้อนกับโซนข้างเคียง';
+
+  @override
+  String get zoneFlagHitsRim => 'ถึงขอบเพลต';
+
+  @override
+  String get zoneFlagHazy => 'ขอบโซนไม่คม: ตรวจว่าเชื้อเริ่มขึ้นตรงไหน';
+
+  @override
+  String get zoneFlagColonies => 'มีโคโลนีในโซน';
+
+  @override
+  String get zoneFlagLowConfidence => 'ขอบโซนไม่ชัด';
+
+  @override
+  String get zoneFlagUnmeasured => 'วัดไม่ได้: ตั้งขนาดเอง';
+
+  @override
+  String get zoneScaleMismatch =>
+      'ขนาดของแผ่นกับเพลตไม่สอดคล้องกัน: ตรวจชนิดจานและวงขอบเพลต';
+
+  @override
+  String get zoneScaleUnchecked =>
+      'ขนาดคำนวณจากขอบเพลตอย่างเดียว เพราะวัดแผ่นไม่ได้';
 }

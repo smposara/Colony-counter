@@ -39,6 +39,9 @@ class PlateStore extends ChangeNotifier {
   /// Colour theme: 'system', 'light' or 'dark'.
   String theme = 'system';
 
+  /// The last zone plate's setup, offered for the next one.
+  ZoneSetup zoneSetup = const ZoneSetup();
+
   static const _recordsKey = 'plates';
   static const _settingsKey = 'settings';
   static const _samplesKey = 'samples';
@@ -107,6 +110,10 @@ class PlateStore extends ChangeNotifier {
       accuracyCheckEvery = (s['accuracy_every'] as num?)?.toInt() ?? 10;
       language = s['language'] as String? ?? 'system';
       theme = s['theme'] as String? ?? 'system';
+      final zs = s['zone_setup'];
+      zoneSetup = zs is Map<String, dynamic>
+          ? ZoneSetup.fromJson(zs)
+          : const ZoneSetup();
     }
     notifyListeners();
   }
@@ -216,6 +223,11 @@ class PlateStore extends ChangeNotifier {
     defaultMedium = medium ?? defaultMedium;
     defaultFormat = format ?? defaultFormat;
     this.accuracyCheckEvery = accuracyCheckEvery ?? this.accuracyCheckEvery;
+    await _saveSettings();
+  }
+
+  Future<void> setZoneSetup(ZoneSetup setup) async {
+    zoneSetup = setup;
     await _saveSettings();
   }
 
@@ -424,6 +436,7 @@ class PlateStore extends ChangeNotifier {
         'accuracy_every': accuracyCheckEvery,
         'language': language,
         'theme': theme,
+        'zone_setup': zoneSetup.toJson(),
       }),
     );
     notifyListeners();

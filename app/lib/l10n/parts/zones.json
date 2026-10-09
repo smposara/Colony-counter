@@ -1,0 +1,279 @@
+{
+ "homeZones": {
+  "en": "Zones",
+  "th": "โซนยับยั้ง"
+ },
+ "zonesMeasure": {
+  "en": "Measure zones",
+  "th": "วัดโซนยับยั้ง"
+ },
+ "zonesNone": {
+  "en": "No zone plates yet",
+  "th": "ยังไม่มีเพลตวัดโซนยับยั้ง"
+ },
+ "zonesEmptyHint": {
+  "en": "Measure inhibition zones around paper disks or agar wells: tap Measure zones and photograph the plate with its lid off.",
+  "th": "วัดโซนยับยั้งรอบแผ่นกระดาษหรือหลุมวุ้น: แตะ วัดโซนยับยั้ง แล้วถ่ายภาพเพลตโดยเปิดฝา"
+ },
+ "zoneSetupTitle": {
+  "en": "Zone plate",
+  "th": "เพลตวัดโซนยับยั้ง"
+ },
+ "zoneAssay": {
+  "en": "Method",
+  "th": "วิธี"
+ },
+ "zoneAssayDisk": {
+  "en": "Paper disks",
+  "th": "แผ่นกระดาษ"
+ },
+ "zoneAssayWell": {
+  "en": "Agar wells",
+  "th": "หลุมวุ้น"
+ },
+ "zoneDiskSize": {
+  "en": "Disk diameter (mm)",
+  "th": "เส้นผ่านศูนย์กลางแผ่นกระดาษ (มม.)"
+ },
+ "zoneWellSize": {
+  "en": "Well diameter (mm)",
+  "th": "เส้นผ่านศูนย์กลางหลุม (มม.)"
+ },
+ "zoneSizeInvalid": {
+  "en": "Enter 3 to 15 mm",
+  "th": "ใส่ 3 ถึง 15 มม."
+ },
+ "zoneOrganism": {
+  "en": "Test organism",
+  "th": "เชื้อทดสอบ"
+ },
+ "zoneOrganismHint": {
+  "en": "e.g. S. aureus ATCC 25923",
+  "th": "เช่น S. aureus ATCC 25923"
+ },
+ "zoneExperiment": {
+  "en": "Experiment",
+  "th": "การทดลอง"
+ },
+ "zoneReplicate": {
+  "en": "Replicate",
+  "th": "ซ้ำที่"
+ },
+ "zonePanel": {
+  "en": "Test item labels",
+  "th": "ชื่อสารทดสอบ"
+ },
+ "zonePanelNone": {
+  "en": "None: label the disks later",
+  "th": "ไม่ใช้: ใส่ชื่อทีหลัง"
+ },
+ "zonePanelNew": {
+  "en": "New label list",
+  "th": "สร้างรายการชื่อใหม่"
+ },
+ "zonePanelHelp": {
+  "en": "Labels go clockwise from 12 o'clock; a disk in the centre comes last.",
+  "th": "ชื่อเรียงตามเข็มนาฬิกาเริ่มจากตำแหน่ง 12 นาฬิกา แผ่นที่อยู่ตรงกลางเป็นลำดับสุดท้าย"
+ },
+ "zonePanelName": {
+  "en": "Name of the list",
+  "th": "ชื่อรายการ"
+ },
+ "zonePanelLabels": {
+  "en": "Labels, one per line",
+  "th": "ชื่อสารทดสอบ บรรทัดละหนึ่งชื่อ"
+ },
+ "zoneTakePhoto": {
+  "en": "Take photo",
+  "th": "ถ่ายภาพ"
+ },
+ "zoneFromGallery": {
+  "en": "From gallery",
+  "th": "จากคลังภาพ"
+ },
+ "zoneCaptureTip": {
+  "en": "Lid off, plate on a dark background, camera straight overhead.",
+  "th": "เปิดฝา วางเพลตบนพื้นสีเข้ม ถือกล้องตรงเหนือเพลต"
+ },
+ "zoneMeasuring": {
+  "en": "Measuring zones…",
+  "th": "กำลังวัดโซนยับยั้ง…"
+ },
+ "zoneNZones": {
+  "en": "{n, plural, =1{1 zone} other{{n} zones}}",
+  "th": "{n} โซน",
+  "placeholders": {
+   "n": {
+    "type": "int"
+   }
+  }
+ },
+ "zoneNToCheck": {
+  "en": "{n} to check",
+  "th": "ต้องตรวจ {n}",
+  "placeholders": {
+   "n": {
+    "type": "int"
+   }
+  }
+ },
+ "zoneAllChecked": {
+  "en": "All checked",
+  "th": "ตรวจครบแล้ว"
+ },
+ "zoneRep": {
+  "en": "Rep {n}",
+  "th": "ซ้ำที่ {n}",
+  "placeholders": {
+   "n": {
+    "type": "int"
+   }
+  }
+ },
+ "zoneHint": {
+  "en": "Tap a disk to check it. Drag a zone's edge to resize it. Long-press to add a disk the app missed.",
+  "th": "แตะแผ่นเพื่อตรวจ ลากขอบโซนเพื่อปรับขนาด กดค้างเพื่อเพิ่มแผ่นที่แอปหาไม่พบ"
+ },
+ "zoneHintWell": {
+  "en": "Tap a well to check it. Drag a zone's edge to resize it. Long-press to add a well the app missed.",
+  "th": "แตะหลุมเพื่อตรวจ ลากขอบโซนเพื่อปรับขนาด กดค้างเพื่อเพิ่มหลุมที่แอปหาไม่พบ"
+ },
+ "zoneHintPlate": {
+  "en": "Drag to move the circle onto the plate edge, use the slider to resize it, then measure again.",
+  "th": "ลากวงกลมให้ตรงขอบเพลต ใช้แถบเลื่อนปรับขนาด แล้ววัดใหม่"
+ },
+ "zoneFixPlate": {
+  "en": "Fix plate circle",
+  "th": "แก้วงขอบเพลต"
+ },
+ "zoneMeasureAgain": {
+  "en": "Measure again",
+  "th": "วัดใหม่"
+ },
+ "zoneRemeasureTitle": {
+  "en": "Measure again?",
+  "th": "วัดใหม่?"
+ },
+ "zoneRemeasureBody": {
+  "en": "Your changes to the zones are replaced by a new measurement.",
+  "th": "การแก้ไขโซนทั้งหมดจะถูกแทนที่ด้วยผลการวัดใหม่"
+ },
+ "zoneNoDisks": {
+  "en": "No disks found. Long-press each disk to add it, or fix the plate circle.",
+  "th": "ไม่พบแผ่นกระดาษ กดค้างที่แต่ละแผ่นเพื่อเพิ่ม หรือแก้วงขอบเพลต"
+ },
+ "zoneNoWells": {
+  "en": "No wells found. Long-press each well to add it, or fix the plate circle.",
+  "th": "ไม่พบหลุม กดค้างที่แต่ละหลุมเพื่อเพิ่ม หรือแก้วงขอบเพลต"
+ },
+ "zoneDiskN": {
+  "en": "Disk {n}",
+  "th": "แผ่นที่ {n}",
+  "placeholders": {
+   "n": {
+    "type": "int"
+   }
+  }
+ },
+ "zoneWellN": {
+  "en": "Well {n}",
+  "th": "หลุมที่ {n}",
+  "placeholders": {
+   "n": {
+    "type": "int"
+   }
+  }
+ },
+ "zoneLabel": {
+  "en": "Label",
+  "th": "ชื่อสารทดสอบ"
+ },
+ "zoneDiameter": {
+  "en": "Zone diameter",
+  "th": "เส้นผ่านศูนย์กลางโซน"
+ },
+ "zoneMm": {
+  "en": "{mm} mm",
+  "th": "{mm} มม."
+ },
+ "zoneNotMeasured": {
+  "en": "Not measured",
+  "th": "วัดไม่ได้"
+ },
+ "zoneSmaller": {
+  "en": "1 mm smaller",
+  "th": "เล็กลง 1 มม."
+ },
+ "zoneLarger": {
+  "en": "1 mm larger",
+  "th": "ใหญ่ขึ้น 1 มม."
+ },
+ "zoneNoZone": {
+  "en": "No zone",
+  "th": "ไม่มีโซนยับยั้ง"
+ },
+ "zoneNoZoneHelp": {
+  "en": "Reported as the disk size, {mm} mm.",
+  "th": "รายงานเป็นขนาดของแผ่น {mm} มม."
+ },
+ "zoneNoZoneHelpWell": {
+  "en": "Reported as the well size, {mm} mm.",
+  "th": "รายงานเป็นขนาดของหลุม {mm} มม."
+ },
+ "zoneAutoWas": {
+  "en": "The app measured {mm} mm.",
+  "th": "แอปวัดได้ {mm} มม."
+ },
+ "zoneAdded": {
+  "en": "Added by hand.",
+  "th": "เพิ่มเอง"
+ },
+ "zoneDeletePlate": {
+  "en": "Delete zone plate?",
+  "th": "ลบเพลตวัดโซนยับยั้ง?"
+ },
+ "zoneDeletePlateBody": {
+  "en": "The photo and its zones are deleted.",
+  "th": "ภาพและโซนทั้งหมดจะถูกลบ"
+ },
+ "zoneDetails": {
+  "en": "Details",
+  "th": "รายละเอียด"
+ },
+ "zoneFlagNoZone": {
+  "en": "No clear zone found.",
+  "th": "ไม่พบโซนยับยั้งที่ชัดเจน"
+ },
+ "zoneFlagOverlap": {
+  "en": "Overlaps a neighbouring zone.",
+  "th": "ซ้อนกับโซนข้างเคียง"
+ },
+ "zoneFlagHitsRim": {
+  "en": "Reaches the plate edge.",
+  "th": "ถึงขอบเพลต"
+ },
+ "zoneFlagHazy": {
+  "en": "Hazy edge: check where growth starts.",
+  "th": "ขอบโซนไม่คม: ตรวจว่าเชื้อเริ่มขึ้นตรงไหน"
+ },
+ "zoneFlagColonies": {
+  "en": "Colonies inside the zone.",
+  "th": "มีโคโลนีในโซน"
+ },
+ "zoneFlagLowConfidence": {
+  "en": "The edge is unclear.",
+  "th": "ขอบโซนไม่ชัด"
+ },
+ "zoneFlagUnmeasured": {
+  "en": "Could not be measured: set the size by hand.",
+  "th": "วัดไม่ได้: ตั้งขนาดเอง"
+ },
+ "zoneScaleMismatch": {
+  "en": "The disks and the plate disagree on size: check the plate type and the plate circle.",
+  "th": "ขนาดของแผ่นกับเพลตไม่สอดคล้องกัน: ตรวจชนิดจานและวงขอบเพลต"
+ },
+ "zoneScaleUnchecked": {
+  "en": "Sizes are from the plate edge only: no disk could be measured.",
+  "th": "ขนาดคำนวณจากขอบเพลตอย่างเดียว เพราะวัดแผ่นไม่ได้"
+ }
+}

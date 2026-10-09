@@ -156,6 +156,22 @@ void main() {
       );
     });
 
+    test('a disk just left of 12 o’clock still comes first', () {
+      final out = assignLabels(
+        [
+          _mark(800, 500, 10), // 3 o'clock
+          _mark(480, 150, 10), // 12, a little to the left
+          _mark(200, 500, 10), // 9 o'clock
+        ],
+        _plate,
+        const ['a', 'b', 'c'],
+      );
+      expect(
+        [for (final m in out) (m.x, m.label)],
+        [(480.0, 'a'), (800.0, 'b'), (200.0, 'c')],
+      );
+    });
+
     test('more disks than labels keep their own', () {
       final out = assignLabels(
         [_mark(500, 150, 10, label: 'x'), _mark(800, 500, 10, label: 'y')],

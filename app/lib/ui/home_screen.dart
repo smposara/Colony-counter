@@ -21,11 +21,13 @@ import 'format.dart';
 import 'insets.dart';
 import 'multi_plate_screen.dart';
 import 'photo_flow.dart';
+import 'photo_thumbnail.dart';
 import 'review_screen.dart';
 import 'samples_screen.dart';
+import 'zones_tab.dart';
 
-/// The app's three areas: individual plates, samples (series and replicates),
-/// and comparisons between conditions.
+/// The app's four areas: individual plates, samples (series and replicates),
+/// comparisons between conditions, and inhibition-zone plates.
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key, required this.store});
 
@@ -45,11 +47,14 @@ class _HomeScreenState extends State<HomeScreen> {
     final body = switch (_tab) {
       0 => _PlatesTab(store: store),
       1 => SamplesTab(store: store),
-      _ => CompareTab(store: store),
+      2 => CompareTab(store: store),
+      _ => ZonesTab(store: store),
     };
     return Scaffold(
       appBar: AppBar(
-        title: Text([tr.appTitle, tr.homeSamples, tr.homeCompare][_tab]),
+        title: Text(
+          [tr.appTitle, tr.homeSamples, tr.homeCompare, tr.homeZones][_tab],
+        ),
         actions: [
           if (_tab == 0 && !store.defaultFormat.isFilm)
             IconButton(
@@ -89,6 +94,11 @@ class _HomeScreenState extends State<HomeScreen> {
           icon: const Icon(Icons.add),
           label: Text(tr.homeNewSample),
         ),
+        3 => FloatingActionButton.extended(
+          onPressed: () => measureNewZonePlate(context, store),
+          icon: const Icon(Icons.adjust),
+          label: Text(tr.zonesMeasure),
+        ),
         _ => null,
       },
       bottomNavigationBar: NavigationBar(
@@ -106,6 +116,10 @@ class _HomeScreenState extends State<HomeScreen> {
           NavigationDestination(
             icon: const Icon(Icons.show_chart),
             label: tr.homeCompare,
+          ),
+          NavigationDestination(
+            icon: const Icon(Icons.adjust),
+            label: tr.homeZones,
           ),
         ],
       ),
@@ -257,7 +271,10 @@ class _DataMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final empty = store.records.isEmpty && store.samplePlans.isEmpty;
+    final empty =
+        store.records.isEmpty &&
+        store.samplePlans.isEmpty &&
+        store.zoneRecords.isEmpty;
     return PopupMenuButton<String>(
       onSelected: (v) => switch (v) {
         'csv' => _exportCsv(),
@@ -502,7 +519,7 @@ class RecordTile extends StatelessWidget {
       onDismissed: (_) => store.delete(r),
       child: ListTile(
         leading: ClipOval(
-          child: _Thumbnail(store: store, record: r),
+          child: PhotoThumbnail(store: store, path: r.imagePath),
         ),
         title: Text(plateLabel(r)),
         subtitle: Text(
@@ -560,47 +577,4 @@ String _filmValueText(PlateRecord r) {
   return est == null
       ? formatCount(t.counts[k]!.toDouble())
       : '≈${formatCount(est)}';
-}
-
-class _Thumbnail extends StatefulWidget {
-  const _Thumbnail({required this.store, required this.record});
-
-  final PlateStore store;
-  final PlateRecord record;
-
-  @override
-  State<_Thumbnail> createState() => _ThumbnailState();
-}
-
-class _ThumbnailState extends State<_Thumbnail> {
-  late Future<Uint8List?> _photo = widget.store.readPhoto(widget.record);
-
-  @override
-  void didUpdateWidget(_Thumbnail old) {
-    super.didUpdateWidget(old);
-    if (old.record.imagePath != widget.record.imagePath) {
-      _photo = widget.store.readPhoto(widget.record);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    const empty = SizedBox(width: 48, height: 48);
-    return FutureBuilder<Uint8List?>(
-      future: _photo,
-      builder: (context, snap) {
-        final bytes = snap.data;
-        if (bytes == null) return empty;
-        return Image.memory(
-          bytes,
-          width: 48,
-          height: 48,
-          fit: BoxFit.cover,
-          cacheWidth: 144,
-          gaplessPlayback: true,
-          errorBuilder: (_, _, _) => empty,
-        );
-      },
-    );
-  }
 }

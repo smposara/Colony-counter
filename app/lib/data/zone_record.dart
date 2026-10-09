@@ -364,6 +364,9 @@ double clockAngle(Plate plate, double x, double y) {
 /// [labels] (marks beyond the list keep their own label). A disk at the
 /// centre (within a fifth of the radius) comes last, as panels usually put
 /// the control there.
+///
+/// The order starts half the spacing between ring disks before 12 o'clock,
+/// so a disk placed at 12 but a little to the left still comes first.
 List<ZoneMark> assignLabels(
   List<ZoneMark> marks,
   Plate plate,
@@ -372,11 +375,15 @@ List<ZoneMark> assignLabels(
   bool central(ZoneMark m) =>
       math.sqrt(math.pow(m.x - plate.cx, 2) + math.pow(m.y - plate.cy, 2)) <
       plate.radius * 0.2;
+  final ring = marks.where((m) => !central(m)).length;
+  final lead = ring > 0 ? math.pi / ring : 0.0;
+  double angle(ZoneMark m) =>
+      (clockAngle(plate, m.x, m.y) + lead) % (2 * math.pi);
   final ordered = List.of(marks)
     ..sort((a, b) {
       final ca = central(a), cb = central(b);
       if (ca != cb) return ca ? 1 : -1;
-      return clockAngle(plate, a.x, a.y).compareTo(clockAngle(plate, b.x, b.y));
+      return angle(a).compareTo(angle(b));
     });
   return [
     for (var i = 0; i < ordered.length; i++)
@@ -442,4 +449,71 @@ List<ZoneSummary> summariseZones(List<ZoneRecord> records) {
       return 0;
     });
   return [for (final k in keys) ZoneSummary(k.$1, k.$2, k.$3, groups[k]!)];
+}
+
+/// The choices made before photographing a zone plate; the last ones are
+/// remembered for the next plate.
+class ZoneSetup {
+  const ZoneSetup({
+    this.assay = ZoneAssay.disk,
+    this.diskMm = 6.0,
+    this.format = PlateFormat.dish90,
+    this.experiment = '',
+    this.organism = '',
+    this.replicate = 1,
+    this.panel = '',
+  });
+
+  final ZoneAssay assay;
+
+  /// Disk diameter, or the well diameter.
+  final double diskMm;
+  final PlateFormat format;
+  final String experiment;
+  final String organism;
+  final int replicate;
+
+  /// Name of the label panel, or empty for none.
+  final String panel;
+
+  ZoneSetup copyWith({
+    ZoneAssay? assay,
+    double? diskMm,
+    PlateFormat? format,
+    String? experiment,
+    String? organism,
+    int? replicate,
+    String? panel,
+  }) => ZoneSetup(
+    assay: assay ?? this.assay,
+    diskMm: diskMm ?? this.diskMm,
+    format: format ?? this.format,
+    experiment: experiment ?? this.experiment,
+    organism: organism ?? this.organism,
+    replicate: replicate ?? this.replicate,
+    panel: panel ?? this.panel,
+  );
+
+  Map<String, dynamic> toJson() => {
+    'assay': assay.name,
+    'disk_mm': diskMm,
+    'format': format.name,
+    'experiment': experiment,
+    'organism': organism,
+    'replicate': replicate,
+    'panel': panel,
+  };
+
+  factory ZoneSetup.fromJson(Map<String, dynamic> j) => ZoneSetup(
+    assay: ZoneAssay.values.firstWhere(
+      (a) => a.name == j['assay'],
+      orElse: () => ZoneAssay.disk,
+    ),
+    diskMm: (j['disk_mm'] as num?)?.toDouble() ?? 6.0,
+    format: PlateFormat.byName(j['format'] as String?),
+    experiment: j['experiment'] as String? ?? '',
+    organism: j['organism'] as String? ?? '',
+    replicate: (j['replicate'] as num?)?.toInt() ?? 1,
+    panel: j['panel'] as String? ?? '',
+  );
 }

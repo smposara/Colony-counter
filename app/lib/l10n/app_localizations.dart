@@ -2995,6 +2995,384 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'no estimate'**
   String get noEstimate;
+
+  /// No description provided for @homeZones.
+  ///
+  /// In en, this message translates to:
+  /// **'Zones'**
+  String get homeZones;
+
+  /// No description provided for @zonesMeasure.
+  ///
+  /// In en, this message translates to:
+  /// **'Measure zones'**
+  String get zonesMeasure;
+
+  /// No description provided for @zonesNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No zone plates yet'**
+  String get zonesNone;
+
+  /// No description provided for @zonesEmptyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Measure inhibition zones around paper disks or agar wells: tap Measure zones and photograph the plate with its lid off.'**
+  String get zonesEmptyHint;
+
+  /// No description provided for @zoneSetupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Zone plate'**
+  String get zoneSetupTitle;
+
+  /// No description provided for @zoneAssay.
+  ///
+  /// In en, this message translates to:
+  /// **'Method'**
+  String get zoneAssay;
+
+  /// No description provided for @zoneAssayDisk.
+  ///
+  /// In en, this message translates to:
+  /// **'Paper disks'**
+  String get zoneAssayDisk;
+
+  /// No description provided for @zoneAssayWell.
+  ///
+  /// In en, this message translates to:
+  /// **'Agar wells'**
+  String get zoneAssayWell;
+
+  /// No description provided for @zoneDiskSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Disk diameter (mm)'**
+  String get zoneDiskSize;
+
+  /// No description provided for @zoneWellSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Well diameter (mm)'**
+  String get zoneWellSize;
+
+  /// No description provided for @zoneSizeInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter 3 to 15 mm'**
+  String get zoneSizeInvalid;
+
+  /// No description provided for @zoneOrganism.
+  ///
+  /// In en, this message translates to:
+  /// **'Test organism'**
+  String get zoneOrganism;
+
+  /// No description provided for @zoneOrganismHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. S. aureus ATCC 25923'**
+  String get zoneOrganismHint;
+
+  /// No description provided for @zoneExperiment.
+  ///
+  /// In en, this message translates to:
+  /// **'Experiment'**
+  String get zoneExperiment;
+
+  /// No description provided for @zoneReplicate.
+  ///
+  /// In en, this message translates to:
+  /// **'Replicate'**
+  String get zoneReplicate;
+
+  /// No description provided for @zonePanel.
+  ///
+  /// In en, this message translates to:
+  /// **'Test item labels'**
+  String get zonePanel;
+
+  /// No description provided for @zonePanelNone.
+  ///
+  /// In en, this message translates to:
+  /// **'None: label the disks later'**
+  String get zonePanelNone;
+
+  /// No description provided for @zonePanelNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New label list'**
+  String get zonePanelNew;
+
+  /// No description provided for @zonePanelHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Labels go clockwise from 12 o\'clock; a disk in the centre comes last.'**
+  String get zonePanelHelp;
+
+  /// No description provided for @zonePanelName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name of the list'**
+  String get zonePanelName;
+
+  /// No description provided for @zonePanelLabels.
+  ///
+  /// In en, this message translates to:
+  /// **'Labels, one per line'**
+  String get zonePanelLabels;
+
+  /// No description provided for @zoneTakePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Take photo'**
+  String get zoneTakePhoto;
+
+  /// No description provided for @zoneFromGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'From gallery'**
+  String get zoneFromGallery;
+
+  /// No description provided for @zoneCaptureTip.
+  ///
+  /// In en, this message translates to:
+  /// **'Lid off, plate on a dark background, camera straight overhead.'**
+  String get zoneCaptureTip;
+
+  /// No description provided for @zoneMeasuring.
+  ///
+  /// In en, this message translates to:
+  /// **'Measuring zones…'**
+  String get zoneMeasuring;
+
+  /// No description provided for @zoneNZones.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{1 zone} other{{n} zones}}'**
+  String zoneNZones(int n);
+
+  /// No description provided for @zoneNToCheck.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} to check'**
+  String zoneNToCheck(int n);
+
+  /// No description provided for @zoneAllChecked.
+  ///
+  /// In en, this message translates to:
+  /// **'All checked'**
+  String get zoneAllChecked;
+
+  /// No description provided for @zoneRep.
+  ///
+  /// In en, this message translates to:
+  /// **'Rep {n}'**
+  String zoneRep(int n);
+
+  /// No description provided for @zoneHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a disk to check it. Drag a zone\'s edge to resize it. Long-press to add a disk the app missed.'**
+  String get zoneHint;
+
+  /// No description provided for @zoneHintWell.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a well to check it. Drag a zone\'s edge to resize it. Long-press to add a well the app missed.'**
+  String get zoneHintWell;
+
+  /// No description provided for @zoneHintPlate.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag to move the circle onto the plate edge, use the slider to resize it, then measure again.'**
+  String get zoneHintPlate;
+
+  /// No description provided for @zoneFixPlate.
+  ///
+  /// In en, this message translates to:
+  /// **'Fix plate circle'**
+  String get zoneFixPlate;
+
+  /// No description provided for @zoneMeasureAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Measure again'**
+  String get zoneMeasureAgain;
+
+  /// No description provided for @zoneRemeasureTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Measure again?'**
+  String get zoneRemeasureTitle;
+
+  /// No description provided for @zoneRemeasureBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your changes to the zones are replaced by a new measurement.'**
+  String get zoneRemeasureBody;
+
+  /// No description provided for @zoneNoDisks.
+  ///
+  /// In en, this message translates to:
+  /// **'No disks found. Long-press each disk to add it, or fix the plate circle.'**
+  String get zoneNoDisks;
+
+  /// No description provided for @zoneNoWells.
+  ///
+  /// In en, this message translates to:
+  /// **'No wells found. Long-press each well to add it, or fix the plate circle.'**
+  String get zoneNoWells;
+
+  /// No description provided for @zoneDiskN.
+  ///
+  /// In en, this message translates to:
+  /// **'Disk {n}'**
+  String zoneDiskN(int n);
+
+  /// No description provided for @zoneWellN.
+  ///
+  /// In en, this message translates to:
+  /// **'Well {n}'**
+  String zoneWellN(int n);
+
+  /// No description provided for @zoneLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Label'**
+  String get zoneLabel;
+
+  /// No description provided for @zoneDiameter.
+  ///
+  /// In en, this message translates to:
+  /// **'Zone diameter'**
+  String get zoneDiameter;
+
+  /// No description provided for @zoneMm.
+  ///
+  /// In en, this message translates to:
+  /// **'{mm} mm'**
+  String zoneMm(Object mm);
+
+  /// No description provided for @zoneNotMeasured.
+  ///
+  /// In en, this message translates to:
+  /// **'Not measured'**
+  String get zoneNotMeasured;
+
+  /// No description provided for @zoneSmaller.
+  ///
+  /// In en, this message translates to:
+  /// **'1 mm smaller'**
+  String get zoneSmaller;
+
+  /// No description provided for @zoneLarger.
+  ///
+  /// In en, this message translates to:
+  /// **'1 mm larger'**
+  String get zoneLarger;
+
+  /// No description provided for @zoneNoZone.
+  ///
+  /// In en, this message translates to:
+  /// **'No zone'**
+  String get zoneNoZone;
+
+  /// No description provided for @zoneNoZoneHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Reported as the disk size, {mm} mm.'**
+  String zoneNoZoneHelp(Object mm);
+
+  /// No description provided for @zoneNoZoneHelpWell.
+  ///
+  /// In en, this message translates to:
+  /// **'Reported as the well size, {mm} mm.'**
+  String zoneNoZoneHelpWell(Object mm);
+
+  /// No description provided for @zoneAutoWas.
+  ///
+  /// In en, this message translates to:
+  /// **'The app measured {mm} mm.'**
+  String zoneAutoWas(Object mm);
+
+  /// No description provided for @zoneAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Added by hand.'**
+  String get zoneAdded;
+
+  /// No description provided for @zoneDeletePlate.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete zone plate?'**
+  String get zoneDeletePlate;
+
+  /// No description provided for @zoneDeletePlateBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The photo and its zones are deleted.'**
+  String get zoneDeletePlateBody;
+
+  /// No description provided for @zoneDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Details'**
+  String get zoneDetails;
+
+  /// No description provided for @zoneFlagNoZone.
+  ///
+  /// In en, this message translates to:
+  /// **'No clear zone found.'**
+  String get zoneFlagNoZone;
+
+  /// No description provided for @zoneFlagOverlap.
+  ///
+  /// In en, this message translates to:
+  /// **'Overlaps a neighbouring zone.'**
+  String get zoneFlagOverlap;
+
+  /// No description provided for @zoneFlagHitsRim.
+  ///
+  /// In en, this message translates to:
+  /// **'Reaches the plate edge.'**
+  String get zoneFlagHitsRim;
+
+  /// No description provided for @zoneFlagHazy.
+  ///
+  /// In en, this message translates to:
+  /// **'Hazy edge: check where growth starts.'**
+  String get zoneFlagHazy;
+
+  /// No description provided for @zoneFlagColonies.
+  ///
+  /// In en, this message translates to:
+  /// **'Colonies inside the zone.'**
+  String get zoneFlagColonies;
+
+  /// No description provided for @zoneFlagLowConfidence.
+  ///
+  /// In en, this message translates to:
+  /// **'The edge is unclear.'**
+  String get zoneFlagLowConfidence;
+
+  /// No description provided for @zoneFlagUnmeasured.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not be measured: set the size by hand.'**
+  String get zoneFlagUnmeasured;
+
+  /// No description provided for @zoneScaleMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'The disks and the plate disagree on size: check the plate type and the plate circle.'**
+  String get zoneScaleMismatch;
+
+  /// No description provided for @zoneScaleUnchecked.
+  ///
+  /// In en, this message translates to:
+  /// **'Sizes are from the plate edge only: no disk could be measured.'**
+  String get zoneScaleUnchecked;
 }
 
 class _AppLocalizationsDelegate

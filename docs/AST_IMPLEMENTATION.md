@@ -179,6 +179,45 @@ tuned on real plates without changing this layer).
   `chart_colours.dart`).
 - **Disclaimer:** shown once before the first zone plate, plus a line on the About screen.
 
+**Progress (October 2026):** M4 is done; the experiment view and the disclaimer are left for
+M5 and M6.
+- **Home:** the Zones tab (`zones_tab.dart`) lists zone plates with a check mark once every
+  unsure zone has been opened, and swipe to delete. `PhotoThumbnail` is shared with the
+  Plates tab.
+- **Setup:** `zone_setup_sheet.dart` offers 90, 100 and 150 mm dishes and 100 and 120 mm
+  square plates, and a disk or well size of 3–15 mm. It suggests organisms and experiments
+  already used, and the replicate after the highest one saved for them. A label list can be
+  made in place. The last setup is kept in the settings (`zone_setup`).
+- **Capture:** `takePlatePhoto` in `photo_flow.dart` is now shared by colony and zone plates.
+  The camera guide shows the zone tip (lid off, dark background, straight overhead).
+- **Review:** `zone_review_screen.dart` draws zones amber until they are checked, green when
+  checked or confident, and red when unmeasured, each with its whole-mm size and label. A
+  row of chips under the photo opens the same sheet as tapping a disk.
+  - A drag that starts on a zone edge resizes it. A custom pan recogniser joins the gesture
+    arena only for those drags, so every other drag still pans the photo. It uses
+    `DragStartBehavior.down`, because the default start point (after the drag slop) is
+    already off the edge.
+  - Long-press inside the plate adds a disk and measures it, with the existing disks held
+    fixed so the scale stays the same.
+  - The plate circle can be fixed, then the plate measured again (after a warning if zones
+    were edited). Undo, a details sheet and a guard against leaving unsaved changes are
+    included.
+- **Labels:** clockwise order now starts half a disk spacing before 12 o'clock, so a disk
+  placed at 12 but slightly to the left still comes first.
+- **Tests:** `zones_ui_test.dart`, 13 widget tests:
+  - measure, label, edit and save;
+  - edge drag, pan and undo;
+  - long-press to add a disk, and none outside the plate;
+  - checking unsure zones;
+  - wells and "no zone";
+  - reopening a saved plate and discarding changes;
+  - fixing the plate circle;
+  - setup sheet memory, a label list and size checks;
+  - the next replicate;
+  - the Zones tab, filled and empty;
+  - Thai at 360 × 640.
+
+
 ## 5. Export
 
 - **`zones.csv`** (one row per zone): plate_id, date, experiment, organism, assay,

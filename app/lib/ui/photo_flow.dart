@@ -25,6 +25,44 @@ class PlatePreset {
   final Slot slot;
 }
 
+/// A plate photo as encoded bytes, and whether it came through the in-app
+/// camera with its guide.
+typedef PlatePhoto = ({Uint8List bytes, bool guided});
+
+/// Takes (or imports) a plate photo; null when the user backs out.
+///
+/// [fromGallery] picks an existing photo. Otherwise phones use the in-app
+/// camera with its guide (shaped for [format], with [tip] over the preview);
+/// browsers open the phone's own camera.
+Future<PlatePhoto?> takePlatePhoto(
+  BuildContext context, {
+  bool fromGallery = false,
+  PlateFormat format = PlateFormat.dish90,
+  String? tip,
+}) async {
+  if (fromGallery || kIsWeb) {
+    final picked = await ImagePicker().pickImage(
+      source: fromGallery ? ImageSource.gallery : ImageSource.camera,
+      maxWidth: kIsWeb ? _webMaxSide : null,
+      maxHeight: kIsWeb ? _webMaxSide : null,
+      imageQuality: kIsWeb ? 92 : null,
+    );
+    if (picked == null) return null;
+    return (bytes: await picked.readAsBytes(), guided: false);
+  }
+  final path = await Navigator.of(context).push<String>(
+    MaterialPageRoute(
+      builder: (_) => CaptureScreen(
+        square: format.shape == PlateShape.square,
+        film: format.isFilm,
+        tip: tip,
+      ),
+    ),
+  );
+  if (path == null) return null;
+  return (bytes: await XFile(path).readAsBytes(), guided: true);
+}
+
 /// Takes (or imports) a plate photo and opens the review screen for it.
 ///
 /// [fromGallery] picks an existing photo. Otherwise phones use the in-app
@@ -36,43 +74,18 @@ Future<void> countNewPlate(
   PlatePreset? preset,
   PlateRecord? laterPhotoOf,
 }) async {
-  Uint8List? bytes;
-  var guided = false;
-  if (fromGallery || kIsWeb) {
-    final picked = await ImagePicker().pickImage(
-      source: fromGallery ? ImageSource.gallery : ImageSource.camera,
-      maxWidth: kIsWeb ? _webMaxSide : null,
-      maxHeight: kIsWeb ? _webMaxSide : null,
-      imageQuality: kIsWeb ? 92 : null,
-    );
-    if (picked == null) return;
-    bytes = await picked.readAsBytes();
-  } else {
-    final path = await Navigator.of(context).push<String>(
-      MaterialPageRoute(
-        builder: (_) {
-          final format =
-              laterPhotoOf?.format ??
-              preset?.info.format ??
-              store.defaultFormat;
-          return CaptureScreen(
-            square: format.shape == PlateShape.square,
-            film: format.isFilm,
-          );
-        },
-      ),
-    );
-    if (path == null) return;
-    bytes = await XFile(path).readAsBytes();
-    guided = true;
-  }
-  if (!context.mounted) return;
+  final photo = await takePlatePhoto(
+    context,
+    fromGallery: fromGallery,
+    format: laterPhotoOf?.format ?? preset?.info.format ?? store.defaultFormat,
+  );
+  if (photo == null || !context.mounted) return;
   await Navigator.of(context).push(
     MaterialPageRoute(
       builder: (_) => ReviewScreen(
         store: store,
-        photo: bytes,
-        guided: guided,
+        photo: photo.bytes,
+        guided: photo.guided,
         preset: preset,
         laterPhotoOf: laterPhotoOf,
       ),

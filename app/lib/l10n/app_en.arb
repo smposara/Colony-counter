@@ -1163,5 +1163,123 @@
   "noteTntc": "too numerous to count",
   "noteNoPlateInRange": "no plate in countable range",
   "estimatePrefix": "est. ",
-  "noEstimate": "no estimate"
+  "noEstimate": "no estimate",
+  "homeZones": "Zones",
+  "zonesMeasure": "Measure zones",
+  "zonesNone": "No zone plates yet",
+  "zonesEmptyHint": "Measure inhibition zones around paper disks or agar wells: tap Measure zones and photograph the plate with its lid off.",
+  "zoneSetupTitle": "Zone plate",
+  "zoneAssay": "Method",
+  "zoneAssayDisk": "Paper disks",
+  "zoneAssayWell": "Agar wells",
+  "zoneDiskSize": "Disk diameter (mm)",
+  "zoneWellSize": "Well diameter (mm)",
+  "zoneSizeInvalid": "Enter 3 to 15 mm",
+  "zoneOrganism": "Test organism",
+  "zoneOrganismHint": "e.g. S. aureus ATCC 25923",
+  "zoneExperiment": "Experiment",
+  "zoneReplicate": "Replicate",
+  "zonePanel": "Test item labels",
+  "zonePanelNone": "None: label the disks later",
+  "zonePanelNew": "New label list",
+  "zonePanelHelp": "Labels go clockwise from 12 o'clock; a disk in the centre comes last.",
+  "zonePanelName": "Name of the list",
+  "zonePanelLabels": "Labels, one per line",
+  "zoneTakePhoto": "Take photo",
+  "zoneFromGallery": "From gallery",
+  "zoneCaptureTip": "Lid off, plate on a dark background, camera straight overhead.",
+  "zoneMeasuring": "Measuring zones…",
+  "zoneNZones": "{n, plural, =1{1 zone} other{{n} zones}}",
+  "@zoneNZones": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "zoneNToCheck": "{n} to check",
+  "@zoneNToCheck": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "zoneAllChecked": "All checked",
+  "zoneRep": "Rep {n}",
+  "@zoneRep": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "zoneHint": "Tap a disk to check it. Drag a zone's edge to resize it. Long-press to add a disk the app missed.",
+  "zoneHintWell": "Tap a well to check it. Drag a zone's edge to resize it. Long-press to add a well the app missed.",
+  "zoneHintPlate": "Drag to move the circle onto the plate edge, use the slider to resize it, then measure again.",
+  "zoneFixPlate": "Fix plate circle",
+  "zoneMeasureAgain": "Measure again",
+  "zoneRemeasureTitle": "Measure again?",
+  "zoneRemeasureBody": "Your changes to the zones are replaced by a new measurement.",
+  "zoneNoDisks": "No disks found. Long-press each disk to add it, or fix the plate circle.",
+  "zoneNoWells": "No wells found. Long-press each well to add it, or fix the plate circle.",
+  "zoneDiskN": "Disk {n}",
+  "@zoneDiskN": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "zoneWellN": "Well {n}",
+  "@zoneWellN": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "zoneLabel": "Label",
+  "zoneDiameter": "Zone diameter",
+  "zoneMm": "{mm} mm",
+  "@zoneMm": {
+    "placeholders": {
+      "mm": {}
+    }
+  },
+  "zoneNotMeasured": "Not measured",
+  "zoneSmaller": "1 mm smaller",
+  "zoneLarger": "1 mm larger",
+  "zoneNoZone": "No zone",
+  "zoneNoZoneHelp": "Reported as the disk size, {mm} mm.",
+  "@zoneNoZoneHelp": {
+    "placeholders": {
+      "mm": {}
+    }
+  },
+  "zoneNoZoneHelpWell": "Reported as the well size, {mm} mm.",
+  "@zoneNoZoneHelpWell": {
+    "placeholders": {
+      "mm": {}
+    }
+  },
+  "zoneAutoWas": "The app measured {mm} mm.",
+  "@zoneAutoWas": {
+    "placeholders": {
+      "mm": {}
+    }
+  },
+  "zoneAdded": "Added by hand.",
+  "zoneDeletePlate": "Delete zone plate?",
+  "zoneDeletePlateBody": "The photo and its zones are deleted.",
+  "zoneDetails": "Details",
+  "zoneFlagNoZone": "No clear zone found.",
+  "zoneFlagOverlap": "Overlaps a neighbouring zone.",
+  "zoneFlagHitsRim": "Reaches the plate edge.",
+  "zoneFlagHazy": "Hazy edge: check where growth starts.",
+  "zoneFlagColonies": "Colonies inside the zone.",
+  "zoneFlagLowConfidence": "The edge is unclear.",
+  "zoneFlagUnmeasured": "Could not be measured: set the size by hand.",
+  "zoneScaleMismatch": "The disks and the plate disagree on size: check the plate type and the plate circle.",
+  "zoneScaleUnchecked": "Sizes are from the plate edge only: no disk could be measured."
 }
