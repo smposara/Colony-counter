@@ -31,7 +31,7 @@ the zone plates use.
 - A guided wizard: get the target, check the print, set up, take 3 photos, see the result.
 - A saved calibration profile for each camera and setup.
 - A cross-check of every zone plate against the profile.
-- Optional use of the profile's scale for well plates on a fixed stand.
+- A check of every well plate's scale against the profile (warn only).
 - An optional calliper check on real plates (Bland–Altman summary). The same data serves
   as the real-photo gate data the zone feature still needs.
 
@@ -51,7 +51,7 @@ calibration_target.dart (geometry, one source of truth)
    └─► zone_calibration.dart: photo ─► find target ─► measure its zones with zones.dart
                                        ─► compare with true sizes ─► CalibrationResult
 CalibrationWizard (ui) ─► CalibrationProfile (store) ─► used by every zone plate:
-   flag, scale cross-check, stand scale for wells (and optionally radial correction)
+   flags, scale cross-check for disks and wells, re-check reminders (warn only)
 ```
 
 ## 1. The calibration target
@@ -138,7 +138,7 @@ A full-screen stepper. Each step is short, with one picture and one action.
 
 1. **Why and what you need:**
    - About 5 minutes, a printer (or a calliper and a round object), a ruler or calliper,
-     scissors, and an unused agar plate (or an empty dish).
+     scissors, and an unused agar plate.
    - It uses the same stand, distance and light as for real plates.
 2. **Get the target:**
    - "Share PDF" (A4 or Letter) with the warning "print at 100 % (actual size), not
@@ -151,9 +151,8 @@ A full-screen stepper. Each step is short, with one picture and one action.
    - Otherwise save `printFactor = measured / 60`.
 4. **Set up:**
    - Cut out the disc and lay it flat on the agar of an unused plate, lid off. Putting it
-     on the agar keeps it at the height where real zones are.
-   - If you only have an empty dish: put it in the base and enter how many mL of agar you
-     usually pour. The height correction is then estimated (stand only; see Risks).
+     on the agar keeps it at the height where real zones are. An empty dish is not offered:
+     the paper would sit lower than the agar surface.
    - Choose the setup: **on the Colony Counter stand** or **hand-held**.
 5. **Take 3 photos:**
    - The in-app camera (`CaptureScreen`) with the zone tip and all checks green, plus a
@@ -167,7 +166,9 @@ A full-screen stepper. Each step is short, with one picture and one action.
 7. **Optional:** "Check against your calliper on real plates" (section 6), now or later.
 
 **Entry points:**
-- After the disclaimer, before the first zone plate: "Calibrate now (5 min)" or "Later".
+- After the disclaimer, before the first zone plate: a strong suggestion, "Calibrate now
+  (5 min)" or "Later". It isn't required: users without a printer can still measure, and
+  their plates are flagged *Not calibrated*.
 - Settings → *Zone camera calibration*: run it again, see the history, delete a profile.
 - On the Zones tab, a chip: *Calibrated: Good* / *Not calibrated*.
 
@@ -199,17 +200,23 @@ A full-screen stepper. Each step is short, with one picture and one action.
 
 ## 5. Using the profile on zone plates
 
-v1 checks and warns. Corrections stay off until the calliper data supports them (see
-Decisions).
+v1 only checks and warns. It never changes a measured zone or the scale it was
+measured at. Corrections (the stand scale for wells, the radial `k1`) stay off until the
+calliper data supports them (see Decisions).
 
 - **Disk plates:** the disk-based scale is still used. If the profile is from the same
   setup, compare the two scales: more than 2 % apart gives the
   `scale_disagrees_calibration` warning, with the advice "check the disk size and the plate
   type".
-- **Well plates on the stand:** with no disks, use `mmPerPxAtAgar` instead of the rim
-  scale when the setup matches (rim radius within 3 %). This removes the rim height
-  error (up to about 8 %). Otherwise keep the rim scale and add a warning. This is the one place v1 corrects
-  something, because the current well scale is the weakest part.
+- **Well plates:** with no disks, the rim scale is still used. If the profile is from the
+  same setup (rim radius within 3 %), compare the rim scale with the profile's
+  `mmPerPxAtAgar`. More than 2 % apart gives the `scale_disagrees_calibration` warning, with
+  the size of the likely error: "Zones may read about N % small" (N from the two scales). On the stand this is the
+  expected case (the rim sits above the agar), so the warning is the main help for wells
+  in v1.
+- **Re-check reminders:** a profile older than 90 days, or a plate whose camera, resolution
+  or stand setup no longer matches the profile, shows "Calibrate again". It is shown on the
+  plate and on the Zones tab chip, and offered again before the next zone plate.
 - **Review screen:** a chip shows *Calibrated: Good (±0.5 mm)*, *Usable (±1 mm)* or
   *Not calibrated*, and the export notes the calibration.
 - **CSV:** `zones.csv` gains `calibration_id`, `calibration_verdict` and
@@ -267,7 +274,7 @@ the user: the app against their own calliper.
 | C1 | Target geometry, PDF sheet, Python renderer and synthetic photos | 2 | `calibration_target.dart/json`, `calibration_sheet.dart`, `calibration.py` |
 | C2 | Analysis in Python and Dart, with fixtures | 3 | `zone_calibration.dart`, matches Python |
 | C3 | Wizard, profile storage, backup, Settings entry | 3 | Working wizard on a phone |
-| C4 | Profiles on zone plates: flags, scale cross-check, stand scale for wells, chips, CSV columns | 2 | Zone plates show their calibration |
+| C4 | Profiles on zone plates: flags, scale cross-check (disks and wells), re-check reminders, chips, CSV columns | 2 | Zone plates show their calibration |
 | C5 | Calliper check: field, Bland–Altman screen, test-data export | 2 | Gate data from users' own plates |
 | C6 | Strings (en/th), docs, store text, tests, release | 2 | Beta build |
 
@@ -282,26 +289,23 @@ reported errors with calliper readings of the printed zones.
 | Risk | Mitigation |
 |---|---|
 | Printed at the wrong size ("fit to page") | Measured 60 mm bar; refused outside 57–63 mm; the print factor corrects the rest |
-| Paper on wet agar curls or soaks | Short exposure (photos take under a minute); heavier paper or a laminated print; an empty dish with the agar-depth estimate as a fallback |
-| Target height ≠ agar height (empty dish) | Height correction `Z / (Z − Δh)`, with Z the stand's 120 mm and Δh = agar volume ÷ dish area; stand only, marked "estimated" |
+| Paper on wet agar curls or soaks | Short exposure (photos take under a minute); heavier paper or a laminated print, laid flat on the agar |
 | Phone switches lens close up | Profile keyed by camera name and resolution; rim-radius check catches a changed field of view; advice to move further away |
 | Printed edges are sharper than real zones, so the result looks better than reality | Section 6 calliper check; results worded as "camera and scale accuracy", not "zone accuracy" |
 | Users skip calibration | Prompt after the disclaimer; *Not calibrated* chip and flag on every plate; CSV column |
 | Calibration read as validation of the method | The wizard and result say what was checked (scale, lens, repeatability) and what wasn't (the lawn edge, the method); the beta label stays until the gate passes |
 | Web camera gives a different resolution or lens each time | Web profiles keyed by image size; a note in the wizard; scale cross-check on every plate |
 
-## Decisions to make
+## Decisions (made October 2026)
 
-1. **Mandatory or optional?** Recommended: strongly suggested after the disclaimer, with
-   "Later" allowed, and plates flagged *Not calibrated*. Forcing it would block users who
-   have no printer.
-2. **Correct or only check?** Recommended for v1: check and warn everywhere, but use the
-   stand scale for wells (up to about 8 % error today). Apply the radial `k1` correction only
-   after the C5 calliper data shows it helps.
-3. **Target on agar or in an empty dish?** Recommended: on an unused agar plate (true
-   height), with the empty dish plus the agar-volume estimate as a fallback on the stand.
-4. **Re-check interval:** recommended a reminder after 90 days, and immediately when the
-   camera name or resolution changes, or when the stand setup no longer matches.
-5. **Collect gate data through the app (C5)?** Recommended yes. It's opt-in, stays on the
-   phone, and the user shares it as a zip. It is the quickest route to the 30–50
-   calliper-measured plates the beta label depends on.
+1. **Mandatory or optional:** **strongly suggested.** Offered after the disclaimer, with
+   "Later" allowed; uncalibrated plates are flagged *Not calibrated*.
+2. **Correct or only check:** **check only.** v1 never changes measurements. It compares
+   each plate's scale with the profile and warns, for disks and for wells. The stand scale
+   for wells and the radial `k1` correction stay off until the C5 calliper data shows they
+   help.
+3. **Where the target goes:** **on the agar of an unused plate.** No empty-dish fallback.
+4. **Re-check:** **every 90 days, and whenever the setup changes:** a different camera
+   name, resolution or stand height (rim radius off by more than 3 %).
+5. **Gate data through the app (C5):** **yes.** It's opt-in, stays on the phone, and the
+   user shares it as a zip.
