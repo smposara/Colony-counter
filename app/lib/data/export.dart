@@ -13,6 +13,7 @@ import 'drop_results.dart';
 import 'plate_record.dart';
 import 'plate_store.dart';
 import 'sample_info.dart';
+import 'zone_record.dart';
 
 String _csv(List<List<Object?>> rows) {
   String esc(Object? v) {
@@ -449,15 +450,21 @@ Future<Uint8List> buildBackup(PlateStore store) async {
     },
     'samples': [for (final s in store.samplePlans) s.toJson()],
     'plates': [for (final r in store.records) r.toJson()],
+    // Inhibition-zone plates and label panels (older versions ignore them).
+    'zone_plates': [for (final r in store.zoneRecords) r.toJson()],
+    'zone_panels': [for (final p in store.zonePanels) p.toJson()],
   };
   final json = utf8.encode(jsonEncode(manifest));
   archive.addFile(ArchiveFile(_manifest, json.length, json));
-  for (final r in store.records) {
-    final bytes = await store.readPhoto(r);
+  for (final name in [
+    for (final r in store.records) r.imagePath,
+    for (final r in store.zoneRecords) r.imagePath,
+  ]) {
+    final bytes = await store.readPhotoPath(name);
     if (bytes == null) continue;
     // JPEGs are already compressed; store them as-is.
     archive.addFile(
-      ArchiveFile.noCompress('photos/${r.imagePath}', bytes.length, bytes),
+      ArchiveFile.noCompress('photos/$name', bytes.length, bytes),
     );
   }
   for (final (name, csv) in [
@@ -506,9 +513,17 @@ Future<RestoreSummary> restoreBackup(PlateStore store, Uint8List zip) async {
     for (final s in m['samples'] as List? ?? const [])
       SampleInfo.fromJson(s as Map<String, dynamic>),
   ];
+  final zonePlates = [
+    for (final z in m['zone_plates'] as List? ?? const [])
+      ZoneRecord.fromJson(z as Map<String, dynamic>),
+  ];
+  final zonePanels = [
+    for (final p in m['zone_panels'] as List? ?? const [])
+      ZonePanel.fromJson(p as Map<String, dynamic>),
+  ];
   // On a device with no plates yet (e.g. a new phone) the backup's settings
   // come back too; otherwise keep the settings already chosen here.
-  final wasEmpty = store.records.isEmpty;
+  final wasEmpty = store.records.isEmpty && store.zoneRecords.isEmpty;
   final (added, skipped, samplesAdded) = await store.importAll(
     plates,
     samples,
@@ -516,6 +531,8 @@ Future<RestoreSummary> restoreBackup(PlateStore store, Uint8List zip) async {
       final f = archive.findFile('photos/$name');
       return f == null ? null : Uint8List.fromList(f.content as List<int>);
     },
+    zonePlates: zonePlates,
+    zonePanels: zonePanels,
   );
   final settings = m['settings'];
   if (wasEmpty && settings is Map<String, dynamic>) {

@@ -6,6 +6,7 @@ import '../core/calculator.dart';
 import '../core/plate.dart';
 import 'plate_record.dart';
 import 'sample_info.dart';
+import 'zone_record.dart';
 import 'storage/storage.dart';
 
 /// Saved plates and settings, on top of a [StorageBackend] (files on phones,
@@ -17,6 +18,8 @@ class PlateStore extends ChangeNotifier {
   final List<PlateRecord> _records = [];
   final Map<String, Uint8List> _photoCache = {};
   final Map<String, SampleInfo> _samples = {};
+  final List<ZoneRecord> _zoneRecords = [];
+  final List<ZonePanel> _zonePanels = [];
   CountingRule rule = CountingRule.fdaBam;
   double defaultVolumeMl = 0.1;
 
@@ -39,6 +42,8 @@ class PlateStore extends ChangeNotifier {
   static const _recordsKey = 'plates';
   static const _settingsKey = 'settings';
   static const _samplesKey = 'samples';
+  static const _zoneRecordsKey = 'zone_plates';
+  static const _zonePanelsKey = 'zone_panels';
   static const _photoCacheSize = 24;
 
   static Future<PlateStore> open() async {
@@ -48,6 +53,12 @@ class PlateStore extends ChangeNotifier {
   }
 
   List<PlateRecord> get records => List.unmodifiable(_records);
+
+  /// Inhibition-zone plates, newest first.
+  List<ZoneRecord> get zoneRecords => List.unmodifiable(_zoneRecords);
+
+  /// Saved label panels for zone plates.
+  List<ZonePanel> get zonePanels => List.unmodifiable(_zonePanels);
 
   Future<void> load() async {
     _records.clear();
@@ -65,6 +76,21 @@ class PlateStore extends ChangeNotifier {
       for (final e in jsonDecode(samplesJson) as List) {
         final info = SampleInfo.fromJson(e as Map<String, dynamic>);
         _samples[info.sampleId] = info;
+      }
+    }
+    _zoneRecords.clear();
+    final zonesJson = await backend.readText(_zoneRecordsKey);
+    if (zonesJson != null) {
+      for (final e in jsonDecode(zonesJson) as List) {
+        _zoneRecords.add(ZoneRecord.fromJson(e as Map<String, dynamic>));
+      }
+      _zoneRecords.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    }
+    _zonePanels.clear();
+    final panelsJson = await backend.readText(_zonePanelsKey);
+    if (panelsJson != null) {
+      for (final e in jsonDecode(panelsJson) as List) {
+        _zonePanels.add(ZonePanel.fromJson(e as Map<String, dynamic>));
       }
     }
     final settingsJson = await backend.readText(_settingsKey);
@@ -93,11 +119,14 @@ class PlateStore extends ChangeNotifier {
     return name;
   }
 
-  Future<Uint8List?> readPhoto(PlateRecord r) async {
-    final cached = _photoCache[r.imagePath];
+  Future<Uint8List?> readPhoto(PlateRecord r) => readPhotoPath(r.imagePath);
+
+  /// A stored photo by name (colony and zone plates share the photo folder).
+  Future<Uint8List?> readPhotoPath(String name) async {
+    final cached = _photoCache[name];
     if (cached != null) return cached;
-    final bytes = await backend.readPhoto(r.imagePath);
-    if (bytes != null) _cachePhoto(r.imagePath, bytes);
+    final bytes = await backend.readPhoto(name);
+    if (bytes != null) _cachePhoto(name, bytes);
     return bytes;
   }
 
@@ -122,6 +151,46 @@ class PlateStore extends ChangeNotifier {
     await backend.deletePhoto(record.imagePath);
     await _save();
   }
+
+  Future<void> upsertZone(ZoneRecord record) async {
+    _zoneRecords.removeWhere((r) => r.id == record.id);
+    _zoneRecords.add(record);
+    _zoneRecords.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    await _saveZones();
+  }
+
+  Future<void> deleteZone(ZoneRecord record) async {
+    _zoneRecords.removeWhere((r) => r.id == record.id);
+    _photoCache.remove(record.imagePath);
+    await backend.deletePhoto(record.imagePath);
+    await _saveZones();
+  }
+
+  /// Adds or replaces the panel called [panel]'s name.
+  Future<void> savePanel(ZonePanel panel) async {
+    final i = _zonePanels.indexWhere((p) => p.name == panel.name);
+    if (i < 0) {
+      _zonePanels.add(panel);
+    } else {
+      _zonePanels[i] = panel;
+    }
+    await _savePanels();
+  }
+
+  Future<void> deletePanel(String name) async {
+    _zonePanels.removeWhere((p) => p.name == name);
+    await _savePanels();
+  }
+
+  /// Experiments and organisms used on zone plates, for suggestions.
+  List<String> zoneExperiments() => {
+    for (final r in _zoneRecords)
+      if (r.experiment.isNotEmpty) r.experiment,
+  }.toList()..sort();
+  List<String> zoneOrganisms() => {
+    for (final r in _zoneRecords)
+      if (r.organism.isNotEmpty) r.organism,
+  }.toList()..sort();
 
   Future<void> setRule(CountingRule r) async {
     rule = r;
@@ -223,22 +292,18 @@ class PlateStore extends ChangeNotifier {
   Future<(int, int, int)> importAll(
     List<PlateRecord> plates,
     List<SampleInfo> sampleInfos,
-    Future<Uint8List?> Function(String imagePath) photo,
-  ) async {
+    Future<Uint8List?> Function(String imagePath) photo, {
+    List<ZoneRecord> zonePlates = const [],
+    List<ZonePanel> zonePanels = const [],
+  }) async {
     final have = {for (final r in _records) r.id};
-    final usedNames = {for (final r in _records) r.imagePath};
-    var added = 0, skipped = 0, samplesAdded = 0;
-    for (final r in plates) {
-      // A backup can list the same plate twice (e.g. merged exports).
-      if (!have.add(r.id)) {
-        skipped++;
-        continue;
-      }
-      final bytes = await photo(r.imagePath);
-      // The name comes from the backup file: never let it leave the photo
-      // folder (e.g. "../settings.json"), and never overwrite another
-      // plate's photo.
-      var safe = safePhotoName(r.imagePath, r.id);
+    final usedNames = {
+      for (final r in _records) r.imagePath,
+      for (final r in _zoneRecords) r.imagePath,
+    };
+    // A free, safe photo name for a restored plate (see below).
+    String freeName(String name, String id) {
+      var safe = safePhotoName(name, id);
       if (usedNames.contains(safe)) {
         final stem = safe.endsWith('.jpg')
             ? safe.substring(0, safe.length - 4)
@@ -250,6 +315,21 @@ class PlateStore extends ChangeNotifier {
         safe = '${stem}_$n.jpg';
       }
       usedNames.add(safe);
+      return safe;
+    }
+
+    var added = 0, skipped = 0, samplesAdded = 0;
+    for (final r in plates) {
+      // A backup can list the same plate twice (e.g. merged exports).
+      if (!have.add(r.id)) {
+        skipped++;
+        continue;
+      }
+      final bytes = await photo(r.imagePath);
+      // The name comes from the backup file: never let it leave the photo
+      // folder (e.g. "../settings.json"), and never overwrite another
+      // plate's photo.
+      final safe = freeName(r.imagePath, r.id);
       _photoCache.remove(safe);
       if (bytes != null) await backend.writePhoto(safe, bytes);
       _records.add(
@@ -265,10 +345,37 @@ class PlateStore extends ChangeNotifier {
         samplesAdded++;
       }
     }
+    // Zone plates: the same rules (skip known IDs, safe and free photo names).
+    final haveZones = {for (final r in _zoneRecords) r.id};
+    var zonesAdded = 0;
+    for (final r in zonePlates) {
+      if (!haveZones.add(r.id)) {
+        skipped++;
+        continue;
+      }
+      final bytes = await photo(r.imagePath);
+      final safe = freeName(r.imagePath, r.id);
+      _photoCache.remove(safe);
+      if (bytes != null) await backend.writePhoto(safe, bytes);
+      _zoneRecords.add(
+        safe == r.imagePath
+            ? r
+            : ZoneRecord.fromJson({...r.toJson(), 'image': safe}),
+      );
+      zonesAdded++;
+    }
+    for (final p in zonePanels) {
+      if (!_zonePanels.any((q) => q.name == p.name)) _zonePanels.add(p);
+    }
     _records.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    _zoneRecords.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     await _save();
     await _saveSamples();
-    return (added, skipped, samplesAdded);
+    if (zonePlates.isNotEmpty || zonePanels.isNotEmpty) {
+      await _saveZones();
+      await _savePanels();
+    }
+    return (added + zonesAdded, skipped, samplesAdded);
   }
 
   List<SampleInfo> get samplePlans => List.unmodifiable(_samples.values);
@@ -285,6 +392,22 @@ class PlateStore extends ChangeNotifier {
     await backend.writeText(
       _recordsKey,
       jsonEncode([for (final r in _records) r.toJson()]),
+    );
+    notifyListeners();
+  }
+
+  Future<void> _saveZones() async {
+    await backend.writeText(
+      _zoneRecordsKey,
+      jsonEncode([for (final r in _zoneRecords) r.toJson()]),
+    );
+    notifyListeners();
+  }
+
+  Future<void> _savePanels() async {
+    await backend.writeText(
+      _zonePanelsKey,
+      jsonEncode([for (final p in _zonePanels) p.toJson()]),
     );
     notifyListeners();
   }

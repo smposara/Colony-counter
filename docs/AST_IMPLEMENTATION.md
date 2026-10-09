@@ -120,6 +120,26 @@ output.
 These are separate from `PlateRecord` so colony code paths (estimates, CSVs, accuracy checks,
 training export) never see zone plates.
 
+**Progress (October 2026):** done, before the real-photo gate (the detector can still be
+tuned on real plates without changing this layer).
+- **`zone_record.dart`:** `ZoneMark` (one disk or well: centre, disk radius, zone radius,
+  `diameterMm` as edited and `autoDiameterMm` as measured, confidence, flags, `label`,
+  `noZone`, `manual`, `opened`), `ZoneRecord` (the plate: photo, plate circle, `mmPerPx`,
+  format, assay, disk or well size, plate flags, experiment, organism, replicate, panel,
+  notes; `checked` once every low-confidence zone has been opened), `ZonePanel`,
+  `assignLabels` (clockwise from 12 o'clock, a centre disk last, as panels put the
+  control there), `summariseZones` (mean ± SD per experiment, organism and label;
+  "no zone" counts as the disk size), and `ZoneRecord.fromResult`.
+- **Scale:** each record keeps the mm per pixel the zones were measured at (the
+  detector's disk-based scale), so an edited radius converts back to mm exactly.
+- **`PlateStore`:** `zone_plates` and `zone_panels` keys; `zoneRecords`, `upsertZone`,
+  `deleteZone`, `zonePanels`, `savePanel`, `deletePanel`, suggestions for experiments and
+  organisms; `readPhotoPath` shared by both record types.
+- **Backup:** `zone_plates`, `zone_panels` and their photos in the zip; restore skips known
+  IDs and gives a zone photo a new name rather than overwrite any plate's photo. Older
+  backups and stores load with no zones.
+- **Tests:** `app/test/zones_data_test.dart` (10).
+
 - **`zone_record.dart`:** `ZoneRecord` holds `id`, `createdAt`, `imagePath`, image size,
   `plate`, `format`, `assay` (disk / well), `wellDiameterMm`, `zones`, `experiment`,
   `organism`, `replicate`, `notes`, `verified`, and `toJson`/`fromJson`.
