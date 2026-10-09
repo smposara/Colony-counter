@@ -6,6 +6,7 @@ import '../core/calculator.dart';
 import '../core/plate.dart';
 import 'plate_record.dart';
 import 'sample_info.dart';
+import 'zone_calibration_record.dart';
 import 'zone_record.dart';
 import 'storage/storage.dart';
 
@@ -20,6 +21,7 @@ class PlateStore extends ChangeNotifier {
   final Map<String, SampleInfo> _samples = {};
   final List<ZoneRecord> _zoneRecords = [];
   final List<ZonePanel> _zonePanels = [];
+  final List<CalibrationProfile> _calibrations = [];
   CountingRule rule = CountingRule.fdaBam;
   double defaultVolumeMl = 0.1;
 
@@ -50,6 +52,7 @@ class PlateStore extends ChangeNotifier {
   static const _samplesKey = 'samples';
   static const _zoneRecordsKey = 'zone_plates';
   static const _zonePanelsKey = 'zone_panels';
+  static const _calibrationsKey = 'zone_calibrations';
   static const _photoCacheSize = 24;
 
   static Future<PlateStore> open() async {
@@ -65,6 +68,9 @@ class PlateStore extends ChangeNotifier {
 
   /// Saved label panels for zone plates.
   List<ZonePanel> get zonePanels => List.unmodifiable(_zonePanels);
+
+  /// Zone calibration profiles (calliper against the app), newest first.
+  List<CalibrationProfile> get calibrations => List.unmodifiable(_calibrations);
 
   Future<void> load() async {
     _records.clear();
@@ -91,6 +97,16 @@ class PlateStore extends ChangeNotifier {
         _zoneRecords.add(ZoneRecord.fromJson(e as Map<String, dynamic>));
       }
       _zoneRecords.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    }
+    _calibrations.clear();
+    final calJson = await backend.readText(_calibrationsKey);
+    if (calJson != null) {
+      for (final e in jsonDecode(calJson) as List) {
+        _calibrations.add(
+          CalibrationProfile.fromJson(e as Map<String, dynamic>),
+        );
+      }
+      _sortCalibrations();
     }
     _zonePanels.clear();
     final panelsJson = await backend.readText(_zonePanelsKey);
@@ -191,6 +207,30 @@ class PlateStore extends ChangeNotifier {
   Future<void> deletePanel(String name) async {
     _zonePanels.removeWhere((p) => p.name == name);
     await _savePanels();
+  }
+
+  Future<void> upsertCalibration(CalibrationProfile profile) async {
+    _calibrations.removeWhere((p) => p.id == profile.id);
+    _calibrations.add(profile);
+    _sortCalibrations();
+    await _saveCalibrations();
+  }
+
+  /// Deletes the profile; its plates stay as ordinary zone plates.
+  Future<void> deleteCalibration(CalibrationProfile profile) async {
+    _calibrations.removeWhere((p) => p.id == profile.id);
+    await _saveCalibrations();
+  }
+
+  void _sortCalibrations() =>
+      _calibrations.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+
+  Future<void> _saveCalibrations() async {
+    await backend.writeText(
+      _calibrationsKey,
+      jsonEncode([for (final p in _calibrations) p.toJson()]),
+    );
+    notifyListeners();
   }
 
   /// Experiments and organisms used on zone plates, for suggestions.
@@ -316,6 +356,7 @@ class PlateStore extends ChangeNotifier {
     Future<Uint8List?> Function(String imagePath) photo, {
     List<ZoneRecord> zonePlates = const [],
     List<ZonePanel> zonePanels = const [],
+    List<CalibrationProfile> calibrations = const [],
   }) async {
     final have = {for (final r in _records) r.id};
     final usedNames = {
@@ -392,6 +433,19 @@ class PlateStore extends ChangeNotifier {
     _zoneRecords.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     await _save();
     await _saveSamples();
+    // Calibration profiles: known IDs are kept as they are.
+    final haveCal = {for (final p in _calibrations) p.id};
+    var calAdded = 0;
+    for (final p in calibrations) {
+      if (haveCal.add(p.id)) {
+        _calibrations.add(p);
+        calAdded++;
+      }
+    }
+    if (calAdded > 0) {
+      _sortCalibrations();
+      await _saveCalibrations();
+    }
     if (zonePlates.isNotEmpty || zonePanels.isNotEmpty) {
       await _saveZones();
       await _savePanels();

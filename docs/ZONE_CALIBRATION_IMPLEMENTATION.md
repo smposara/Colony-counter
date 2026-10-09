@@ -221,6 +221,30 @@ A full-screen stepper. Each step is short, with one picture and one action.
 - **No new dependency:** the camera is identified by its plugin name and resolution, not
   the phone model, so nothing is added (privacy and offline unchanged).
 
+**Progress (October 2026):** C2 is done.
+- **Zone marks** gain `calliperMm`: one reading, or two at right angles. It is kept apart
+  from `diameterMm` and never counts as an edit. **Zone plates** gain `camera`,
+  `calibrationId` and `usedForCalibration`. Older data loads with none of them.
+- **`zone_calibration_record.dart`:**
+  - `CalibrationPlate.fromRecord` snapshots the zones that have readings, with the span
+    across the farthest pair of disks. `doubtfulForCalibration` spots overlap, hazy and
+    unmeasured zones, which are left out by default.
+  - `CalibrationProfile` stores camera, photo size, platform, setup, rim radius, tool and
+    plates. Its `summary` is pooled over plates; the span check is the mean of the per-plate
+    span ratios. `withPlate` replaces an earlier snapshot of the same plate.
+- **Matching:**
+  - `activeCalibration` picks the newest profile for the camera and photo size. The size
+    matches in either orientation.
+  - `statusAgainst` judges a photo against a profile: calibrated, uncalibrated, old
+    (more than 90 days since the last plate was added, counted on the photo's day),
+    other camera, or setup changed (stand rim radius more than 3 % off; hand-held
+    profiles skip this check).
+  - `recordCalibration` uses the profile a plate was saved with, else the active one.
+  - `calibrationFlags` gives the plate flags.
+- **Store and backup:** the `zone_calibrations` key in the store and in the backup
+  manifest. Restore skips known IDs, and calibration plates restore with their readings.
+- **Tests:** `app/test/zone_calibration_data_test.dart` (18).
+
 ## Using the profile on zone plates (check only)
 
 The profile never changes a measured zone or the scale it was measured at.

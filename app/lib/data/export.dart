@@ -13,6 +13,7 @@ import 'drop_results.dart';
 import 'plate_record.dart';
 import 'plate_store.dart';
 import 'sample_info.dart';
+import 'zone_calibration_record.dart';
 import 'zone_record.dart';
 
 String _csv(List<List<Object?>> rows) {
@@ -528,6 +529,7 @@ Future<Uint8List> buildBackup(PlateStore store) async {
     // Inhibition-zone plates and label panels (older versions ignore them).
     'zone_plates': [for (final r in store.zoneRecords) r.toJson()],
     'zone_panels': [for (final p in store.zonePanels) p.toJson()],
+    'zone_calibrations': [for (final p in store.calibrations) p.toJson()],
   };
   final json = utf8.encode(jsonEncode(manifest));
   archive.addFile(ArchiveFile(_manifest, json.length, json));
@@ -602,6 +604,10 @@ Future<RestoreSummary> restoreBackup(PlateStore store, Uint8List zip) async {
   ];
   // On a device with no plates yet (e.g. a new phone) the backup's settings
   // come back too; otherwise keep the settings already chosen here.
+  final calibrations = [
+    for (final c in m['zone_calibrations'] as List? ?? const [])
+      CalibrationProfile.fromJson(c as Map<String, dynamic>),
+  ];
   final wasEmpty = store.records.isEmpty && store.zoneRecords.isEmpty;
   final (added, skipped, samplesAdded) = await store.importAll(
     plates,
@@ -612,6 +618,7 @@ Future<RestoreSummary> restoreBackup(PlateStore store, Uint8List zip) async {
     },
     zonePlates: zonePlates,
     zonePanels: zonePanels,
+    calibrations: calibrations,
   );
   final settings = m['settings'];
   if (wasEmpty && settings is Map<String, dynamic>) {

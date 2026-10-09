@@ -24,6 +24,7 @@ class ZoneMark {
     this.noZone = false,
     this.manual = false,
     this.opened = false,
+    this.calliperMm = const [],
   });
 
   /// From an automatic measurement.
@@ -72,6 +73,11 @@ class ZoneMark {
   /// The user has looked at it (opened its sheet).
   final bool opened;
 
+  /// The user's own calliper (or ruler) reading(s) of the zone in mm, for
+  /// calibration: one, or two at right angles for a zone that isn't round.
+  /// Kept apart from [diameterMm] and never changes it.
+  final List<double> calliperMm;
+
   bool get measured => noZone || diameterMm.isFinite;
 
   /// Needs a look before the plate counts as checked.
@@ -111,6 +117,7 @@ class ZoneMark {
     String? label,
     bool? noZone,
     bool? opened,
+    List<double>? calliperMm,
   }) => ZoneMark(
     x: x ?? this.x,
     y: y ?? this.y,
@@ -125,6 +132,7 @@ class ZoneMark {
     noZone: noZone ?? this.noZone,
     manual: manual,
     opened: opened ?? this.opened,
+    calliperMm: calliperMm ?? this.calliperMm,
   );
 
   static double? _num(Object? v) => (v as num?)?.toDouble();
@@ -143,6 +151,7 @@ class ZoneMark {
     if (noZone) 'no_zone': true,
     if (manual) 'manual': true,
     if (opened) 'opened': true,
+    if (calliperMm.isNotEmpty) 'calliper_mm': calliperMm,
   };
 
   factory ZoneMark.fromJson(Map<String, dynamic> j) => ZoneMark(
@@ -159,6 +168,10 @@ class ZoneMark {
     noZone: j['no_zone'] as bool? ?? false,
     manual: j['manual'] as bool? ?? false,
     opened: j['opened'] as bool? ?? false,
+    calliperMm: [
+      for (final v in j['calliper_mm'] as List? ?? const [])
+        (v as num).toDouble(),
+    ],
   );
 }
 
@@ -182,6 +195,9 @@ class ZoneRecord {
     this.replicate = 1,
     this.panel = '',
     this.notes = '',
+    this.camera = '',
+    this.calibrationId = '',
+    this.usedForCalibration = false,
   });
 
   final String id;
@@ -216,6 +232,16 @@ class ZoneRecord {
   final String panel;
   final String notes;
 
+  /// The camera plugin's name for the lens the photo was taken with ('' when
+  /// not known: gallery photos and the web).
+  final String camera;
+
+  /// The calibration profile active when the plate was saved ('' for none).
+  final String calibrationId;
+
+  /// The plate was measured with a calliper to calibrate the app.
+  final bool usedForCalibration;
+
   /// Every zone the app was unsure of has been looked at.
   bool get checked => marks.every((m) => !m.lowConfidence || m.opened);
 
@@ -231,6 +257,9 @@ class ZoneRecord {
     int? replicate,
     String? panel,
     String? notes,
+    String? camera,
+    String? calibrationId,
+    bool? usedForCalibration,
   }) => ZoneRecord(
     id: id,
     createdAt: createdAt,
@@ -249,6 +278,9 @@ class ZoneRecord {
     replicate: replicate ?? this.replicate,
     panel: panel ?? this.panel,
     notes: notes ?? this.notes,
+    camera: camera ?? this.camera,
+    calibrationId: calibrationId ?? this.calibrationId,
+    usedForCalibration: usedForCalibration ?? this.usedForCalibration,
   );
 
   Map<String, dynamic> toJson() => {
@@ -269,6 +301,9 @@ class ZoneRecord {
     'replicate': replicate,
     if (panel.isNotEmpty) 'panel': panel,
     if (notes.isNotEmpty) 'notes': notes,
+    if (camera.isNotEmpty) 'camera': camera,
+    if (calibrationId.isNotEmpty) 'calibration': calibrationId,
+    if (usedForCalibration) 'used_for_calibration': true,
   };
 
   factory ZoneRecord.fromJson(Map<String, dynamic> j) {
@@ -297,6 +332,9 @@ class ZoneRecord {
       replicate: (j['replicate'] as num?)?.toInt() ?? 1,
       panel: j['panel'] as String? ?? '',
       notes: j['notes'] as String? ?? '',
+      camera: j['camera'] as String? ?? '',
+      calibrationId: j['calibration'] as String? ?? '',
+      usedForCalibration: j['used_for_calibration'] as bool? ?? false,
     );
   }
 
@@ -314,6 +352,7 @@ class ZoneRecord {
     String organism = '',
     int replicate = 1,
     String panel = '',
+    String camera = '',
   }) => ZoneRecord(
     id: id,
     createdAt: createdAt,
@@ -335,6 +374,7 @@ class ZoneRecord {
     organism: organism,
     replicate: replicate,
     panel: panel,
+    camera: camera,
   );
 }
 
