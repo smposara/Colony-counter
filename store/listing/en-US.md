@@ -62,11 +62,12 @@ Reads Neogen® Petrifilm® plates. Petrifilm and Neogen are trademarks of Neogen
 Intended use: for research and teaching. Colony Counter is not a medical or diagnostic device. Always check the automatic count.
 ```
 
-## Release notes (What's new) (391/500 characters)
+## Release notes (What's new) (398/500 characters)
 
 ```
-Version 0.9.0
-• Zone calibration: photograph a used zone plate, measure it with your calliper or ruler, and see how closely the app agrees with you (bias, limits of agreement, scale check)
-• Every zone plate shows its calibration, with a reminder after 90 days or when the camera or stand height changes
-• Zones CSV gains your calliper readings; calibration plates can be shared as test data
+Version 0.9.1
+• Calibration: readings stay with the right zones when a calibration plate is edited later, and stay put when an open plate is saved
+• "Measure again" keeps your calliper readings and typed labels
+• Zone positions sit on the disk centre; hand-added disks no longer affect the disk scale
+• Calibration status picks the profile from the same stand height; zones CSV gains plate warnings
 ```
