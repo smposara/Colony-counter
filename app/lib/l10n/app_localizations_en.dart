@@ -2033,4 +2033,44 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get zoneScaleUnchecked =>
       'Sizes are from the plate edge only: no disk could be measured.';
+
+  @override
+  String get zoneShareSubject => 'Inhibition zones';
+
+  @override
+  String get zoneResults => 'Results';
+
+  @override
+  String get zoneNoExperiment => 'No experiment name';
+
+  @override
+  String get zoneNoOrganism => 'Organism not given';
+
+  @override
+  String get zoneColItem => 'Test item';
+
+  @override
+  String get zoneColMean => 'Mean ± SD (mm)';
+
+  @override
+  String zoneResultsPlates(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n plates',
+      one: '1 plate',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get zoneResultsNone =>
+      'No labelled zones yet. Give the disks labels to compare them.';
+
+  @override
+  String get zoneResultsNote =>
+      'Mean ± SD of zone diameters over the replicate plates; a disk with no zone counts as the disk size (the grey line). Diameters only: the app does not interpret them as susceptible, intermediate or resistant.';
+
+  @override
+  String get zoneExportCsv => 'Export zone CSVs';
 }

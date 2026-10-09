@@ -1918,4 +1918,38 @@ class AppLocalizationsTh extends AppLocalizations {
   @override
   String get zoneScaleUnchecked =>
       'ขนาดคำนวณจากขอบเพลตอย่างเดียว เพราะวัดแผ่นไม่ได้';
+
+  @override
+  String get zoneShareSubject => 'โซนยับยั้ง';
+
+  @override
+  String get zoneResults => 'ผลการวัด';
+
+  @override
+  String get zoneNoExperiment => 'ไม่ได้ตั้งชื่อการทดลอง';
+
+  @override
+  String get zoneNoOrganism => 'ไม่ได้ระบุเชื้อทดสอบ';
+
+  @override
+  String get zoneColItem => 'สารทดสอบ';
+
+  @override
+  String get zoneColMean => 'ค่าเฉลี่ย ± SD (มม.)';
+
+  @override
+  String zoneResultsPlates(int n) {
+    return '$n เพลต';
+  }
+
+  @override
+  String get zoneResultsNone =>
+      'ยังไม่มีโซนที่ตั้งชื่อ ใส่ชื่อสารทดสอบให้แผ่นเพื่อเปรียบเทียบ';
+
+  @override
+  String get zoneResultsNote =>
+      'ค่าเฉลี่ย ± SD ของเส้นผ่านศูนย์กลางโซนจากเพลตซ้ำ แผ่นที่ไม่มีโซนนับเป็นขนาดของแผ่น (เส้นสีเทา) แอปรายงานเฉพาะขนาด ไม่แปลผลเป็นไว ปานกลาง หรือดื้อ';
+
+  @override
+  String get zoneExportCsv => 'ส่งออก CSV ของโซนยับยั้ง';
 }

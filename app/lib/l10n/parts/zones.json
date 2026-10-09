@@ -275,5 +275,50 @@
  "zoneScaleUnchecked": {
   "en": "Sizes are from the plate edge only: no disk could be measured.",
   "th": "ขนาดคำนวณจากขอบเพลตอย่างเดียว เพราะวัดแผ่นไม่ได้"
+ },
+ "zoneShareSubject": {
+  "en": "Inhibition zones",
+  "th": "โซนยับยั้ง"
+ },
+ "zoneResults": {
+  "en": "Results",
+  "th": "ผลการวัด"
+ },
+ "zoneNoExperiment": {
+  "en": "No experiment name",
+  "th": "ไม่ได้ตั้งชื่อการทดลอง"
+ },
+ "zoneNoOrganism": {
+  "en": "Organism not given",
+  "th": "ไม่ได้ระบุเชื้อทดสอบ"
+ },
+ "zoneColItem": {
+  "en": "Test item",
+  "th": "สารทดสอบ"
+ },
+ "zoneColMean": {
+  "en": "Mean ± SD (mm)",
+  "th": "ค่าเฉลี่ย ± SD (มม.)"
+ },
+ "zoneResultsPlates": {
+  "en": "{n, plural, =1{1 plate} other{{n} plates}}",
+  "th": "{n} เพลต",
+  "placeholders": {
+   "n": {
+    "type": "int"
+   }
+  }
+ },
+ "zoneResultsNone": {
+  "en": "No labelled zones yet. Give the disks labels to compare them.",
+  "th": "ยังไม่มีโซนที่ตั้งชื่อ ใส่ชื่อสารทดสอบให้แผ่นเพื่อเปรียบเทียบ"
+ },
+ "zoneResultsNote": {
+  "en": "Mean ± SD of zone diameters over the replicate plates; a disk with no zone counts as the disk size (the grey line). Diameters only: the app does not interpret them as susceptible, intermediate or resistant.",
+  "th": "ค่าเฉลี่ย ± SD ของเส้นผ่านศูนย์กลางโซนจากเพลตซ้ำ แผ่นที่ไม่มีโซนนับเป็นขนาดของแผ่น (เส้นสีเทา) แอปรายงานเฉพาะขนาด ไม่แปลผลเป็นไว ปานกลาง หรือดื้อ"
+ },
+ "zoneExportCsv": {
+  "en": "Export zone CSVs",
+  "th": "ส่งออก CSV ของโซนยับยั้ง"
  }
 }

@@ -431,6 +431,81 @@ String coloniesCsv(PlateStore store) {
   return _csv(rows);
 }
 
+/// One row per inhibition zone (disk or well) on the zone plates.
+///
+/// diameter_mm is to 0.1 mm as stored; diameter_mm_rounded is the whole mm
+/// shown on screen (EUCAST reads to the nearest mm). "No zone" is reported
+/// as the disk (or well) size. Positions are in mm from the plate centre.
+/// Measurement only: no S/I/R interpretation.
+String zonesCsv(PlateStore store) {
+  double r1(double v) => (v * 10).round() / 10;
+  double r3(double v) => (v * 1000).round() / 1000;
+  final rows = <List<Object?>>[
+    [
+      'plate_id',
+      'date',
+      'experiment',
+      'organism',
+      'assay',
+      'disk_or_well_mm',
+      'zone',
+      'label',
+      'replicate',
+      'diameter_mm',
+      'diameter_mm_rounded',
+      'no_zone',
+      'auto_diameter_mm',
+      'edited',
+      'added_by_hand',
+      'confidence',
+      'flags',
+      'x_mm',
+      'y_mm',
+      'image',
+    ],
+  ];
+  for (final r in store.zoneRecords.reversed) {
+    for (var i = 0; i < r.marks.length; i++) {
+      final m = r.marks[i];
+      final v = m.reportedMm(r.diskMm);
+      rows.add([
+        r.id,
+        r.createdAt.toIso8601String().substring(0, 10),
+        r.experiment,
+        r.organism,
+        r.assay.name,
+        r.diskMm,
+        i + 1,
+        m.label,
+        r.replicate,
+        v.isFinite ? r1(v) : null,
+        m.roundedMm(r.diskMm),
+        m.noZone,
+        m.autoDiameterMm.isFinite ? r1(m.autoDiameterMm) : null,
+        m.edited,
+        m.manual,
+        (m.confidence * 100).round() / 100,
+        m.flags.join(' '),
+        r3((m.x - r.plate.cx) * r.mmPerPx),
+        r3((m.y - r.plate.cy) * r.mmPerPx),
+        r.imagePath,
+      ]);
+    }
+  }
+  return _csv(rows);
+}
+
+/// Mean ± SD zone diameter per experiment, organism and label (replicate
+/// plates pooled; unlabelled and unmeasured zones left out).
+String zoneSummaryCsv(PlateStore store) {
+  double? r2(double v) => v.isFinite ? (v * 100).round() / 100 : null;
+  return _csv([
+    ['experiment', 'organism', 'label', 'n', 'mean_mm', 'sd_mm'],
+    for (final z in summariseZones(store.zoneRecords))
+      [z.experiment, z.organism, z.label, z.n, r2(z.mean), r2(z.sd)],
+  ]);
+}
+
 const _manifest = 'colony-counter-backup.json';
 
 /// Everything (plates, sample plans, settings, photos) in one zip.
@@ -472,6 +547,10 @@ Future<Uint8List> buildBackup(PlateStore store) async {
     ('samples.csv', samplesCsv(store)),
     ('colonies.csv', coloniesCsv(store)),
     ('drops.csv', dropsCsv(store)),
+    if (store.zoneRecords.isNotEmpty) ...[
+      ('zones.csv', zonesCsv(store)),
+      ('zone_summary.csv', zoneSummaryCsv(store)),
+    ],
   ]) {
     final bytes = utf8.encode(csv);
     archive.addFile(ArchiveFile(name, bytes.length, bytes));

@@ -3373,6 +3373,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sizes are from the plate edge only: no disk could be measured.'**
   String get zoneScaleUnchecked;
+
+  /// No description provided for @zoneShareSubject.
+  ///
+  /// In en, this message translates to:
+  /// **'Inhibition zones'**
+  String get zoneShareSubject;
+
+  /// No description provided for @zoneResults.
+  ///
+  /// In en, this message translates to:
+  /// **'Results'**
+  String get zoneResults;
+
+  /// No description provided for @zoneNoExperiment.
+  ///
+  /// In en, this message translates to:
+  /// **'No experiment name'**
+  String get zoneNoExperiment;
+
+  /// No description provided for @zoneNoOrganism.
+  ///
+  /// In en, this message translates to:
+  /// **'Organism not given'**
+  String get zoneNoOrganism;
+
+  /// No description provided for @zoneColItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Test item'**
+  String get zoneColItem;
+
+  /// No description provided for @zoneColMean.
+  ///
+  /// In en, this message translates to:
+  /// **'Mean ± SD (mm)'**
+  String get zoneColMean;
+
+  /// No description provided for @zoneResultsPlates.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{1 plate} other{{n} plates}}'**
+  String zoneResultsPlates(int n);
+
+  /// No description provided for @zoneResultsNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No labelled zones yet. Give the disks labels to compare them.'**
+  String get zoneResultsNone;
+
+  /// No description provided for @zoneResultsNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Mean ± SD of zone diameters over the replicate plates; a disk with no zone counts as the disk size (the grey line). Diameters only: the app does not interpret them as susceptible, intermediate or resistant.'**
+  String get zoneResultsNote;
+
+  /// No description provided for @zoneExportCsv.
+  ///
+  /// In en, this message translates to:
+  /// **'Export zone CSVs'**
+  String get zoneExportCsv;
 }
 
 class _AppLocalizationsDelegate

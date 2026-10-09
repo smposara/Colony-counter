@@ -1281,5 +1281,22 @@
   "zoneFlagLowConfidence": "The edge is unclear.",
   "zoneFlagUnmeasured": "Could not be measured: set the size by hand.",
   "zoneScaleMismatch": "The disks and the plate disagree on size: check the plate type and the plate circle.",
-  "zoneScaleUnchecked": "Sizes are from the plate edge only: no disk could be measured."
+  "zoneScaleUnchecked": "Sizes are from the plate edge only: no disk could be measured.",
+  "zoneShareSubject": "Inhibition zones",
+  "zoneResults": "Results",
+  "zoneNoExperiment": "No experiment name",
+  "zoneNoOrganism": "Organism not given",
+  "zoneColItem": "Test item",
+  "zoneColMean": "Mean ± SD (mm)",
+  "zoneResultsPlates": "{n, plural, =1{1 plate} other{{n} plates}}",
+  "@zoneResultsPlates": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "zoneResultsNone": "No labelled zones yet. Give the disks labels to compare them.",
+  "zoneResultsNote": "Mean ± SD of zone diameters over the replicate plates; a disk with no zone counts as the disk size (the grey line). Diameters only: the app does not interpret them as susceptible, intermediate or resistant.",
+  "zoneExportCsv": "Export zone CSVs"
 }

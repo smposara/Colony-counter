@@ -24,6 +24,7 @@ import 'photo_flow.dart';
 import 'photo_thumbnail.dart';
 import 'review_screen.dart';
 import 'samples_screen.dart';
+import 'zone_results_screen.dart';
 import 'zones_tab.dart';
 
 /// The app's four areas: individual plates, samples (series and replicates),
@@ -79,7 +80,22 @@ class _HomeScreenState extends State<HomeScreen> {
                 }
               },
             ),
-          _DataMenu(store: store),
+          if (_tab == 3)
+            ListenableBuilder(
+              listenable: store,
+              builder: (context, _) => IconButton(
+                tooltip: tr.zoneResults,
+                icon: const Icon(Icons.bar_chart),
+                onPressed: store.zoneRecords.isEmpty
+                    ? null
+                    : () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => ZoneResultsScreen(store: store),
+                        ),
+                      ),
+              ),
+            ),
+          _DataMenu(store: store, zones: _tab == 3),
         ],
       ),
       body: body,
@@ -153,9 +169,12 @@ class _PlatesTab extends StatelessWidget {
 
 /// Export, backup, restore and settings.
 class _DataMenu extends StatelessWidget {
-  const _DataMenu({required this.store});
+  const _DataMenu({required this.store, this.zones = false});
 
   final PlateStore store;
+
+  /// On the Zones tab: the CSV export is the zone CSVs.
+  final bool zones;
 
   static String _stamp() =>
       DateTime.now().toIso8601String().substring(0, 19).replaceAll(':', '-');
@@ -183,6 +202,17 @@ class _DataMenu extends StatelessWidget {
 
   Future<void> _exportCsv() async {
     final stamp = _stamp();
+    if (zones) {
+      await _share([
+        ('zones_$stamp.csv', utf8.encode(zonesCsv(store)), 'text/csv'),
+        (
+          'zone_summary_$stamp.csv',
+          utf8.encode(zoneSummaryCsv(store)),
+          'text/csv',
+        ),
+      ], tr.zoneShareSubject);
+      return;
+    }
     await _share([
       ('plates_$stamp.csv', utf8.encode(platesCsv(store)), 'text/csv'),
       ('samples_$stamp.csv', utf8.encode(samplesCsv(store)), 'text/csv'),
@@ -292,8 +322,10 @@ class _DataMenu extends StatelessWidget {
       itemBuilder: (_) => [
         PopupMenuItem(
           value: 'csv',
-          enabled: !empty,
-          child: Text(tr.homeExportCsv),
+          enabled: zones
+              ? store.zoneRecords.isNotEmpty
+              : store.records.isNotEmpty || store.samplePlans.isNotEmpty,
+          child: Text(zones ? tr.zoneExportCsv : tr.homeExportCsv),
         ),
         PopupMenuItem(
           value: 'backup',

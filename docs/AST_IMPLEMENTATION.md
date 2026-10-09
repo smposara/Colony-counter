@@ -228,6 +228,24 @@ M5 and M6.
 - **Annotated image:** extend `annotate.dart` to draw zone circles and labels.
 - The CSVs and photos go in the backup zip, and can be shared from the Zones tab menu.
 
+**Progress (October 2026):** M5 is done.
+- **CSVs (`export.dart`):** `zonesCsv` writes every column above, plus `zone`, `no_zone` and
+  `added_by_hand`, oldest plate first. "No zone" is reported as the disk or well size, and an
+  unmeasured zone is left empty. `zoneSummaryCsv` holds mean and SD to 0.01 mm, with no SD
+  for a single plate. Both are in the backup zip when there are zone plates. On the Zones
+  tab, the menu's CSV export shares them.
+- **Annotated image:** `AnnotationJob` takes `AnnotatedZone`s. The disk is drawn white, the
+  zone green, or amber when unsure, with "18 mm EtOH" above it. The banner says the plate
+  shows diameters only, with no S/I/R interpretation. The bitmap fonts are ASCII only, so
+  the banner is in English and Thai labels come out as "?" (as on colony photos). It is
+  shared from the zone review screen.
+- **Experiment view (`zone_results_screen.dart`):** opened from the Zones tab. Pick an
+  experiment (the newest plate's by default). Each organism gets horizontal bars (mean, with
+  a ±SD whisker and a line at the disk size) and a table: test item, n, mean ± SD.
+- **Tests:** `zones_export_test.dart`, 8 tests: CSV values and quoting, the summary, the
+  backup contents, pixels of the annotated photo, the results screen and its experiment
+  switch, the Zones tab entry points, and Thai at 360 × 640.
+
 ## 6. Translation and text
 
 - New `app/lib/l10n/parts/zones.json` (en/th), run through the existing gen-l10n step.

@@ -5,12 +5,15 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
+import '../core/annotate.dart';
 import '../core/plate.dart';
 import '../core/zones.dart';
 import '../data/plate_store.dart';
 import '../data/zone_record.dart';
 import '../l10n/l10n.dart';
+import 'format.dart';
 import 'insets.dart';
+import 'photo_flow.dart';
 import 'zone_setup_sheet.dart';
 
 /// Shows the measured inhibition zones over the photo and lets the user
@@ -434,6 +437,42 @@ class _ZoneReviewScreenState extends State<ZoneReviewScreen> {
     Navigator.of(context).pop(r);
   }
 
+  Future<void> _shareAnnotated() async {
+    final r = _rec;
+    final photo = _photo;
+    if (r == null || photo == null) return;
+    setState(() => _busy = true);
+    try {
+      final jpeg = await compute(
+        annotatePhoto,
+        AnnotationJob(
+          photo: photo,
+          plate: r.plate,
+          colonies: const [],
+          zones: zoneAnnotations(r),
+          header: zoneAnnotationHeader(r),
+          rimFraction: 1,
+        ),
+      );
+      final safe = r.experiment.replaceAll(RegExp(r'[^A-Za-z0-9_-]+'), '_');
+      await shareBytes(
+        jpeg,
+        'zones_${safe.isEmpty ? 'plate' : safe}_R${r.replicate}_'
+            '${DateTime.now().millisecondsSinceEpoch}.jpg',
+        'image/jpeg',
+        subject: tr.zoneShareSubject,
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(tr.reviewCouldNotShare('$e'))));
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
   Future<bool> _confirmLeave() async {
     final leave = await showDialog<bool>(
       context: context,
@@ -488,6 +527,13 @@ class _ZoneReviewScreenState extends State<ZoneReviewScreen> {
               onPressed: r == null || _busy ? null : _togglePlateMode,
               icon: const Icon(Icons.radio_button_unchecked),
               selectedIcon: const Icon(Icons.adjust),
+            ),
+            IconButton(
+              tooltip: tr.reviewShareAnnotated,
+              onPressed: r == null || _busy || _photo == null || _plateMode
+                  ? null
+                  : _shareAnnotated,
+              icon: const Icon(Icons.share_outlined),
             ),
             IconButton(
               tooltip: tr.zoneDetails,
@@ -762,6 +808,42 @@ class _ZoneReviewScreenState extends State<ZoneReviewScreen> {
     );
   }
 }
+
+/// The zones as drawn on a shared photo: size in whole mm and label.
+List<AnnotatedZone> zoneAnnotations(ZoneRecord r) => [
+  for (var i = 0; i < r.marks.length; i++)
+    () {
+      final m = r.marks[i];
+      final mm = m.roundedMm(r.diskMm);
+      final name = m.label.isEmpty ? '${i + 1}' : m.label;
+      return AnnotatedZone(
+        m.x,
+        m.y,
+        m.diskRadiusPx,
+        m.noZone ? double.nan : m.radiusPx,
+        [
+          mm == null ? '?' : '$mm mm',
+          if (m.noZone) '(no zone)',
+          name,
+        ].join(' '),
+        unsure: !m.measured || (m.lowConfidence && !m.opened),
+      );
+    }(),
+];
+
+/// Banner lines for a shared zone photo (the image fonts are ASCII only, so
+/// it is in English like the colony photos).
+List<String> zoneAnnotationHeader(ZoneRecord r) => [
+  [
+    r.experiment.isEmpty ? 'Zone plate' : r.experiment,
+    if (r.organism.isNotEmpty) r.organism,
+    'Rep ${r.replicate}',
+  ].join(' - '),
+  '${r.assay == ZoneAssay.well ? 'Wells' : 'Disks'} '
+      '${_mmNum(r.diskMm)} mm - ${r.marks.length} zones - '
+      '${r.checked ? 'all checked' : 'not all checked'}',
+  '${shortDate(r.createdAt)} - zone diameters only, no S/I/R interpretation',
+];
 
 /// A pan that only joins the gesture arena when [accept] says so for the
 /// point it starts at, so other drags still pan the view.

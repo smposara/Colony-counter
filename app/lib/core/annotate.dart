@@ -8,6 +8,28 @@ import 'colour.dart';
 import 'plate.dart';
 import 'spots.dart';
 
+/// An inhibition zone to draw: its disk (or well), the zone circle (NaN
+/// radius for none) and the text beside it, e.g. "18 mm EtOH".
+class AnnotatedZone {
+  const AnnotatedZone(
+    this.x,
+    this.y,
+    this.diskRadiusPx,
+    this.radiusPx,
+    this.text, {
+    this.unsure = false,
+  });
+
+  final double x;
+  final double y;
+  final double diskRadiusPx;
+  final double radiusPx;
+  final String text;
+
+  /// Drawn amber instead of green: not measured, or not checked.
+  final bool unsure;
+}
+
 /// Everything needed to draw an annotated copy of a plate photo.
 class AnnotationJob {
   const AnnotationJob({
@@ -15,6 +37,7 @@ class AnnotationJob {
     required this.plate,
     required this.colonies,
     this.spots = const [],
+    this.zones = const [],
     this.colourMode = ColourMode.none,
     this.header = const [],
     this.rimFraction = 0.95,
@@ -26,6 +49,7 @@ class AnnotationJob {
   final Plate plate;
   final List<Colony> colonies;
   final List<Spot> spots;
+  final List<AnnotatedZone> zones;
   final ColourMode colourMode;
 
   /// Lines for the banner across the top (sample, dilution, count…).
@@ -141,6 +165,34 @@ Uint8List annotatePhoto(AnnotationJob job) {
       color: colour,
     );
     img.drawString(photo, text, font: font, x: x, y: y, color: black);
+  }
+
+  void label(String text, int x, int y, img.Color colour) {
+    final t = asciiOnly(text);
+    img.fillRect(
+      photo,
+      x1: x - 4,
+      y1: y - 2,
+      x2: x + t.length * font.base ~/ 2 + 8,
+      y2: y + font.lineHeight + 2,
+      color: colour,
+    );
+    img.drawString(photo, t, font: font, x: x, y: y, color: black);
+  }
+
+  for (final z in job.zones) {
+    final colour = z.unsure ? amber : green;
+    ring(z.x, z.y, z.diskRadiusPx, white);
+    final zone = z.radiusPx.isFinite && z.radiusPx > z.diskRadiusPx;
+    if (zone) ring(z.x, z.y, z.radiusPx, colour);
+    final top = zone ? z.radiusPx : z.diskRadiusPx;
+    final w = asciiOnly(z.text).length * font.base ~/ 2;
+    label(
+      z.text,
+      (z.x * s).round() - w ~/ 2,
+      ((z.y - top) * s).round() - font.lineHeight - 6,
+      colour,
+    );
   }
 
   if (job.header.isNotEmpty) {
