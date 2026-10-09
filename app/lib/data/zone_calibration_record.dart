@@ -162,10 +162,12 @@ class CalibrationPlate {
   }
 }
 
-/// Zones whose detector flags make them poor calibration zones: offered, but
-/// left out unless the user includes them.
+/// Zones that make poor calibration zones: offered, but left out unless the
+/// user includes them. A disk with no zone only checks the disk size, not
+/// where a zone edge is read.
 bool doubtfulForCalibration(ZoneMark m) =>
     !m.measured ||
+    m.noZone ||
     m.flags.any((f) => const {'overlap', 'hazy', 'unmeasured'}.contains(f));
 
 /// The two marks of [record] farthest apart (outer edge to outer edge), or null

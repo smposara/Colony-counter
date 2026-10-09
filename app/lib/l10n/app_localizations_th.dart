@@ -84,6 +84,270 @@ class AppLocalizationsTh extends AppLocalizations {
       'วัดเฉพาะเส้นผ่านศูนย์กลางของโซน ไม่แปลผลเป็นไว ปานกลาง หรือดื้อ ยังไม่ได้เทียบกับการวัดด้วยเวอร์เนียร์บนเพลตจริง ควรตรวจทุกโซน';
 
   @override
+  String get calSuggestTitle => 'ปรับเทียบกับเวอร์เนียร์ของคุณก่อนไหม';
+
+  @override
+  String get calSuggestBody =>
+      'แนะนำอย่างยิ่งก่อนใช้ขนาดโซนจริง ถ่ายภาพเพลตวัดโซนที่ใช้แล้ว วัดด้วยเวอร์เนียร์หรือไม้บรรทัด แล้วดูว่าแอปวัดได้ใกล้เคียงกับคุณเพียงใด ใช้เวลาประมาณ 5–10 นาที และทำภายหลังได้จากเมนูของแท็บโซนยับยั้ง';
+
+  @override
+  String get calLater => 'ภายหลัง';
+
+  @override
+  String get calNow => 'ปรับเทียบตอนนี้';
+
+  @override
+  String get calTitle => 'การปรับเทียบการวัดโซน';
+
+  @override
+  String get calNew => 'ปรับเทียบใหม่';
+
+  @override
+  String get calNone =>
+      'ยังไม่มีการปรับเทียบ แตะ ปรับเทียบใหม่ แล้วเตรียมเวอร์เนียร์ (หรือไม้บรรทัด) และเพลตวัดโซนที่ใช้แล้ว';
+
+  @override
+  String get calOld => 'เกิน 90 วันแล้ว: ควรปรับเทียบใหม่';
+
+  @override
+  String calStats(String bias, String low, String high, int n) {
+    return 'ค่าเบี่ยงเบน $bias มม. · ช่วงความสอดคล้อง $low ถึง $high มม. · $n โซน';
+  }
+
+  @override
+  String calPlatesTool(int n, String tool) {
+    return '$n เพลต · $tool';
+  }
+
+  @override
+  String get calToolCalliper => 'เวอร์เนียร์';
+
+  @override
+  String get calToolRuler => 'ไม้บรรทัด';
+
+  @override
+  String get calAddPlate => 'เพิ่มเพลตอีกแผ่น';
+
+  @override
+  String get calDeleteTitle => 'ลบการปรับเทียบ?';
+
+  @override
+  String get calDeleteBody =>
+      'ค่าที่วัดจะถูกลบ เพลตยังอยู่เป็นเพลตวัดโซนตามปกติ';
+
+  @override
+  String get calVerdictGood =>
+      'ดี: แอปวัดได้ใกล้เคียงกับค่าที่คุณวัดภายในประมาณ 1 มม.';
+
+  @override
+  String get calVerdictUsable =>
+      'ใช้ได้: ต่างกันภายในประมาณ 2 มม. ควรวัดโซนที่ก้ำกึ่งด้วยมือ';
+
+  @override
+  String get calVerdictPoor => 'ยังไม่ดีพอ';
+
+  @override
+  String get calVerdictTooFew => 'วัดโซนน้อยเกินไป';
+
+  @override
+  String get calSetupStand => 'บนขาตั้ง';
+
+  @override
+  String get calSetupHandheld => 'ถือด้วยมือ';
+
+  @override
+  String get calOtherSetup =>
+      'เพลตนี้ถ่ายด้วยกล้องอื่นหรือที่ความสูงอื่น ควรใช้การตั้งค่าเดียวกันสำหรับทุกเพลตในการปรับเทียบหนึ่งครั้ง';
+
+  @override
+  String get calNoRecent => 'ไม่มีเพลตวัดโซนในวันที่ผ่านมา';
+
+  @override
+  String get calUseRecent => 'ใช้เพลตที่เพิ่งวัด';
+
+  @override
+  String get calLeaveTitle => 'ออกจากการปรับเทียบ?';
+
+  @override
+  String get calLeaveBody => 'ค่าที่วัดไว้ยังไม่ได้บันทึก';
+
+  @override
+  String get calIntroTitle => 'ตรวจแอปเทียบกับเวอร์เนียร์ของคุณ';
+
+  @override
+  String get calAddPlateTitle => 'เพิ่มเพลตในการปรับเทียบนี้';
+
+  @override
+  String get calIntro =>
+      'แอปวัดเพลตวัดโซนที่ใช้แล้วจากภาพ คุณวัดเพลตเดียวกัน แล้วแอปแสดงว่าทั้งสองสอดคล้องกันเพียงใด ไม่มีการแก้ค่าใด ๆ เพลตที่วัดหลังจากนี้จะแสดงผลการปรับเทียบ';
+
+  @override
+  String get calNeedTool => 'เวอร์เนียร์ (หรือไม้บรรทัด)';
+
+  @override
+  String get calNeedPlate =>
+      'เพลตวัดโซนที่บ่มแล้ว มีโซนชัดอย่างน้อย 6 โซน ควรมีหลายขนาดและมีบางโซนอยู่ใกล้ขอบ';
+
+  @override
+  String get calNeedSetup => 'ขาตั้ง ระยะ และแสงแบบเดียวกับที่ใช้กับเพลตจริง';
+
+  @override
+  String get calBiosafety =>
+      'เพลตมีเชื้อมีชีวิต: วัดโดยปิดฝาจากด้านนอก และปฏิบัติตามข้อกำหนดของห้องปฏิบัติการ';
+
+  @override
+  String get calToolQuestion => 'คุณจะวัดด้วยอะไร';
+
+  @override
+  String calMinZones(int n) {
+    return 'ต้องวัดอย่างน้อย $n โซน';
+  }
+
+  @override
+  String get calSetupQuestion => 'คุณถ่ายภาพเพลตอย่างไร';
+
+  @override
+  String get calPhotograph => 'ถ่ายภาพเพลตที่ใช้แล้ว';
+
+  @override
+  String get calBackToResult => 'กลับไปที่ผลลัพธ์';
+
+  @override
+  String get calReadingsHelp =>
+      'วัดแบบที่คุณอ่านโซนตามปกติ เช่น วัดจากด้านหลังเพลตโดยปิดฝา ขนาดที่แอปวัดได้จะถูกซ่อนไว้ เพื่อให้ค่าที่วัดเป็นของคุณเอง';
+
+  @override
+  String get calSpanTitle => 'ตรวจมาตราส่วน';
+
+  @override
+  String calSpanHelp(int a, int b) {
+    return 'วัดจากขอบนอกของแผ่นที่ $a ถึงขอบนอกของแผ่นที่ $b (เส้นสีเหลือง)';
+  }
+
+  @override
+  String get calSpanLabel => 'ระยะ';
+
+  @override
+  String get calSpanInvalid => 'ใส่ระยะ 20 ถึง 90 มม.';
+
+  @override
+  String calReadingInvalid(int n) {
+    return 'โซน $n: ใส่ 2 ถึง 90 มม.';
+  }
+
+  @override
+  String calNeedZones(int need, int have) {
+    return 'วัดอย่างน้อย $need โซน (ตอนนี้ $have)';
+  }
+
+  @override
+  String get calZonesTitle => 'เส้นผ่านศูนย์กลางโซน';
+
+  @override
+  String calZoneN(int n) {
+    return 'โซน $n';
+  }
+
+  @override
+  String get calDoubtful =>
+      'ขอบไม่ชัด ซ้อนกัน หรือไม่มีโซน: ไม่นำมาคิดหากไม่เลือก';
+
+  @override
+  String get calSecondReading => 'วัดอีกแนวตั้งฉาก';
+
+  @override
+  String get calNotRound => 'ไม่กลม: เพิ่มการวัดอีกแนว';
+
+  @override
+  String get calOneReading => 'วัดแนวเดียว';
+
+  @override
+  String get calSeeResult => 'ดูผลลัพธ์';
+
+  @override
+  String get calCheckTitle => 'ตรวจโซนเหล่านี้';
+
+  @override
+  String calCheckBody(String list) {
+    return 'โซน $list ต่างจากแอปมากกว่า 3 มม. ใส่ค่าถูกโซนหรือไม่';
+  }
+
+  @override
+  String get calCheckFix => 'ตรวจอีกครั้ง';
+
+  @override
+  String get calCheckOk => 'ถูกต้องแล้ว';
+
+  @override
+  String get calHintScale =>
+      'มาตราส่วนขนาดดูคลาดเคลื่อน ตรวจขนาดแผ่นและชนิดจาน ตั้งขาตั้งที่ความสูงเดิม และใช้เลนส์หลักแทนการซูม';
+
+  @override
+  String get calHintLens =>
+      'โซนที่อยู่ใกล้ขอบเพลตต่างมากกว่าโซนตรงกลาง ให้ถอยกล้องออกห่างขึ้นและวางเพลตไว้กลางภาพ';
+
+  @override
+  String calHintEdgeLarger(String mm) {
+    return 'แอปวัดโซนใหญ่กว่าที่คุณวัดประมาณ $mm มม. คือวางขอบโซนออกไปด้านนอกมากกว่า ตรวจแสง และวัดโซนที่ก้ำกึ่งด้วยมือ แอปจะไม่เลื่อนขอบโซนเอง';
+  }
+
+  @override
+  String calHintEdgeSmaller(String mm) {
+    return 'แอปวัดโซนเล็กกว่าที่คุณวัดประมาณ $mm มม. คือวางขอบโซนเข้ามาด้านในมากกว่า ตรวจแสง และวัดโซนที่ก้ำกึ่งด้วยมือ แอปจะไม่เลื่อนขอบโซนเอง';
+  }
+
+  @override
+  String get calHintSpread =>
+      'ค่าความต่างกระจายมาก วัดใหม่อย่างระมัดระวัง ใช้ขาตั้ง และล็อกโฟกัส';
+
+  @override
+  String calWithin1(int pct) {
+    return '$pct % ของโซนต่างกันไม่เกิน 1 มม.';
+  }
+
+  @override
+  String calScaleCheck(String pct) {
+    return 'ตรวจมาตราส่วน: ระยะที่แอปวัดต่างจากของคุณ $pct %';
+  }
+
+  @override
+  String calRepeatability(String mm) {
+    return 'ความซ้ำได้ระหว่างภาพ: SD $mm มม.';
+  }
+
+  @override
+  String get calPlotCaption =>
+      'แต่ละจุดคือหนึ่งโซน: ค่าของแอปลบค่าของคุณ เทียบกับค่าเฉลี่ยของทั้งสอง เส้นทึบคือค่าเบี่ยงเบน เส้นประคือช่วงความสอดคล้อง 95 % แถบสีจางคือ ±1 มม.';
+
+  @override
+  String get calColZone => 'โซน';
+
+  @override
+  String get calColYours => 'ของคุณ';
+
+  @override
+  String get calColApp => 'แอป';
+
+  @override
+  String get calColDiff => 'แอป − ของคุณ';
+
+  @override
+  String get calLeftOut => 'ไม่นำมาคิด';
+
+  @override
+  String get calWhatChecked =>
+      'ผลนี้เทียบแอปกับค่าที่คุณวัดเอง บนกล้องและการตั้งค่านี้ ไม่ได้รับรองวิธีการ เพราะค่าที่วัดด้วยเวอร์เนียร์ก็ต่างกันระหว่างผู้วัดประมาณ 0.5 มม.';
+
+  @override
+  String get calSave => 'บันทึกการปรับเทียบ';
+
+  @override
+  String get calTryAgain => 'ลองใหม่โดยไม่ใช้เพลตนี้';
+
+  @override
+  String get calMenu => 'ปรับเทียบกับเวอร์เนียร์';
+
+  @override
   String get sampleKind => 'ชนิดตัวอย่าง';
 
   @override

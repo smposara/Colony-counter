@@ -9,6 +9,7 @@ import '../core/annotate.dart';
 import '../core/plate.dart';
 import '../core/zones.dart';
 import '../data/plate_store.dart';
+import '../data/zone_calibration_record.dart';
 import '../data/zone_record.dart';
 import '../l10n/l10n.dart';
 import 'format.dart';
@@ -28,12 +29,20 @@ class ZoneReviewScreen extends StatefulWidget {
     this.photo,
     this.setup,
     this.record,
+    this.camera = '',
+    this.forCalibration = false,
   }) : assert((photo != null && setup != null) || record != null);
 
   final PlateStore store;
   final Uint8List? photo;
   final ZoneSetup? setup;
   final ZoneRecord? record;
+
+  /// The camera's name for the lens of a new [photo] ('' when not known).
+  final String camera;
+
+  /// A used plate photographed to calibrate the app: saved as such.
+  final bool forCalibration;
 
   @override
   State<ZoneReviewScreen> createState() => _ZoneReviewScreenState();
@@ -130,11 +139,18 @@ class _ZoneReviewScreenState extends State<ZoneReviewScreen> {
         organism: old?.organism ?? setup!.organism,
         replicate: old?.replicate ?? setup!.replicate,
         panel: old?.panel ?? setup!.panel,
+        camera: old?.camera ?? widget.camera,
       );
       if (!mounted) return;
       setState(() {
         if (old != null) _pushUndo();
-        _rec = old == null ? rec : rec.copyWith(notes: old.notes);
+        _rec = old == null
+            ? rec
+            : rec.copyWith(
+                notes: old.notes,
+                calibrationId: old.calibrationId,
+                usedForCalibration: old.usedForCalibration,
+              );
         _busy = false;
         _dirty = _dirty || old != null || widget.record == null;
       });
@@ -430,6 +446,15 @@ class _ZoneReviewScreenState extends State<ZoneReviewScreen> {
     if (r.imagePath.isEmpty) {
       final name = await store.savePhoto(photo, 'zone_${r.id}');
       r = ZoneRecord.fromJson({...r.toJson(), 'image': name});
+    }
+    if (widget.forCalibration) {
+      r = r.copyWith(usedForCalibration: true);
+    } else if (widget.record == null) {
+      // A new plate keeps the calibration it was measured under.
+      final (status, profile) = recordCalibration(r, store.calibrations);
+      if (status == CalibrationStatus.calibrated && profile != null) {
+        r = r.copyWith(calibrationId: profile.id);
+      }
     }
     await store.upsertZone(r);
     if (!mounted) return;

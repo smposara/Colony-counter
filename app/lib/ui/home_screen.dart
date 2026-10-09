@@ -24,6 +24,7 @@ import 'photo_flow.dart';
 import 'photo_thumbnail.dart';
 import 'review_screen.dart';
 import 'samples_screen.dart';
+import 'zone_calibration_screen.dart';
 import 'zone_results_screen.dart';
 import 'zones_tab.dart';
 
@@ -319,6 +320,7 @@ class _DataMenu extends StatelessWidget {
           MaterialPageRoute<void>(builder: (_) => AccuracyScreen(store: store)),
         ),
         'training' => _trainingExport(context),
+        'calibration' => openZoneCalibration(context, store),
         'about' => Navigator.of(
           context,
         ).push(MaterialPageRoute<void>(builder: (_) => const AboutScreen())),
@@ -338,6 +340,10 @@ class _DataMenu extends StatelessWidget {
           child: Text(tr.homeBackUpAll),
         ),
         PopupMenuItem(value: 'restore', child: Text(tr.homeRestore)),
+        if (zones) ...[
+          const PopupMenuDivider(),
+          PopupMenuItem(value: 'calibration', child: Text(tr.calMenu)),
+        ],
         const PopupMenuDivider(),
         PopupMenuItem(value: 'accuracy', child: Text(tr.accuracyTitle)),
         PopupMenuItem(

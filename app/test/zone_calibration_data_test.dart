@@ -148,7 +148,8 @@ void main() {
         ],
       );
       expect(CalibrationPlate.fromRecord(r).zones.single.appMm, [6.0]);
-      expect(doubtfulForCalibration(m), isFalse);
+      expect(doubtfulForCalibration(m), isTrue); // no zone: disk size only
+      expect(doubtfulForCalibration(_mark(0, 0, 14)), isFalse);
       final hazy = ZoneMark.fromJson({
         ..._mark(0, 0, 14).toJson(),
         'flags': ['hazy'],

@@ -491,6 +491,10 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('I understand'));
     await tester.pumpAndSettle();
+    // The first time, calibration is suggested; Later goes on to the plate.
+    expect(find.text('Calibrate against your calliper?'), findsOneWidget);
+    await tester.tap(find.text('Later'));
+    await tester.pumpAndSettle();
     expect(find.text('Zone plate'), findsOneWidget);
     expect(find.text('Paper disks'), findsOneWidget);
     expect(store.zoneDisclaimerSeen, isTrue);
@@ -520,6 +524,8 @@ void main() {
     await tester.tap(find.text('วัดโซนยับยั้ง'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('เข้าใจแล้ว'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('ภายหลัง'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('หลุมวุ้น'));
     await tester.pumpAndSettle();

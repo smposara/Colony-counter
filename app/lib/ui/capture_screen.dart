@@ -16,6 +16,15 @@ const double kMaxGlare = 0.005;
 
 /// Camera with a plate guide and live checks (level, focus, glare).
 /// Pops with the path of the captured photo.
+/// A photo from the in-app camera: the file, and the camera plugin's name for
+/// the lens (zone calibrations are kept per lens).
+class CapturedPhoto {
+  const CapturedPhoto(this.path, this.camera);
+
+  final String path;
+  final String camera;
+}
+
 class CaptureScreen extends StatefulWidget {
   const CaptureScreen({
     super.key,
@@ -160,7 +169,10 @@ class _CaptureScreenState extends State<CaptureScreen>
     try {
       if (c.value.isStreamingImages) await c.stopImageStream();
       final file = await c.takePicture();
-      if (mounted) Navigator.of(context).pop(file.path);
+      if (mounted) {
+        Navigator.of(context)
+            .pop(CapturedPhoto(file.path, _controller?.description.name ?? ''));
+      }
     } on CameraException catch (e) {
       _snack(tr.captureFailed(e.description ?? e.code));
       await _startStream();

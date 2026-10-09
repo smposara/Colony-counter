@@ -192,6 +192,35 @@ A full-screen stepper. Each step is short, with one picture and one action.
 - On the Zones tab, a chip: *Calibrated: Good* / *Usable* / *Not calibrated* /
   *Calibrate again*.
 
+**Progress (October 2026):** C3 is done (`app/lib/ui/zone_calibration_screen.dart`).
+- **Wizard:**
+  - **Intro:** what you need, biosafety, calliper or ruler, stand or hand-held. Then
+    "Photograph a used plate" (the usual setup → camera → zone review, saved as a
+    calibration plate) or "Use a plate I just measured" (any zone plate from the last day).
+  - **Readings:** the photo with numbers only (the app's sizes are hidden so the readings
+    are the user's own). The span pair is drawn as a yellow line, and the focused zone is
+    ringed. Each zone has an include box and an optional second reading at right angles.
+    Disks with no zone are left out by default, along with hazy, overlapping and unmeasured
+    zones: a no-zone disk only checks the disk size.
+  - **Checks:** span 20–90 mm, readings 2–90 mm, at least 6 zones (8 with a ruler). A
+    reading more than 3 mm from the app asks "Is this zone N?".
+  - **Result:** the verdict, bias and limits, % within 1 mm, the scale check, repeatability,
+    a Bland–Altman plot, a per-zone table and what was (and wasn't) checked. "Save",
+    "Add another plate" (pooled; a plate from another camera or height is refused) and
+    "Try again without this plate".
+- **Saved together:** the profile, plus each plate with its readings, `usedForCalibration`
+  and `calibrationId`. The app's diameters are never changed.
+- **Calibrations screen:** each profile shows its verdict, stats, plates and tool, with
+  "Add another plate" and delete.
+- **Entry points:**
+  - After the disclaimer on the first zone plate: "Calibrate now" or "Later".
+  - The Zones tab menu: "Calibrate against a calliper".
+- **Camera plumbing:** the in-app camera now returns the lens name (`CapturedPhoto`), and new
+  zone plates keep it. A new plate measured under a matching profile is saved with that
+  profile's `calibrationId`. Re-measuring a saved plate keeps its camera and calibration.
+- **Strings:** `l10n/parts/calibration.json` (en/th).
+- **Tests:** `app/test/zone_calibration_ui_test.dart` (9), including Thai at 360 × 640.
+
 ## Data (`app/lib/data/zone_calibration_record.dart`, `plate_store.dart`)
 
 - **`CalibrationProfile`:**

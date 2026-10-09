@@ -25,9 +25,9 @@ class PlatePreset {
   final Slot slot;
 }
 
-/// A plate photo as encoded bytes, and whether it came through the in-app
-/// camera with its guide.
-typedef PlatePhoto = ({Uint8List bytes, bool guided});
+/// A plate photo as encoded bytes, whether it came through the in-app camera
+/// with its guide, and that camera's name for the lens ('' otherwise).
+typedef PlatePhoto = ({Uint8List bytes, bool guided, String camera});
 
 /// Takes (or imports) a plate photo; null when the user backs out.
 ///
@@ -48,9 +48,9 @@ Future<PlatePhoto?> takePlatePhoto(
       imageQuality: kIsWeb ? 92 : null,
     );
     if (picked == null) return null;
-    return (bytes: await picked.readAsBytes(), guided: false);
+    return (bytes: await picked.readAsBytes(), guided: false, camera: '');
   }
-  final path = await Navigator.of(context).push<String>(
+  final shot = await Navigator.of(context).push<CapturedPhoto>(
     MaterialPageRoute(
       builder: (_) => CaptureScreen(
         square: format.shape == PlateShape.square,
@@ -59,8 +59,12 @@ Future<PlatePhoto?> takePlatePhoto(
       ),
     ),
   );
-  if (path == null) return null;
-  return (bytes: await XFile(path).readAsBytes(), guided: true);
+  if (shot == null) return null;
+  return (
+    bytes: await XFile(shot.path).readAsBytes(),
+    guided: true,
+    camera: shot.camera,
+  );
 }
 
 /// Takes (or imports) a plate photo and opens the review screen for it.

@@ -6,6 +6,7 @@ import '../l10n/l10n.dart';
 import 'format.dart';
 import 'photo_flow.dart';
 import 'photo_thumbnail.dart';
+import 'zone_calibration_screen.dart';
 import 'zone_review_screen.dart';
 import 'zone_setup_sheet.dart';
 
@@ -39,29 +40,68 @@ Future<bool> confirmZoneDisclaimer(
   return true;
 }
 
-/// Sets up, photographs and measures a new zone plate.
-Future<void> measureNewZonePlate(BuildContext context, PlateStore store) async {
-  if (!await confirmZoneDisclaimer(context, store) || !context.mounted) {
-    return;
-  }
+/// Sets up, photographs and measures a zone plate; the saved plate, or null.
+/// [forCalibration]: a used plate photographed to calibrate the app.
+Future<ZoneRecord?> photographZonePlate(
+  BuildContext context,
+  PlateStore store, {
+  bool forCalibration = false,
+}) async {
   final choice = await showZoneSetupSheet(context, store);
-  if (choice == null || !context.mounted) return;
+  if (choice == null || !context.mounted) return null;
   final photo = await takePlatePhoto(
     context,
     fromGallery: choice.fromGallery,
     format: choice.setup.format,
     tip: tr.zoneCaptureTip,
   );
-  if (photo == null || !context.mounted) return;
-  await Navigator.of(context).push(
+  if (photo == null || !context.mounted) return null;
+  return Navigator.of(context).push(
     MaterialPageRoute<ZoneRecord>(
       builder: (_) => ZoneReviewScreen(
         store: store,
         photo: photo.bytes,
         setup: choice.setup,
+        camera: photo.camera,
+        forCalibration: forCalibration,
       ),
     ),
   );
+}
+
+/// Sets up, photographs and measures a new zone plate. The first time, after
+/// the disclaimer, calibration against a calliper is suggested.
+Future<void> measureNewZonePlate(BuildContext context, PlateStore store) async {
+  final first = !store.zoneDisclaimerSeen;
+  if (!await confirmZoneDisclaimer(context, store) || !context.mounted) {
+    return;
+  }
+  if (first && store.calibrations.isEmpty) {
+    final now = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        icon: const Icon(Icons.straighten),
+        title: Text(tr.calSuggestTitle),
+        content: Text(tr.calSuggestBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(tr.calLater),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(tr.calNow),
+          ),
+        ],
+      ),
+    );
+    if (!context.mounted) return;
+    if (now == true) {
+      await openZoneCalibration(context, store, wizard: true);
+      return;
+    }
+  }
+  await photographZonePlate(context, store);
 }
 
 /// Inhibition-zone plates, newest first.

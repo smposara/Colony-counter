@@ -224,6 +224,450 @@ abstract class AppLocalizations {
   /// **'Zone diameters are measured only: no susceptible, intermediate or resistant interpretation. Not yet checked against calliper readings on real plates; check every zone.'**
   String get aboutZones;
 
+  /// No description provided for @calSuggestTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Calibrate against your calliper?'**
+  String get calSuggestTitle;
+
+  /// No description provided for @calSuggestBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Strongly recommended before relying on zone sizes. Photograph a used zone plate, measure it with a calliper or ruler, and see how closely the app agrees with you. It takes about 5–10 minutes, and you can do it later from the Zones menu.'**
+  String get calSuggestBody;
+
+  /// No description provided for @calLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get calLater;
+
+  /// No description provided for @calNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Calibrate now'**
+  String get calNow;
+
+  /// No description provided for @calTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Zone calibration'**
+  String get calTitle;
+
+  /// No description provided for @calNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New calibration'**
+  String get calNew;
+
+  /// No description provided for @calNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No calibration yet. Tap New calibration and have a calliper (or ruler) and a used zone plate ready.'**
+  String get calNone;
+
+  /// No description provided for @calOld.
+  ///
+  /// In en, this message translates to:
+  /// **'Older than 90 days: calibrate again'**
+  String get calOld;
+
+  /// No description provided for @calStats.
+  ///
+  /// In en, this message translates to:
+  /// **'Bias {bias} mm · limits {low} to {high} mm · {n} zones'**
+  String calStats(String bias, String low, String high, int n);
+
+  /// No description provided for @calPlatesTool.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{1 plate} other{{n} plates}} · {tool}'**
+  String calPlatesTool(int n, String tool);
+
+  /// No description provided for @calToolCalliper.
+  ///
+  /// In en, this message translates to:
+  /// **'Calliper'**
+  String get calToolCalliper;
+
+  /// No description provided for @calToolRuler.
+  ///
+  /// In en, this message translates to:
+  /// **'Ruler'**
+  String get calToolRuler;
+
+  /// No description provided for @calAddPlate.
+  ///
+  /// In en, this message translates to:
+  /// **'Add another plate'**
+  String get calAddPlate;
+
+  /// No description provided for @calDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete calibration?'**
+  String get calDeleteTitle;
+
+  /// No description provided for @calDeleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The readings are deleted; the plates stay as ordinary zone plates.'**
+  String get calDeleteBody;
+
+  /// No description provided for @calVerdictGood.
+  ///
+  /// In en, this message translates to:
+  /// **'Good: the app agrees with your readings within about 1 mm.'**
+  String get calVerdictGood;
+
+  /// No description provided for @calVerdictUsable.
+  ///
+  /// In en, this message translates to:
+  /// **'Usable: within about 2 mm. Check borderline zones by hand.'**
+  String get calVerdictUsable;
+
+  /// No description provided for @calVerdictPoor.
+  ///
+  /// In en, this message translates to:
+  /// **'Not good enough yet.'**
+  String get calVerdictPoor;
+
+  /// No description provided for @calVerdictTooFew.
+  ///
+  /// In en, this message translates to:
+  /// **'Too few zones measured.'**
+  String get calVerdictTooFew;
+
+  /// No description provided for @calSetupStand.
+  ///
+  /// In en, this message translates to:
+  /// **'On the stand'**
+  String get calSetupStand;
+
+  /// No description provided for @calSetupHandheld.
+  ///
+  /// In en, this message translates to:
+  /// **'Hand-held'**
+  String get calSetupHandheld;
+
+  /// No description provided for @calOtherSetup.
+  ///
+  /// In en, this message translates to:
+  /// **'This plate was photographed with another camera or at another height. Use the same setup for every plate of a calibration.'**
+  String get calOtherSetup;
+
+  /// No description provided for @calNoRecent.
+  ///
+  /// In en, this message translates to:
+  /// **'No zone plates from the last day.'**
+  String get calNoRecent;
+
+  /// No description provided for @calUseRecent.
+  ///
+  /// In en, this message translates to:
+  /// **'Use a plate I just measured'**
+  String get calUseRecent;
+
+  /// No description provided for @calLeaveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave the calibration?'**
+  String get calLeaveTitle;
+
+  /// No description provided for @calLeaveBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The readings so far are not saved.'**
+  String get calLeaveBody;
+
+  /// No description provided for @calIntroTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Check the app against your calliper'**
+  String get calIntroTitle;
+
+  /// No description provided for @calAddPlateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a plate to this calibration'**
+  String get calAddPlateTitle;
+
+  /// No description provided for @calIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'The app measures a used zone plate from a photo, you measure the same plate, and the app shows how well the two agree. Nothing is changed: plates measured afterwards show how they were calibrated.'**
+  String get calIntro;
+
+  /// No description provided for @calNeedTool.
+  ///
+  /// In en, this message translates to:
+  /// **'A calliper (or a ruler).'**
+  String get calNeedTool;
+
+  /// No description provided for @calNeedPlate.
+  ///
+  /// In en, this message translates to:
+  /// **'A used, incubated zone plate with at least 6 clear zones, ideally of different sizes and some near the edge.'**
+  String get calNeedPlate;
+
+  /// No description provided for @calNeedSetup.
+  ///
+  /// In en, this message translates to:
+  /// **'The same stand, distance and light you use for real plates.'**
+  String get calNeedSetup;
+
+  /// No description provided for @calBiosafety.
+  ///
+  /// In en, this message translates to:
+  /// **'The plate is a live culture: measure with the lid on, from the outside, and follow your lab\'s rules.'**
+  String get calBiosafety;
+
+  /// No description provided for @calToolQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'What will you measure with?'**
+  String get calToolQuestion;
+
+  /// No description provided for @calMinZones.
+  ///
+  /// In en, this message translates to:
+  /// **'At least {n} zones are needed.'**
+  String calMinZones(int n);
+
+  /// No description provided for @calSetupQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'How do you photograph plates?'**
+  String get calSetupQuestion;
+
+  /// No description provided for @calPhotograph.
+  ///
+  /// In en, this message translates to:
+  /// **'Photograph a used plate'**
+  String get calPhotograph;
+
+  /// No description provided for @calBackToResult.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to the result'**
+  String get calBackToResult;
+
+  /// No description provided for @calReadingsHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Measure the way you normally read zones, for example from the back of the plate with the lid on. The app\'s sizes are hidden so your readings stay your own.'**
+  String get calReadingsHelp;
+
+  /// No description provided for @calSpanTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scale check'**
+  String get calSpanTitle;
+
+  /// No description provided for @calSpanHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Measure from the outer edge of disk {a} to the outer edge of disk {b} (the yellow line).'**
+  String calSpanHelp(int a, int b);
+
+  /// No description provided for @calSpanLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Span'**
+  String get calSpanLabel;
+
+  /// No description provided for @calSpanInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the span, 20 to 90 mm.'**
+  String get calSpanInvalid;
+
+  /// No description provided for @calReadingInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Zone {n}: enter 2 to 90 mm.'**
+  String calReadingInvalid(int n);
+
+  /// No description provided for @calNeedZones.
+  ///
+  /// In en, this message translates to:
+  /// **'Measure at least {need} zones ({have} so far).'**
+  String calNeedZones(int need, int have);
+
+  /// No description provided for @calZonesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Zone diameters'**
+  String get calZonesTitle;
+
+  /// No description provided for @calZoneN.
+  ///
+  /// In en, this message translates to:
+  /// **'Zone {n}'**
+  String calZoneN(int n);
+
+  /// No description provided for @calDoubtful.
+  ///
+  /// In en, this message translates to:
+  /// **'Hazy, overlapping or no zone: left out unless ticked'**
+  String get calDoubtful;
+
+  /// No description provided for @calSecondReading.
+  ///
+  /// In en, this message translates to:
+  /// **'At right angles'**
+  String get calSecondReading;
+
+  /// No description provided for @calNotRound.
+  ///
+  /// In en, this message translates to:
+  /// **'Not round: add a second reading'**
+  String get calNotRound;
+
+  /// No description provided for @calOneReading.
+  ///
+  /// In en, this message translates to:
+  /// **'One reading'**
+  String get calOneReading;
+
+  /// No description provided for @calSeeResult.
+  ///
+  /// In en, this message translates to:
+  /// **'See the result'**
+  String get calSeeResult;
+
+  /// No description provided for @calCheckTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Check these zones'**
+  String get calCheckTitle;
+
+  /// No description provided for @calCheckBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Zones {list} differ from the app by more than 3 mm. Was each reading typed into the right zone?'**
+  String calCheckBody(String list);
+
+  /// No description provided for @calCheckFix.
+  ///
+  /// In en, this message translates to:
+  /// **'Check them'**
+  String get calCheckFix;
+
+  /// No description provided for @calCheckOk.
+  ///
+  /// In en, this message translates to:
+  /// **'They are right'**
+  String get calCheckOk;
+
+  /// No description provided for @calHintScale.
+  ///
+  /// In en, this message translates to:
+  /// **'The size scale looks off. Check the disk size and plate type, keep the stand at the same height, and use the main lens rather than zoom.'**
+  String get calHintScale;
+
+  /// No description provided for @calHintLens.
+  ///
+  /// In en, this message translates to:
+  /// **'Zones near the plate edge differ more than central ones. Move the camera further away and keep the plate centred.'**
+  String get calHintLens;
+
+  /// No description provided for @calHintEdgeLarger.
+  ///
+  /// In en, this message translates to:
+  /// **'The app reads zones about {mm} mm larger than you do: it places the edge further out. Check the lighting, and read borderline zones by hand. The app does not shift its edge.'**
+  String calHintEdgeLarger(String mm);
+
+  /// No description provided for @calHintEdgeSmaller.
+  ///
+  /// In en, this message translates to:
+  /// **'The app reads zones about {mm} mm smaller than you do: it places the edge further in. Check the lighting, and read borderline zones by hand. The app does not shift its edge.'**
+  String calHintEdgeSmaller(String mm);
+
+  /// No description provided for @calHintSpread.
+  ///
+  /// In en, this message translates to:
+  /// **'The differences are scattered. Measure again carefully, use the stand, and lock the focus.'**
+  String get calHintSpread;
+
+  /// No description provided for @calWithin1.
+  ///
+  /// In en, this message translates to:
+  /// **'{pct} % of zones within 1 mm'**
+  String calWithin1(int pct);
+
+  /// No description provided for @calScaleCheck.
+  ///
+  /// In en, this message translates to:
+  /// **'Scale check: the app\'s span differs from yours by {pct} %'**
+  String calScaleCheck(String pct);
+
+  /// No description provided for @calRepeatability.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeatability across photos: SD {mm} mm'**
+  String calRepeatability(String mm);
+
+  /// No description provided for @calPlotCaption.
+  ///
+  /// In en, this message translates to:
+  /// **'Each dot is a zone: the app minus your reading, against the mean of the two. The solid line is the bias, the dashed lines the 95 % limits of agreement, the shaded band ±1 mm.'**
+  String get calPlotCaption;
+
+  /// No description provided for @calColZone.
+  ///
+  /// In en, this message translates to:
+  /// **'Zone'**
+  String get calColZone;
+
+  /// No description provided for @calColYours.
+  ///
+  /// In en, this message translates to:
+  /// **'Yours'**
+  String get calColYours;
+
+  /// No description provided for @calColApp.
+  ///
+  /// In en, this message translates to:
+  /// **'App'**
+  String get calColApp;
+
+  /// No description provided for @calColDiff.
+  ///
+  /// In en, this message translates to:
+  /// **'App − yours'**
+  String get calColDiff;
+
+  /// No description provided for @calLeftOut.
+  ///
+  /// In en, this message translates to:
+  /// **'left out'**
+  String get calLeftOut;
+
+  /// No description provided for @calWhatChecked.
+  ///
+  /// In en, this message translates to:
+  /// **'This compares the app with your own readings on this camera and setup. It doesn\'t prove the method: calliper readings also differ by about 0.5 mm between people.'**
+  String get calWhatChecked;
+
+  /// No description provided for @calSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save calibration'**
+  String get calSave;
+
+  /// No description provided for @calTryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again without this plate'**
+  String get calTryAgain;
+
+  /// No description provided for @calMenu.
+  ///
+  /// In en, this message translates to:
+  /// **'Calibrate against a calliper'**
+  String get calMenu;
+
   /// No description provided for @sampleKind.
   ///
   /// In en, this message translates to:

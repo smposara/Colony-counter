@@ -84,6 +84,277 @@ class AppLocalizationsEn extends AppLocalizations {
       'Zone diameters are measured only: no susceptible, intermediate or resistant interpretation. Not yet checked against calliper readings on real plates; check every zone.';
 
   @override
+  String get calSuggestTitle => 'Calibrate against your calliper?';
+
+  @override
+  String get calSuggestBody =>
+      'Strongly recommended before relying on zone sizes. Photograph a used zone plate, measure it with a calliper or ruler, and see how closely the app agrees with you. It takes about 5–10 minutes, and you can do it later from the Zones menu.';
+
+  @override
+  String get calLater => 'Later';
+
+  @override
+  String get calNow => 'Calibrate now';
+
+  @override
+  String get calTitle => 'Zone calibration';
+
+  @override
+  String get calNew => 'New calibration';
+
+  @override
+  String get calNone =>
+      'No calibration yet. Tap New calibration and have a calliper (or ruler) and a used zone plate ready.';
+
+  @override
+  String get calOld => 'Older than 90 days: calibrate again';
+
+  @override
+  String calStats(String bias, String low, String high, int n) {
+    return 'Bias $bias mm · limits $low to $high mm · $n zones';
+  }
+
+  @override
+  String calPlatesTool(int n, String tool) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n plates',
+      one: '1 plate',
+    );
+    return '$_temp0 · $tool';
+  }
+
+  @override
+  String get calToolCalliper => 'Calliper';
+
+  @override
+  String get calToolRuler => 'Ruler';
+
+  @override
+  String get calAddPlate => 'Add another plate';
+
+  @override
+  String get calDeleteTitle => 'Delete calibration?';
+
+  @override
+  String get calDeleteBody =>
+      'The readings are deleted; the plates stay as ordinary zone plates.';
+
+  @override
+  String get calVerdictGood =>
+      'Good: the app agrees with your readings within about 1 mm.';
+
+  @override
+  String get calVerdictUsable =>
+      'Usable: within about 2 mm. Check borderline zones by hand.';
+
+  @override
+  String get calVerdictPoor => 'Not good enough yet.';
+
+  @override
+  String get calVerdictTooFew => 'Too few zones measured.';
+
+  @override
+  String get calSetupStand => 'On the stand';
+
+  @override
+  String get calSetupHandheld => 'Hand-held';
+
+  @override
+  String get calOtherSetup =>
+      'This plate was photographed with another camera or at another height. Use the same setup for every plate of a calibration.';
+
+  @override
+  String get calNoRecent => 'No zone plates from the last day.';
+
+  @override
+  String get calUseRecent => 'Use a plate I just measured';
+
+  @override
+  String get calLeaveTitle => 'Leave the calibration?';
+
+  @override
+  String get calLeaveBody => 'The readings so far are not saved.';
+
+  @override
+  String get calIntroTitle => 'Check the app against your calliper';
+
+  @override
+  String get calAddPlateTitle => 'Add a plate to this calibration';
+
+  @override
+  String get calIntro =>
+      'The app measures a used zone plate from a photo, you measure the same plate, and the app shows how well the two agree. Nothing is changed: plates measured afterwards show how they were calibrated.';
+
+  @override
+  String get calNeedTool => 'A calliper (or a ruler).';
+
+  @override
+  String get calNeedPlate =>
+      'A used, incubated zone plate with at least 6 clear zones, ideally of different sizes and some near the edge.';
+
+  @override
+  String get calNeedSetup =>
+      'The same stand, distance and light you use for real plates.';
+
+  @override
+  String get calBiosafety =>
+      'The plate is a live culture: measure with the lid on, from the outside, and follow your lab\'s rules.';
+
+  @override
+  String get calToolQuestion => 'What will you measure with?';
+
+  @override
+  String calMinZones(int n) {
+    return 'At least $n zones are needed.';
+  }
+
+  @override
+  String get calSetupQuestion => 'How do you photograph plates?';
+
+  @override
+  String get calPhotograph => 'Photograph a used plate';
+
+  @override
+  String get calBackToResult => 'Back to the result';
+
+  @override
+  String get calReadingsHelp =>
+      'Measure the way you normally read zones, for example from the back of the plate with the lid on. The app\'s sizes are hidden so your readings stay your own.';
+
+  @override
+  String get calSpanTitle => 'Scale check';
+
+  @override
+  String calSpanHelp(int a, int b) {
+    return 'Measure from the outer edge of disk $a to the outer edge of disk $b (the yellow line).';
+  }
+
+  @override
+  String get calSpanLabel => 'Span';
+
+  @override
+  String get calSpanInvalid => 'Enter the span, 20 to 90 mm.';
+
+  @override
+  String calReadingInvalid(int n) {
+    return 'Zone $n: enter 2 to 90 mm.';
+  }
+
+  @override
+  String calNeedZones(int need, int have) {
+    return 'Measure at least $need zones ($have so far).';
+  }
+
+  @override
+  String get calZonesTitle => 'Zone diameters';
+
+  @override
+  String calZoneN(int n) {
+    return 'Zone $n';
+  }
+
+  @override
+  String get calDoubtful =>
+      'Hazy, overlapping or no zone: left out unless ticked';
+
+  @override
+  String get calSecondReading => 'At right angles';
+
+  @override
+  String get calNotRound => 'Not round: add a second reading';
+
+  @override
+  String get calOneReading => 'One reading';
+
+  @override
+  String get calSeeResult => 'See the result';
+
+  @override
+  String get calCheckTitle => 'Check these zones';
+
+  @override
+  String calCheckBody(String list) {
+    return 'Zones $list differ from the app by more than 3 mm. Was each reading typed into the right zone?';
+  }
+
+  @override
+  String get calCheckFix => 'Check them';
+
+  @override
+  String get calCheckOk => 'They are right';
+
+  @override
+  String get calHintScale =>
+      'The size scale looks off. Check the disk size and plate type, keep the stand at the same height, and use the main lens rather than zoom.';
+
+  @override
+  String get calHintLens =>
+      'Zones near the plate edge differ more than central ones. Move the camera further away and keep the plate centred.';
+
+  @override
+  String calHintEdgeLarger(String mm) {
+    return 'The app reads zones about $mm mm larger than you do: it places the edge further out. Check the lighting, and read borderline zones by hand. The app does not shift its edge.';
+  }
+
+  @override
+  String calHintEdgeSmaller(String mm) {
+    return 'The app reads zones about $mm mm smaller than you do: it places the edge further in. Check the lighting, and read borderline zones by hand. The app does not shift its edge.';
+  }
+
+  @override
+  String get calHintSpread =>
+      'The differences are scattered. Measure again carefully, use the stand, and lock the focus.';
+
+  @override
+  String calWithin1(int pct) {
+    return '$pct % of zones within 1 mm';
+  }
+
+  @override
+  String calScaleCheck(String pct) {
+    return 'Scale check: the app\'s span differs from yours by $pct %';
+  }
+
+  @override
+  String calRepeatability(String mm) {
+    return 'Repeatability across photos: SD $mm mm';
+  }
+
+  @override
+  String get calPlotCaption =>
+      'Each dot is a zone: the app minus your reading, against the mean of the two. The solid line is the bias, the dashed lines the 95 % limits of agreement, the shaded band ±1 mm.';
+
+  @override
+  String get calColZone => 'Zone';
+
+  @override
+  String get calColYours => 'Yours';
+
+  @override
+  String get calColApp => 'App';
+
+  @override
+  String get calColDiff => 'App − yours';
+
+  @override
+  String get calLeftOut => 'left out';
+
+  @override
+  String get calWhatChecked =>
+      'This compares the app with your own readings on this camera and setup. It doesn\'t prove the method: calliper readings also differ by about 0.5 mm between people.';
+
+  @override
+  String get calSave => 'Save calibration';
+
+  @override
+  String get calTryAgain => 'Try again without this plate';
+
+  @override
+  String get calMenu => 'Calibrate against a calliper';
+
+  @override
   String get sampleKind => 'Sample';
 
   @override
