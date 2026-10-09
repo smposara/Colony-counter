@@ -302,6 +302,9 @@ M5 and M6.
 
 About **21 working days (4–5 weeks)** after the gate, in line with the AST.md estimate.
 
+Follow-up: a camera calibration wizard, planned in
+[ZONE_CALIBRATION_IMPLEMENTATION.md](ZONE_CALIBRATION_IMPLEMENTATION.md).
+
 ## Risks and mitigations
 
 | Risk | Mitigation |
