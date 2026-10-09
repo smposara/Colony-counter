@@ -1,311 +1,302 @@
-# Camera calibration wizard for zone measurement: implementation plan
+# Calibration wizard for zone measurement: implementation plan
 
-A short guided check, run once per phone and setup before measuring inhibition zones. It
-shows how accurately this camera, at this distance and with this lighting, measures known
-diameters, and keeps the result with every zone plate. It builds on the zone feature
-([AST_IMPLEMENTATION.md](AST_IMPLEMENTATION.md)), which is in beta until it has been checked
-against calliper readings on real plates.
+A short guided check of the zone measurement on one phone and setup. You need only:
+- a **calliper** (or a ruler);
+- a **used inhibition-zone plate**, already incubated.
+
+No printer, target or special object is needed. The app measures the plate from a photo,
+you measure the same plate with your calliper, and the app shows how well the two agree.
+That agreement is kept with every zone plate measured on this phone and setup afterwards.
+
+It builds on the zone feature ([AST_IMPLEMENTATION.md](AST_IMPLEMENTATION.md)), which is in
+beta until it has been checked against calliper readings on real plates. The readings
+collected here are that check.
 
 ## Why calibrate
 
 Zones are read to the nearest mm, and a 1 % scale error is 0.3 mm on a 30 mm zone. The
-detector already takes its scale from the 6.0 mm paper disks, but some errors are invisible
-to it:
+detector takes its scale from the 6.0 mm paper disks, but some errors are invisible to it:
 
 | Error source | Size | Seen today? |
 |---|---|---|
 | Scale from the dish rim (wells have no disks) | The rim is up to about 10 mm above the agar. At 120 mm camera height that is up to about 8 %, depending on which edge the plate finder locks onto | No: wells use the plate scale |
-| Lens distortion (barrel/pincushion) after the phone's own correction | 0.2–1 % between centre and edge; more on ultra-wide lenses | No |
-| Phone switches lens at close range (macro / ultra-wide) | Changes scale and distortion between photos | No |
-| Printer or disk tolerance (disks are 6.0 ± ~0.1 mm) | Up to about 2 % | Partly (`scale_mismatch` above 5 %) |
+| Disk tolerance (6.0 ± ~0.1 mm) | Up to about 2 % | Partly (`scale_mismatch` above 5 %) |
+| Lens distortion after the phone's own correction | 0.2–1 % between centre and edge; more on ultra-wide lenses | No |
+| Phone switches lens at close range (macro / ultra-wide) | Changes scale between photos | No |
 | Tilt | cos 3° ≈ 0.14 %, small | Yes (accelerometer check, 3°) |
-| Where the edge is read (50 % threshold vs. the eye) | Up to about ±0.5 mm, depends on the lawn | No |
+| Where the edge is read (the app's 50 % threshold vs. the eye) | Up to about ±1 mm, depends on the lawn | No |
 
-The calibration measures all of these together, end to end, through the same detector
-the zone plates use.
+A printed target would only catch the first four. Comparing with calliper readings on a
+real plate catches all of them, including the last one, which is usually the largest: how
+this lab reads a zone edge.
 
 ## Scope
 
 **In:**
-- A printable calibration target: a "zone plate on paper" with zones of known size.
-- A guided wizard: get the target, check the print, set up, take 3 photos, see the result.
-- A saved calibration profile for each camera and setup.
-- A cross-check of every zone plate against the profile.
-- A check of every well plate's scale against the profile (warn only).
-- An optional calliper check on real plates (Bland–Altman summary). The same data serves
-  as the real-photo gate data the zone feature still needs.
+- A guided wizard. Photograph a used zone plate, measure one long span and the zones with
+  a calliper or ruler, enter them, and see the agreement.
+- A saved calibration profile for each camera and setup, with a verdict, the bias and the
+  limits of agreement.
+- On every zone plate: whether it is calibrated, how the app compared with your calliper,
+  scale checks and re-check reminders.
+- More plates can be added to a calibration at any time, with a running agreement summary.
+- Exporting the photos and readings as labelled test data for the zone feature's
+  real-photo gate (opt-in).
 
 **Out (v1):**
-- Full camera intrinsics (checkerboard, multi-pose).
-- Correcting tilt from the photo.
+- Printed targets, rulers detected in the photo, and other reference objects.
+- Any correction of measured zones or of the scale: v1 checks and reports only.
 - Colour or exposure calibration.
-- Automatic correction of measured zones beyond scale. Radial distortion correction is
-  a decision below.
 
-## Architecture overview
+## What the user measures
 
-```
-calibration_target.dart (geometry, one source of truth)
-   ├─► calibration_sheet.dart ─► PDF (A4 / Letter, print at 100 %)
-   ├─► ml/colonycounter/calibration.py ─► synthetic target photos for tests
-   └─► zone_calibration.dart: photo ─► find target ─► measure its zones with zones.dart
-                                       ─► compare with true sizes ─► CalibrationResult
-CalibrationWizard (ui) ─► CalibrationProfile (store) ─► used by every zone plate:
-   flags, scale cross-check for disks and wells, re-check reminders (warn only)
-```
+The plate is a **used, incubated zone plate** (disks or wells) from routine work. A good
+calibration plate has:
+- at least **6 clear zones**, ideally of different sizes;
+- some zones near the edge of the plate (to show lens effects);
+- no zones that overlap, and none with very hazy edges. The app suggests which zones to
+  skip.
 
-## 1. The calibration target
+Two kinds of reading are entered, all in mm:
 
-`app/lib/core/calibration_target.dart` holds the geometry, all in mm, used by the PDF, the
-detector and the Python generator.
+1. **One span: the scale check.**
+   - The app picks the two disks (or wells) farthest apart and highlights them on the
+     photo.
+   - The user measures across them from outer edge to outer edge, usually 50–70 mm.
+   - This is the plain scale at agar height. It doesn't depend on how a zone edge is
+     read, so it separates "the camera scale is off" from "we read edges differently".
+2. **Each zone's diameter,** numbered as on the screen.
+   - Measure the way the lab normally reads zones, for example from the back of the plate
+     against a dark background with the lid on.
+   - A non-round zone is measured across two directions at right angles; the app averages
+     them. It measures the mean diameter too.
 
-- An **85 mm disc** that fits inside a 90 mm dish (cut along the printed outline).
-- **Zones:**
-  - The lawn is printed light grey with a fine noise texture, so the detector sees a lawn
-    rather than flat paper.
-  - Each zone is a dark grey disc with a white 6.0 mm "paper disk" at its centre. This
-    matches the reflected-light, `dark_zone` polarity.
-  - One centre zone of **30 mm**.
-  - Six zones at 24 mm from the centre, of **10, 11, 12, 13, 14 and 16 mm**. The sizes are
-    all different, so each zone is identified by its size and clockwise order, and none
-    reaches past 32 mm from the centre.
-- **A thin 80.0 mm reference circle** near the edge. It gives a precise large-scale value
-  and a third radius for estimating distortion (centre, 24 mm, 40 mm).
-- **An orientation mark:** a small black triangle at 12 o'clock.
-- **A 60.0 mm print-check bar** across the lower part of the disc, with 10 mm ticks. The
-  user measures it before cutting the target out.
-- **Under the disc:** the target version (`CC-ZT1`), "print at 100 % / actual size", and
-  a QR code with the version, so a photo of the wrong target is rejected.
+**Tools:**
+- **Calliper:** readings to 0.1 mm. 6 zones are enough.
+- **Ruler:** readings to 0.5 mm. The app asks for at least 8 zones and widens the
+  verdict limits (below), because a ruler adds its own reading error.
 
-Disks and zones are printed as filled shapes with sharp edges, so the "true" zone edge is
-known exactly. A real lawn's edge is softer; the calliper check (section 6) covers that.
+**Biosafety:** the plate is a used culture. Measure with the lid on, from the outside;
+the calliper never touches the agar. Follow the lab's own rules for handling and
+disposal. The wizard says this in one line.
 
-**No printer?** A fallback mode uses any flat, round object up to 30 mm across that the
-user has measured with a calliper (for example a coin), laid on the agar. It checks the
-scale only (one size, one position), and the profile is marked "scale only".
+## Analysis (`app/lib/core/zone_calibration.dart`)
 
-## 2. Analysis (`app/lib/core/zone_calibration.dart`)
+`analyseCalibration(CalibrationInput)` is pure Dart and fast, so it needs no isolate. It
+takes the zone measurement of each photo (from `measureZonesInPhoto`, as for a normal
+plate) and the user's readings.
 
-`analyseCalibrationPhoto((Uint8List, CalibrationOptions))` runs in `compute`, like
-`measureZonesInPhoto`. For each photo:
+1. **Scale check:**
+   - The app's span is the distance between the two disk centres plus both disk radii,
+     in mm at the plate's scale.
+   - `scaleError = appSpan / userSpan − 1`, in %.
+   - For wells this checks the rim-based scale directly, which is the weakest part
+     today.
+2. **Zone agreement:**
+   - For each zone, the difference is the app's diameter minus the user's (the mean over
+     photos when there are several).
+   - **Bias** is the mean difference. **SD** is the spread of the differences.
+   - **95 % limits of agreement** are bias ± 1.96 SD (Bland–Altman).
+   - Also reported: the largest absolute difference, and the % within 1 mm.
+3. **Where the error comes from,** shown as hints, not numbers:
+   - **Scale:** if the bias grows with zone size (the slope of the difference against the
+     diameter is clearly not zero), the cause is the scale. The span check confirms it.
+   - **Edge reading:** a steady offset with no slope means the app and the user read the
+     edge at different places.
+   - **Lens:** a larger difference for zones near the plate edge than for central ones
+     points to lens distortion or tilt.
+4. **Repeatability** (optional, from 2–3 photos with the plate turned a little between
+   them): the SD of each zone's app diameter across photos.
 
-1. **Find the plate and the target:**
-   - `findPlate`, then `findDisks` with `diskMm: 6`. It should find 7 white disks.
-   - Identify each zone by its expected size and its angle from the orientation mark.
-     The photo is rejected if fewer than 6 of the 7 are found ("Target not found:
-     centre it in the dish and keep the whole disc in view").
-2. **Measure:**
-   - Measure the 7 zones with `measureZones`, with the disks given, exactly as on a real
-     plate. Also fit the 80 mm reference circle.
-3. **Compare:**
-   - Each true size is the nominal size × the print factor (section 3, step 2).
-   - Compute, in mm, the error of each zone (measured − true), the mean bias and the
-     largest absolute error.
-4. **Scale:**
-   - The disk-based scale the detector used, compared with the true scale from the
-     80 mm circle (the `diskScaleError` %).
-   - The plate-rim scale compared with the true scale (the `rimScaleError` %).
-5. **Distortion:**
-   - Fit `s(r) = s0 · (1 + k1 · r²)` to the scale at the three radii (centre zone, ring
-     zones, 80 mm circle). `r` is measured from the image centre and normalised by half
-     the image diagonal.
-   - Report the edge-to-centre difference as a percentage.
+Zones the detector flagged as `overlap`, `hazy` or `unmeasured` are offered but marked;
+the summary leaves them out unless the user includes them.
 
-Over the 3 photos (the user turns the target between photos):
-- **Repeatability:** the SD of each zone's diameter across photos.
-- Turning separates print errors (they move with the target) from lens errors (they stay
-  with the image).
-- The final error is the per-zone mean.
+**Verdict.** The calliper limits are set at half and all of the 1 mm reading step; the
+ruler adds its own reading error.
 
-**Verdict.** EUCAST reads to the nearest mm, so the limits sit at half of that:
-
-| Verdict | Largest error | Repeatability SD | Advice shown |
+| Verdict | Calliper | Ruler | Shown as |
 |---|---|---|---|
-| **Good** | ≤ 0.5 mm | ≤ 0.2 mm | — |
-| **Usable** | ≤ 1.0 mm | ≤ 0.4 mm | "Zones within about 1 mm; check borderline ones by hand" |
-| **Not good enough** | > 1.0 mm | > 0.4 mm | Specific advice (see below) |
+| **Good** | \|bias\| ≤ 0.5 mm, limits within ±1.0 mm, \|scale error\| ≤ 1 % | \|bias\| ≤ 0.5 mm, limits within ±1.5 mm, \|scale error\| ≤ 1.5 % | "The app agrees with your calliper within about 1 mm" |
+| **Usable** | \|bias\| ≤ 1.0 mm, limits within ±2.0 mm | \|bias\| ≤ 1.0 mm, limits within ±2.5 mm | "Within about 2 mm; check borderline zones by hand" |
+| **Not good enough** | otherwise | otherwise | With the hint from step 3 |
 
-For "not good enough", the advice depends on what failed:
-- Large `diskScaleError`: check that the print factor was measured correctly, or that
-  the disks aren't a different size.
-- Error growing towards the edge: move the camera further away, or use the main lens and
-  not 2× zoom.
-- High SD: lock focus, use the stand, check the lighting for glare.
+Each hint comes with advice:
+- **Scale:** check the disk size and plate type, the stand height, and use the main lens
+  rather than zoom.
+- **Edge reading:** "the app reads zones X mm larger than you do". Check the lighting,
+  then decide whether to read borderline zones by hand. The app doesn't shift its edge:
+  check only.
+- **Lens:** move the camera further away and keep the plate centred.
 
-## 3. The wizard (`app/lib/ui/zone_calibration_wizard.dart`)
+## The wizard (`app/lib/ui/zone_calibration_wizard.dart`)
 
 A full-screen stepper. Each step is short, with one picture and one action.
 
-1. **Why and what you need:**
-   - About 5 minutes, a printer (or a calliper and a round object), a ruler or calliper,
-     scissors, and an unused agar plate.
-   - It uses the same stand, distance and light as for real plates.
-2. **Get the target:**
-   - "Share PDF" (A4 or Letter) with the warning "print at 100 % (actual size), not
-     'fit to page'".
-   - Or "I have no printer" → the object mode.
-3. **Check the print:**
-   - Measure the 60 mm bar and enter the length (to 0.1 mm with a calliper, 0.5 mm with
-     a ruler).
-   - Outside 57–63 mm: "Printed at the wrong size: print again at 100 %".
-   - Otherwise save `printFactor = measured / 60`.
-4. **Set up:**
-   - Cut out the disc and lay it flat on the agar of an unused plate, lid off. Putting it
-     on the agar keeps it at the height where real zones are. An empty dish is not offered:
-     the paper would sit lower than the agar surface.
+1. **What you need:**
+   - A calliper or ruler, and a used zone plate with at least 6 clear zones.
+   - The same stand, distance and light as for real plates. About 5–10 minutes.
+   - Choose **calliper** or **ruler**.
+2. **Photograph the plate:**
+   - The in-app camera with the zone tip (lid off, dark background, straight overhead) and
+     all checks green.
+   - Optionally 1–2 more photos with the plate turned a little, for repeatability.
+   - Or "Use a plate I just measured": a zone plate from today, same camera and setup.
    - Choose the setup: **on the Colony Counter stand** or **hand-held**.
-5. **Take 3 photos:**
-   - The in-app camera (`CaptureScreen`) with the zone tip and all checks green, plus a
-     prompt: "Turn the target a little between photos".
-   - On the web: the phone's own camera, with a note that the browser may change lens or
-     resolution.
+3. **Check the zones:**
+   - The usual zone review, with large numbers on each zone. Fix the plate circle or add a
+     missed disk if needed.
+   - Zones to skip are marked; the user can turn any zone on or off.
+4. **Measure the span:**
+   - The two farthest disks are highlighted: "Measure from the outer edge of disk 2 to the
+     outer edge of disk 5".
+   - One number field. Values below 20 mm or above 90 mm are refused.
+5. **Measure the zones:**
+   - One field per zone, in screen order, with the zone highlighted on a small photo as
+     each field gets focus.
+   - An optional second field for non-round zones.
+   - The keyboard's next key moves to the next zone.
 6. **Result:**
-   - The verdict in plain words, then a table of the 7 zones (true, measured, error), the
-     scale checks, the edge-to-centre difference and the repeatability.
-   - "Save calibration", or "Try again" with the advice.
-7. **Optional:** "Check against your calliper on real plates" (section 6), now or later.
+   - The verdict in plain words.
+   - A difference plot (app − calliper against the mean), the bias and limits, the scale
+     check, and the hint.
+   - A per-zone table: number, label, yours, app, difference.
+   - "Save calibration", "Add another plate" (the profile then pools them) or "Try again".
 
 **Entry points:**
-- After the disclaimer, before the first zone plate: a strong suggestion, "Calibrate now
-  (5 min)" or "Later". It isn't required: users without a printer can still measure, and
-  their plates are flagged *Not calibrated*.
-- Settings → *Zone camera calibration*: run it again, see the history, delete a profile.
-- On the Zones tab, a chip: *Calibrated: Good* / *Not calibrated*.
+- After the disclaimer, before the first zone plate: a strong suggestion, "Calibrate now"
+  or "Later".
+  - It isn't required. Users without a calibration can still measure, and their plates
+    are flagged *Not calibrated*.
+  - A user with no used plate yet can measure their first plate as usual, then calibrate
+    with it ("Use a plate I just measured").
+- On a saved zone plate: "Use for calibration" (same camera and setup, within 1 day).
+- Settings → *Zone calibration*: run it again, add plates, see the history, delete a
+  profile.
+- On the Zones tab, a chip: *Calibrated: Good* / *Usable* / *Not calibrated* /
+  *Calibrate again*.
 
-## 4. Data (`app/lib/data/zone_calibration_record.dart`, `plate_store.dart`)
+## Data (`app/lib/data/zone_calibration_record.dart`, `plate_store.dart`)
 
 - **`CalibrationProfile`:**
-  - `id`, `createdAt`
+  - `id`, `createdAt`, `updatedAt`
   - `name` ("Stand, main camera", editable)
-  - `cameraName` (`CameraDescription.name`) and `imageWidth` / `imageHeight`
-  - `platform` (`android`, `ios`, `web`)
-  - `setup` (`stand` or `handheld`), `targetVersion`, `mode` (`target` or `object`)
-  - `printFactor`
-  - per-zone results (true, measured mean, SD), `bias`, `maxAbsError`, `repeatabilitySd`,
-    `diskScaleError`, `rimScaleError`, `k1`
-  - for the stand only: `mmPerPxAtAgar` (true mm per pixel at agar height) and
-    `rimRadiusPx` (to recognise the same setup again)
-  - `verdict`, and the 3 photos (kept for audit and export).
+  - `cameraName` (`CameraDescription.name`), `imageWidth` / `imageHeight`, `platform`
+    (`android`, `ios`, `web`)
+  - `setup` (`stand` or `handheld`) and `rimRadiusPx` (to recognise the same setup)
+  - `tool` (`calliper` or `ruler`)
+  - `plates`: one entry per calibration plate, with the zone record ID, the span (user and
+    app), and per zone the user reading(s), the app diameter(s) and whether it is
+    included
+  - the summary: n, bias, SD, limits of agreement, largest difference, % within 1 mm,
+    scale error, slope, the edge-vs-centre difference, repeatability, verdict, hint
 - **Storage:** store key `zone_calibrations` (a list); the newest one valid for the
-  current camera is "active". The profiles and photos go in the backup zip.
+  current camera and setup is "active". Calibration plates are ordinary `ZoneRecord`s,
+  with their photos, marked `usedForCalibration`. Everything goes in the backup zip.
+- **`ZoneMark`:** gains `calliperMm` (and `calliperMm2` for the second direction).
+  - These are the user's readings. They are kept apart from `diameterMm`, the app's value
+    as edited, and never change it.
 - **`ZoneRecord`:** gains `calibrationId` (or empty) and plate flags:
   - `uncalibrated`
+  - `calibration_old`: the profile is more than 90 days old.
   - `calibration_other_camera`: the camera name or resolution differs.
   - `calibration_setup_changed`: the rim radius differs by more than 3 % from the
     profile's. This happens on a stand at a different height, or when hand-held.
-  - `scale_disagrees_calibration`: the disk scale and the profile's scale differ by more
-    than 2 %.
 - **No new dependency:** the camera is identified by its plugin name and resolution, not
   the phone model, so nothing is added (privacy and offline unchanged).
 
-## 5. Using the profile on zone plates
+## Using the profile on zone plates (check only)
 
-v1 only checks and warns. It never changes a measured zone or the scale it was
-measured at. Corrections (the stand scale for wells, the radial `k1`) stay off until the
-calliper data supports them (see Decisions).
+The profile never changes a measured zone or the scale it was measured at.
 
-- **Disk plates:** the disk-based scale is still used. If the profile is from the same
-  setup, compare the two scales: more than 2 % apart gives the
-  `scale_disagrees_calibration` warning, with the advice "check the disk size and the plate
-  type".
-- **Well plates:** with no disks, the rim scale is still used. If the profile is from the
-  same setup (rim radius within 3 %), compare the rim scale with the profile's
-  `mmPerPxAtAgar`. More than 2 % apart gives the `scale_disagrees_calibration` warning, with
-  the size of the likely error: "Zones may read about N % small" (N from the two scales). On the stand this is the
-  expected case (the rim sits above the agar), so the warning is the main help for wells
-  in v1.
-- **Re-check reminders:** a profile older than 90 days, or a plate whose camera, resolution
-  or stand setup no longer matches the profile, shows "Calibrate again". It is shown on the
-  plate and on the Zones tab chip, and offered again before the next zone plate.
-- **Review screen:** a chip shows *Calibrated: Good (±0.5 mm)*, *Usable (±1 mm)* or
-  *Not calibrated*, and the export notes the calibration.
-- **CSV:** `zones.csv` gains `calibration_id`, `calibration_verdict` and
-  `calibration_max_error_mm`.
+- **Review screen:** a chip shows *Calibrated: Good (bias +0.3 mm, ±0.9 mm)*, *Usable*,
+  *Not calibrated* or *Calibrate again*. Tapping it opens the profile.
+- **Wells:** when the profile's span check found the rim scale off by more than 2 % on the
+  same setup, well plates on that setup get a warning with the likely size: "Zones may
+  read about N % small" (N from the profile's scale error).
+- **Disks:** when the disk-based scale differs by more than 2 % from the scale the
+  profile was checked at, the warning is "check the disk size and the plate type".
+- **Re-check reminders:** the chip and the plate show "Calibrate again" when the profile
+  is older than 90 days, or the camera, resolution or stand setup no longer matches. It is
+  offered again before the next zone plate.
+- **CSV:** `zones.csv` gains `calliper_mm`, `calibration_id`, `calibration_verdict` and
+  `calibration_bias_mm`. `zone_summary.csv` is unchanged.
 
-## 6. Calliper check on real plates (optional)
+## Gate data export
 
-The printed target has sharp edges; real lawns don't. This step measures what matters to
-the user: the app against their own calliper.
+The calibration readings are real photos paired with calliper values, which is exactly
+what the zone feature's real-photo gate needs (30–50 plates, AST.md). Settings → *Zone
+calibration* → **Share as test data** makes a zip:
+- the photos;
+- one JSON per plate with the zones, the app's and the user's readings, the span, the
+  tool, the camera and the setup.
 
-- In the zone sheet, an optional **"Calliper (mm)"** field for each zone (0.1 mm).
-- *Zone camera calibration → Calliper check*: a Bland–Altman summary over every zone
-  with a calliper value:
-  - n, mean difference (bias) ± SD, 95 % limits of agreement, and % within 1 mm;
-  - a scatter plot of app vs. calliper, and a difference plot;
-  - all of it per setup and per assay (disks / wells).
-  This reuses the pattern of the colony accuracy screen (`accuracy.dart`).
-- **Export:** `zones.csv` gains `calliper_mm`. The same photos and values are the labelled
-  set the AST gate needs (30–50 plates). A "Share as test data" option creates a zip that
-  matches `colonycounter evaluate-zones`.
-- When n ≥ 30 and the bias and limits meet the gate (AST.md), the app can say so. It
-  doesn't drop the beta label by itself.
+It matches `colonycounter evaluate-zones`. It's opt-in and stays on the phone until the
+user shares it. When the pooled readings reach n ≥ 30 plates and meet the gate's limits,
+the profile says so. The beta label is only dropped by a release, not by the app itself.
 
-## 7. Python reference (`ml/colonycounter/calibration.py`)
+## Python reference (`ml/colonycounter/zones.py`)
 
-- **Target:** `render_target(params)` draws the target from the same geometry. The
-  geometry is exported as `calibration_target.json`, so Dart and Python can't drift.
-- **Synthetic photos:** `synth_calibration_photo(...)` adds:
-  - a known scale and print factor;
-  - radial distortion `k1`;
-  - tilt (perspective);
-  - a height offset;
-  - blur, noise and uneven light;
-  - the target turned by a random angle.
-- **Analysis:** `analyse_calibration(photo, print_factor)` mirrors the Dart analysis.
-  Fixtures (`calib_*.jpg/json`) check that Dart and Python agree, as for zones.
-- **CLI:** `colonycounter calibrate photo1.jpg photo2.jpg photo3.jpg --print-bar-mm 59.8`.
+- `evaluate_zones` gains the same summary as the Dart analysis: span check, bias, limits,
+  slope and edge-vs-centre difference. Dart and Python then report the same numbers on
+  the same data.
+- **Fixtures:** the existing synthetic zone plates (`zones_*.jpg/json`). Their true
+  diameters and disk positions stand in for calliper readings. Each fixture gets
+  "readings" with a known bias, noise and scale error added (for example the true value
+  + 0.4 mm + N(0, 0.3)), so the analysis must recover the bias, the limits and the scale
+  error.
 
-## 8. Tests
+## Tests
 
 | Level | File | Checks |
 |---|---|---|
-| Python | `ml/tests/test_calibration.py` | Target found when turned and tilted; k1 recovered within ±20 %; scale within 0.2 %; verdicts on good, distorted and blurred cases |
-| Dart core | `app/test/zone_calibration_test.dart` | Same fixtures as Python (agreement ±0.1 mm); print factor applied; wrong target rejected; fewer than 6 zones → not found |
-| Data | `app/test/zone_calibration_data_test.dart` | Profile JSON round trip; active profile per camera; backup and restore; plate flags for other camera, changed setup and disagreeing scale |
-| UI | `app/test/zone_calibration_ui_test.dart` | The wizard end to end on fixtures; bad print size refused; the result table; entry after the disclaimer; Settings; chips; Thai at 360 × 640 |
-| PDF | in the UI test | Target dimensions in the PDF match the geometry (points → mm) |
-| Wells | in the data test | Stand scale used when the setup matches, rim scale plus a warning when not |
+| Python | `ml/tests/test_zone_calibration.py` | Known bias, noise, scale error and edge effects recovered from simulated readings; verdicts for calliper and ruler |
+| Dart core | `app/test/zone_calibration_test.dart` | Same cases as Python (agreement within 0.01 mm); span from the farthest disks; skipped zones left out; slope → scale hint, offset → edge hint |
+| Data | `app/test/zone_calibration_data_test.dart` | Profile JSON round trip; `calliperMm` kept apart from `diameterMm`; active profile per camera and setup; flags (old, other camera, setup changed); backup and restore; test-data zip contents |
+| UI | `app/test/zone_calibration_ui_test.dart` | The wizard end to end on a fixture; span limits refused; ruler needs 8 zones; the result and difference plot; "Use a plate I just measured"; entry after the disclaimer; chips and reminders; Thai at 360 × 640 |
 | Regression | the existing 208 tests | Unchanged and passing |
 
 ## Milestones
 
 | # | Milestone | Days | Output |
 |---|---|---|---|
-| C1 | Target geometry, PDF sheet, Python renderer and synthetic photos | 2 | `calibration_target.dart/json`, `calibration_sheet.dart`, `calibration.py` |
-| C2 | Analysis in Python and Dart, with fixtures | 3 | `zone_calibration.dart`, matches Python |
-| C3 | Wizard, profile storage, backup, Settings entry | 3 | Working wizard on a phone |
-| C4 | Profiles on zone plates: flags, scale cross-check (disks and wells), re-check reminders, chips, CSV columns | 2 | Zone plates show their calibration |
-| C5 | Calliper check: field, Bland–Altman screen, test-data export | 2 | Gate data from users' own plates |
-| C6 | Strings (en/th), docs, store text, tests, release | 2 | Beta build |
+| C1 | Analysis in Dart and Python, simulated-reading fixtures | 2 | `zone_calibration.dart`, `evaluate_zones` summary, matching tests |
+| C2 | Calliper fields on zone marks, profile storage, backup | 2 | `zone_calibration_record.dart`, store changes |
+| C3 | Wizard: photo, span, zones, result, add a plate | 3 | Working wizard on a phone |
+| C4 | Profiles on zone plates: chips, warnings, reminders, CSV columns | 2 | Zone plates show their calibration |
+| C5 | Test-data export, strings (en/th), docs, store text, release | 2 | Beta build |
 
-About **14 working days**. C1–C4 can ship on their own; C5 can follow.
+About **11 working days**, shorter than the printed-target plan because there is no target,
+PDF or target detector.
 
-**First real-world check:** print the target on 2–3 printers. Run the wizard on 3 phones
-(one with an ultra-wide or macro lens switch), on the stand and hand-held. Compare the
-reported errors with calliper readings of the printed zones.
+**First real-world check:** two people calibrate on the same 3 plates with the same calliper,
+on 2 phones, on the stand and hand-held. The difference between the two people shows the
+reading error that any calliper calibration has, and sets how strict the verdict limits
+can usefully be.
 
 ## Risks and mitigations
 
 | Risk | Mitigation |
 |---|---|
-| Printed at the wrong size ("fit to page") | Measured 60 mm bar; refused outside 57–63 mm; the print factor corrects the rest |
-| Paper on wet agar curls or soaks | Short exposure (photos take under a minute); heavier paper or a laminated print, laid flat on the agar |
-| Phone switches lens close up | Profile keyed by camera name and resolution; rim-radius check catches a changed field of view; advice to move further away |
-| Printed edges are sharper than real zones, so the result looks better than reality | Section 6 calliper check; results worded as "camera and scale accuracy", not "zone accuracy" |
+| Calliper readings have their own error (often ±0.5 mm between readers) | The verdict uses limits of agreement, not a single zone; ruler limits are wider; the first real-world check measures reader error; the result says "agrees with your readings", not "is accurate" |
+| Few zones, or all of a similar size, so the slope (scale) can't be judged | At least 6 zones (8 with a ruler); the span check gives the scale on its own; "Add another plate" pools plates |
+| Zones that aren't round | Two directions measured and averaged; the app uses its fitted mean diameter |
+| Hazy or overlapping zones inflate the differences | They are marked and left out by default |
+| Wrong zone typed into the wrong field | The zone is highlighted as each field gets focus; a difference above 3 mm asks "Is this zone N?" |
+| Used plates are live cultures | Measure with the lid on, from the outside; a biosafety line in the wizard; the lab's own rules apply |
+| The plate dries or the lawn changes between the photo and the readings | Measure right after the photo; the wizard keeps both steps together |
 | Users skip calibration | Prompt after the disclaimer; *Not calibrated* chip and flag on every plate; CSV column |
-| Calibration read as validation of the method | The wizard and result say what was checked (scale, lens, repeatability) and what wasn't (the lawn edge, the method); the beta label stays until the gate passes |
-| Web camera gives a different resolution or lens each time | Web profiles keyed by image size; a note in the wizard; scale cross-check on every plate |
+| Calibration read as validation of the method | The result says it compares the app with this user's own readings on this setup; the beta label stays until the gate passes |
+| Web camera gives a different resolution or lens each time | Web profiles keyed by image size; a note in the wizard; the setup check on every plate |
 
 ## Decisions (made October 2026)
 
 1. **Mandatory or optional:** **strongly suggested.** Offered after the disclaimer, with
    "Later" allowed; uncalibrated plates are flagged *Not calibrated*.
-2. **Correct or only check:** **check only.** v1 never changes measurements. It compares
-   each plate's scale with the profile and warns, for disks and for wells. The stand scale
-   for wells and the radial `k1` correction stay off until the C5 calliper data shows they
-   help.
-3. **Where the target goes:** **on the agar of an unused plate.** No empty-dish fallback.
+2. **Correct or only check:** **check only.** v1 never changes measurements. It reports
+   the agreement and warns, for disks and for wells.
+3. **What is used:** **only a calliper (or ruler) and a used agar plate.** No printed
+   target and no reference object. The calibration plate is a real, incubated zone plate.
 4. **Re-check:** **every 90 days, and whenever the setup changes:** a different camera
    name, resolution or stand height (rim radius off by more than 3 %).
-5. **Gate data through the app (C5):** **yes.** It's opt-in, stays on the phone, and the
-   user shares it as a zip.
+5. **Gate data through the app:** **yes.** It's opt-in, stays on the phone, and the user
+   shares it as a zip.
