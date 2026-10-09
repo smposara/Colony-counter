@@ -128,6 +128,23 @@ Each hint comes with advice:
   check only.
 - **Lens:** move the camera further away and keep the plate centred.
 
+**Progress (October 2026):** C1 is done.
+- **Code:** `ml/colonycounter/zone_calibration.py` and `app/lib/core/zone_calibration.dart`
+  hold the summary (`calibration_summary` / `calibrationSummary`), `farthest_pair` and
+  `app_span_mm`.
+- **Shared cases:** `ml/scripts/make_calibration_cases.py` writes 12 simulated cases to
+  `app/test/fixtures/calibration_cases.json`: good, edge offset, 4 % and 8 % scale error,
+  edge-of-plate zones, scattered readings, ruler, too few zones, 3 photos, excluded zones,
+  usable and poor. Dart matches Python on every number to 1e-9.
+- **A change from the plan above:** the slope is only judged when the zones differ in size
+  by at least 5 mm (`kMinSizeSpread`). With zones of one size, the mean of the two readings
+  varies mostly with the difference itself, so random scatter looked like a scale error.
+- **CLI:** `colonycounter evaluate-zones` also prints the calibration summary when a label
+  has `span_mm` (and `tool`).
+- **Tests:** `ml/tests/test_zone_calibration.py` (12) and
+  `app/test/zone_calibration_test.dart` (11), including end-to-end runs on the
+  `zones_reflected` plate with readings set to the truth + 0.4 mm.
+
 ## The wizard (`app/lib/ui/zone_calibration_wizard.dart`)
 
 A full-screen stepper. Each step is short, with one picture and one action.

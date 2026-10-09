@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import sys
 from pathlib import Path
 
@@ -32,6 +33,7 @@ from .petrifilm import TYPES as FILM_TYPES, count_petrifilm, draw_film
 from .synth_drops import make_drop_plate
 from .synth_petrifilm import make_film
 from .synth_zones import make_zone_plate
+from .zone_calibration import CalZone, app_span_mm, calibration_summary, farthest_pair
 from .zones import draw_zones, measure_plate
 
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".tif", ".tiff", ".bmp"}
@@ -135,14 +137,18 @@ def cmd_zones(args) -> int:
 
 def cmd_evaluate_zones(args) -> int:
     """Each image needs a sidecar ``<stem>.json``:
-    {"plate_mm": 90, "assay": "disk", "disk_mm": 6,
+    {"plate_mm": 90, "assay": "disk", "disk_mm": 6, "tool": "calliper", "span_mm": 63.2,
      "zones": [{"x": px, "y": px, "diameter_mm": 22.0}, ...]}
     x/y are the disk centres in image pixels (to pair readings with disks);
-    plate_mm, assay and disk_mm fall back to the command-line options.
+    plate_mm, assay and disk_mm fall back to the command-line options. The optional
+    span_mm is the user's outer-edge to outer-edge reading across the two disks farthest
+    apart, and tool is "calliper" or "ruler"; with them the calibration summary (bias,
+    limits of agreement, scale error, verdict) is printed too.
     """
     folder = Path(args.folder)
     preds, trues = [], []
     missed = extra = unmeasured = 0
+    cal_zones, app_spans, user_spans, tools = [], [], [], set()
     for path in sorted(p for p in folder.iterdir() if p.suffix.lower() in IMAGE_EXTS):
         label_path = path.with_suffix(".json")
         if not label_path.exists():
@@ -166,6 +172,19 @@ def cmd_evaluate_zones(args) -> int:
             preds.append(z.diameter_mm)
             trues.append(float(truth[ti]["diameter_mm"]))
             errs.append(z.diameter_mm - trues[-1])
+            rf = math.hypot(z.x - res.plate.cx, z.y - res.plate.cy) / res.plate.radius
+            cal_zones.append(CalZone(app_mm=[float(z.diameter_mm)], user_mm=[trues[-1]],
+                                     radial_fraction=float(rf)))
+        if "span_mm" in label and len(pairs) >= 2:
+            matched = [res.zones[pi] for pi, _ in pairs]
+            disks = [(z.x, z.y, z.disk_radius_px) for z in matched]
+            a, b = farthest_pair(disks)
+            measured = [z for z in matched if z.diameter_rounded is not None and z.radius_px > 0]
+            if measured:
+                mm_per_px = float(measured[0].diameter_mm) / (2 * float(measured[0].radius_px))
+                app_spans.append(float(app_span_mm(disks[a], disks[b], mm_per_px)))
+                user_spans.append(float(label["span_mm"]))
+        tools.add(label.get("tool", "calliper"))
         worst = f", worst {max(errs, key=abs):+.1f} mm" if errs else ""
         print(f"{path.name}: {len(pairs)}/{len(truth)} matched{worst}")
     if not trues:
@@ -173,6 +192,18 @@ def cmd_evaluate_zones(args) -> int:
     summary = zone_metrics(preds, trues)
     summary.update({"missed_disks": missed, "extra_disks": extra, "unmeasured": unmeasured})
     print(json.dumps(summary, indent=2))
+    if user_spans:
+        # Pooled over plates: the mean of the per-plate span ratios.
+        ratio = sum(a / u for a, u in zip(app_spans, user_spans)) / len(user_spans)
+        cal = calibration_summary(cal_zones, app_span=ratio, user_span=1.0,
+                                  tool="ruler" if "ruler" in tools else "calliper")
+        print(json.dumps({"calibration": {
+            "n": cal.n, "bias_mm": round(cal.bias, 3), "sd_mm": round(cal.sd, 3),
+            "limits_of_agreement_mm": [round(cal.loa_low, 3), round(cal.loa_high, 3)],
+            "within_1mm": round(cal.within_1mm, 3),
+            "scale_error_pct": round(100 * cal.scale_error, 2),
+            "edge_minus_centre_mm": None if cal.edge_minus_centre is None else round(cal.edge_minus_centre, 3),
+            "verdict": cal.verdict, "hint": cal.hint}}, indent=2))
     return 0
 
 
