@@ -176,7 +176,7 @@ def cmd_evaluate_zones(args) -> int:
             rf = math.hypot(z.x - res.plate.cx, z.y - res.plate.cy) / res.plate.radius
             cal_zones.append(CalZone(app_mm=[float(z.diameter_mm)], user_mm=[trues[-1]],
                                      radial_fraction=float(rf)))
-        if "span_mm" in label and len(res.zones) >= 2:
+        if float(label.get("span_mm") or 0) > 0 and len(res.zones) >= 2:
             matched = [res.zones[pi] for pi, _ in pairs]
             if len(label.get("span_disks", [])) == 2:
                 # The two disks the user measured across (an app export names them).

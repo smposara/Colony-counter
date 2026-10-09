@@ -2465,4 +2465,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get zoneDisclaimerOk => 'I understand';
+
+  @override
+  String zoneCouldNotMeasure(String error) {
+    return 'Could not measure this photo: $error';
+  }
 }

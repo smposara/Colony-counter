@@ -2337,4 +2337,9 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get zoneDisclaimerOk => 'เข้าใจแล้ว';
+
+  @override
+  String zoneCouldNotMeasure(String error) {
+    return 'วัดภาพนี้ไม่ได้: $error';
+  }
 }

@@ -46,19 +46,27 @@ class GateProgress {
 GateProgress gateProgress(List<CalibrationProfile> profiles) {
   final plates = <String>{};
   final diffs = <double>[];
+  // A plate in several profiles counts once: its newest snapshot.
+  final newest = <String, CalibrationPlate>{};
   for (final p in profiles) {
     if (p.tool != CalibrationTool.calliper) continue;
     for (final plate in p.plates) {
-      var used = false;
-      for (final z in plate.zones) {
-        if (!z.included || z.appMm.isEmpty || z.userMm.isEmpty) continue;
-        final app = z.appMm.reduce((a, b) => a + b) / z.appMm.length;
-        final user = z.userMm.reduce((a, b) => a + b) / z.userMm.length;
-        diffs.add((app - user).abs());
-        used = true;
+      final had = newest[plate.zoneRecordId];
+      if (had == null || plate.addedAt.isAfter(had.addedAt)) {
+        newest[plate.zoneRecordId] = plate;
       }
-      if (used) plates.add(plate.zoneRecordId);
     }
+  }
+  for (final plate in newest.values) {
+    var used = false;
+    for (final z in plate.zones) {
+      if (!z.included || z.appMm.isEmpty || z.userMm.isEmpty) continue;
+      final app = z.appMm.reduce((a, b) => a + b) / z.appMm.length;
+      final user = z.userMm.reduce((a, b) => a + b) / z.userMm.length;
+      diffs.add((app - user).abs());
+      used = true;
+    }
+    if (used) plates.add(plate.zoneRecordId);
   }
   return GateProgress(
     plates: plates.length,
@@ -127,40 +135,75 @@ Future<Uint8List> buildCalibrationTestData(PlateStore store) async {
 }
 
 /// The label of one calibration plate (see [buildCalibrationTestData]).
+/// The label of one calibration plate (see [buildCalibrationTestData]).
+/// Positions come from the snapshot, as the plate was when it was measured: the
+/// record's marks may since have been added, deleted or measured again.
 Map<String, dynamic> calibrationLabel(
   ZoneRecord r,
   CalibrationPlate plate,
   CalibrationProfile profile,
 ) {
-  Map<String, dynamic> zone(CalibrationZone z) {
-    final m = r.marks[z.mark];
+  /// The record's mark at (x, y) now, if one is still there.
+  ZoneMark? markAt(double x, double y) {
+    ZoneMark? best;
+    var bestD = double.infinity;
+    for (final m in r.marks) {
+      final d = math.sqrt(math.pow(m.x - x, 2) + math.pow(m.y - y, 2));
+      if (d <= math.max(m.diskRadiusPx, 1) * 1.5 && d < bestD) {
+        best = m;
+        bestD = d;
+      }
+    }
+    return best;
+  }
+
+  Map<String, dynamic>? zone(CalibrationZone z) {
+    // Snapshots from before positions were kept fall back to the mark index.
+    final old = z.mark < r.marks.length ? r.marks[z.mark] : null;
+    final x = z.x ?? old?.x, y = z.y ?? old?.y;
+    if (x == null || y == null) return null;
+    final m = markAt(x, y);
+    final label = z.x != null ? z.label : (old?.label ?? '');
     return {
-      'x': _r1(m.x),
-      'y': _r1(m.y),
+      'x': _r1(x),
+      'y': _r1(y),
       'diameter_mm': _r2(z.userMm.reduce((a, b) => a + b) / z.userMm.length),
       'readings_mm': z.userMm,
       'app_mm': z.appMm.isEmpty ? null : _r2(z.appMm.first),
-      if (m.label.isNotEmpty) 'label': m.label,
-      if (m.flags.isNotEmpty) 'flags': m.flags,
-      if (m.noZone) 'no_zone': true,
+      if (label.isNotEmpty) 'label': label,
+      if (m != null && m.flags.isNotEmpty) 'flags': m.flags,
+      if (m != null && m.noZone) 'no_zone': true,
     };
   }
 
-  final inMarks = [
-    for (final z in plate.zones)
-      if (z.mark < r.marks.length) z,
-  ];
+  List<Map<String, dynamic>>? spanDisks() {
+    final sd = plate.spanDisks;
+    if (sd != null) {
+      return [
+        for (final (x, y) in [sd.$1, sd.$2]) {'x': _r1(x), 'y': _r1(y)},
+      ];
+    }
+    final sm = plate.spanMarks;
+    if (sm == null || sm.$1 >= r.marks.length || sm.$2 >= r.marks.length) {
+      return null;
+    }
+    return [
+      for (final i in [sm.$1, sm.$2])
+        {'x': _r1(r.marks[i].x), 'y': _r1(r.marks[i].y)},
+    ];
+  }
+
+  final span = spanDisks();
+  final user = plate.userSpanMm;
   return {
     'plate_mm': r.format.sizeMm,
     'assay': r.assay.name,
     'disk_mm': r.diskMm,
     'tool': profile.tool.name,
-    'span_mm': ?plate.userSpanMm,
-    if (plate.spanMarks != null)
-      'span_disks': [
-        for (final i in [plate.spanMarks!.$1, plate.spanMarks!.$2])
-          {'x': _r1(r.marks[i].x), 'y': _r1(r.marks[i].y)},
-      ],
+    if (span != null && user != null && user > 0) ...{
+      'span_mm': user,
+      'span_disks': span,
+    },
     'camera': profile.cameraName,
     'setup': profile.setup.name,
     'platform': profile.platform,
@@ -169,12 +212,12 @@ Map<String, dynamic> calibrationLabel(
     'image_height': r.imageHeight,
     'photographed_at': r.createdAt.toIso8601String(),
     'zones': [
-      for (final z in inMarks)
-        if (z.included) zone(z),
+      for (final z in plate.zones)
+        if (z.included) ?zone(z),
     ],
     'excluded': [
-      for (final z in inMarks)
-        if (!z.included) zone(z),
+      for (final z in plate.zones)
+        if (!z.included) ?zone(z),
     ],
   };
 }

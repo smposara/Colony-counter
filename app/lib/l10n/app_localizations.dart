@@ -4075,6 +4075,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'I understand'**
   String get zoneDisclaimerOk;
+
+  /// No description provided for @zoneCouldNotMeasure.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not measure this photo: {error}'**
+  String zoneCouldNotMeasure(String error);
 }
 
 class _AppLocalizationsDelegate

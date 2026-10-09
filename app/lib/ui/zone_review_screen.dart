@@ -50,7 +50,7 @@ class ZoneReviewScreen extends StatefulWidget {
 }
 
 /// One step back: the marks and the plate as they were.
-typedef _Snapshot = (List<ZoneMark>, Plate, double);
+typedef _Snapshot = (List<ZoneMark>, Plate, double, List<String>);
 
 class _ZoneReviewScreenState extends State<ZoneReviewScreen> {
   final _viewer = TransformationController();
@@ -148,6 +148,8 @@ class _ZoneReviewScreenState extends State<ZoneReviewScreen> {
         _rec = old == null
             ? rec
             : rec.copyWith(
+                // Readings and typed labels follow their disks.
+                marks: carryUserData(old.marks, rec.marks),
                 notes: old.notes,
                 calibrationId: old.calibrationId,
                 usedForCalibration: old.usedForCalibration,
@@ -156,7 +158,14 @@ class _ZoneReviewScreenState extends State<ZoneReviewScreen> {
         _dirty = _dirty || old != null || widget.record == null;
       });
     } on Object catch (e) {
-      if (mounted) {
+      if (!mounted) return;
+      if (_rec != null) {
+        // Measuring again failed: keep the plate as it was, photo and all.
+        setState(() => _busy = false);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(tr.zoneCouldNotMeasure('$e'))));
+      } else {
         setState(() {
           _busy = false;
           _error = '$e';
@@ -167,7 +176,7 @@ class _ZoneReviewScreenState extends State<ZoneReviewScreen> {
 
   void _pushUndo() {
     final r = _rec!;
-    _undo.add((r.marks, r.plate, r.mmPerPx));
+    _undo.add((r.marks, r.plate, r.mmPerPx, r.flags));
     if (_undo.length > 30) _undo.removeAt(0);
   }
 
@@ -178,9 +187,14 @@ class _ZoneReviewScreenState extends State<ZoneReviewScreen> {
 
   void _undoLast() {
     if (_undo.isEmpty) return;
-    final (marks, plate, mmPerPx) = _undo.removeLast();
+    final (marks, plate, mmPerPx, flags) = _undo.removeLast();
     setState(() {
-      _rec = _rec!.copyWith(marks: marks, plate: plate, mmPerPx: mmPerPx);
+      _rec = _rec!.copyWith(
+        marks: marks,
+        plate: plate,
+        mmPerPx: mmPerPx,
+        flags: flags,
+      );
       _dirty = true;
     });
   }
@@ -308,7 +322,9 @@ class _ZoneReviewScreenState extends State<ZoneReviewScreen> {
           diskMm: _diskMm,
           plate: r.plate,
           disks: [
-            for (final m in r.marks) Disk(m.x, m.y, m.diskRadiusPx),
+            // Disks added by hand are not used for the disk-based scale.
+            for (final m in r.marks)
+              Disk(m.x, m.y, m.diskRadiusPx, measured: !m.manual),
             Disk(p.dx, p.dy, r0, measured: false),
           ],
         ),
@@ -448,10 +464,18 @@ class _ZoneReviewScreenState extends State<ZoneReviewScreen> {
       final name = await store.savePhoto(photo, 'zone_${r.id}');
       r = ZoneRecord.fromJson({...r.toJson(), 'image': name});
     }
-    if (widget.forCalibration) {
-      r = r.copyWith(usedForCalibration: true);
-    } else if (widget.record == null) {
-      // A new plate keeps the calibration it was measured under.
+    // The plate as stored may have changed while this screen was open (e.g.
+    // calibrated from its chip): keep its calibration and readings.
+    final stored = store.zoneRecords.where((x) => x.id == r!.id).firstOrNull;
+    if (stored != null) {
+      r = r.copyWith(
+        marks: carryUserData(stored.marks, r.marks),
+        calibrationId: stored.calibrationId,
+        usedForCalibration: stored.usedForCalibration,
+      );
+    } else if (widget.record == null && !widget.forCalibration) {
+      // A new plate keeps the calibration it was measured under. (Plates
+      // photographed for calibration are marked by the wizard when it saves.)
       final (status, profile) = recordCalibration(r, store.calibrations);
       if (status == CalibrationStatus.calibrated && profile != null) {
         r = r.copyWith(calibrationId: profile.id);
@@ -819,7 +843,18 @@ class _ZoneReviewScreenState extends State<ZoneReviewScreen> {
                     visualDensity: VisualDensity.compact,
                     onPressed: _busy
                         ? null
-                        : () => openZoneCalibration(context, store),
+                        : () async {
+                            await openZoneCalibration(context, store);
+                            // Calibrating may have changed this plate.
+                            final stored = store.zoneRecords
+                                .where((x) => x.id == r.id)
+                                .firstOrNull;
+                            if (mounted && stored != null && !_dirty) {
+                              setState(() => _rec = stored);
+                            } else if (mounted) {
+                              setState(() {});
+                            }
+                          },
                   ),
                 ),
                 for (final w in warnings)

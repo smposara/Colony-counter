@@ -28,9 +28,11 @@ class ZoneMark {
   });
 
   /// From an automatic measurement.
+  /// Placed on the disk itself (the zone circle's fitted centre can sit up to
+  /// 1 mm off it); the diameter is the fitted one.
   factory ZoneMark.fromZone(Zone z) => ZoneMark(
-    x: z.x,
-    y: z.y,
+    x: z.diskX,
+    y: z.diskY,
     diskRadiusPx: z.diskRadiusPx,
     radiusPx: z.radiusPx,
     diameterMm: z.diameterMm,
@@ -382,16 +384,26 @@ class ZoneRecord {
 /// own ratio (the detector scales by the 6 mm disks), else the plate's
 /// corrected by the disks.
 double zoneScale(ZoneResult r) {
+  // A disk with no zone is reported at the nominal disk size, not at the
+  // scale the zones were measured at: leave it out.
   final ratios = [
     for (final z in r.zones)
-      if (z.diameterMm.isFinite && z.radiusPx > 0)
+      if (z.diameterMm.isFinite &&
+          z.radiusPx > 0 &&
+          !z.flags.contains('no_zone'))
         z.diameterMm / (2 * z.radiusPx),
   ]..sort();
   if (ratios.isNotEmpty) return ratios[ratios.length ~/ 2];
-  final k = r.diskScaleRatio.isFinite && r.diskScaleRatio > 0
-      ? r.diskScaleRatio
-      : 1.0;
-  return r.plate.mmPerPx / k;
+  // The detector corrects the plate's scale by the disks only for paper disks
+  // that agree with it (see measureZones).
+  final corrected =
+      r.assay == ZoneAssay.disk &&
+      r.diskScaleRatio.isFinite &&
+      r.diskScaleRatio > 0 &&
+      !r.flags.contains('scale_mismatch') &&
+      !r.flags.contains('scale_unchecked') &&
+      !r.flags.contains('no_disks');
+  return corrected ? r.plate.mmPerPx / r.diskScaleRatio : r.plate.mmPerPx;
 }
 
 /// Angle of (x, y) clockwise from 12 o'clock around the plate centre, 0–2π.
@@ -556,4 +568,35 @@ class ZoneSetup {
     replicate: (j['replicate'] as num?)?.toInt() ?? 1,
     panel: j['panel'] as String? ?? '',
   );
+}
+
+/// [to] with the calliper readings (and typed labels, where [to] has none) of
+/// the marks in [from] at the same disk, found by position: marks can be
+/// re-ordered, added, deleted or measured again in between.
+List<ZoneMark> carryUserData(List<ZoneMark> from, List<ZoneMark> to) {
+  final taken = <int>{};
+  return [
+    for (final m in to)
+      () {
+        var best = -1;
+        var bestD = double.infinity;
+        for (var i = 0; i < from.length; i++) {
+          if (taken.contains(i)) continue;
+          final o = from[i];
+          final d = math.sqrt(math.pow(o.x - m.x, 2) + math.pow(o.y - m.y, 2));
+          if (d <= math.max(o.diskRadiusPx, m.diskRadiusPx) * 1.5 &&
+              d < bestD) {
+            best = i;
+            bestD = d;
+          }
+        }
+        if (best < 0) return m;
+        taken.add(best);
+        final o = from[best];
+        return m.copyWith(
+          calliperMm: m.calliperMm.isEmpty ? o.calliperMm : m.calliperMm,
+          label: m.label.isEmpty ? o.label : m.label,
+        );
+      }(),
+  ];
 }

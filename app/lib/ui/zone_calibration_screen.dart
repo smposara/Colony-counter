@@ -464,9 +464,19 @@ class _ZoneCalibrationWizardState extends State<ZoneCalibrationWizard> {
 
   Future<void> _pickRecent() async {
     final since = DateTime.now().subtract(const Duration(days: 1));
+    final d = _draft;
+    // Plates from the last day that aren't calibration plates yet (here or in
+    // another profile) and, when adding to a calibration, match its setup.
     final recent = [
       for (final r in store.zoneRecords)
-        if (r.createdAt.isAfter(since) && !_done.any((d) => d.id == r.id)) r,
+        if (r.createdAt.isAfter(since) &&
+            !r.usedForCalibration &&
+            !_done.any((x) => x.id == r.id) &&
+            !(d?.plates.any((p) => p.zoneRecordId == r.id) ?? false) &&
+            (d == null ||
+                (d.sameCamera(r.camera, r.imageWidth, r.imageHeight) &&
+                    d.sameSetup(r.plate.radius))))
+          r,
     ];
     if (recent.isEmpty) {
       ScaffoldMessenger.of(context)
@@ -806,6 +816,7 @@ class _ReadingsStepState extends State<_ReadingsStep> {
       return;
     }
     for (var i = 0; i < r.marks.length; i++) {
+      if (!_include[i]) continue; // left out: its field can't be edited
       for (final v in _readings(i)) {
         if (v < 2 || v > 90) {
           say(tr.calReadingInvalid(i + 1));
@@ -851,7 +862,12 @@ class _ReadingsStepState extends State<_ReadingsStep> {
     }
     final marks = [
       for (var i = 0; i < r.marks.length; i++)
-        r.marks[i].copyWith(calliperMm: _readings(i)),
+        r.marks[i].copyWith(
+          calliperMm: [
+            for (final v in _readings(i))
+              if (_include[i] || (v >= 2 && v <= 90)) v,
+          ],
+        ),
     ];
     widget.onDone(r.copyWith(marks: marks), span ?? 0, {
       for (var i = 0; i < r.marks.length; i++)
@@ -897,7 +913,8 @@ class _ReadingsStepState extends State<_ReadingsStep> {
                               record: r,
                               focused: _focused,
                               pair: pair,
-                              included: _include,
+                              // A copy, so the painter sees a change.
+                              included: List.of(_include),
                             ),
                           ),
                         ],

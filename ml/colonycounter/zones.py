@@ -365,7 +365,12 @@ def measure_zones(gray: np.ndarray, plate: Plate, disks: list[Disk], disk_mm: fl
 
     # Lawn level: far ends of rays that reached open lawn (not stopped early).
     far = np.concatenate([r["far"] for r in rays if r["far"].size] or [np.zeros(0)])
-    near = np.array([r["near_level"] for r in rays])
+    near_all = np.array([r["near_level"] for r in rays])
+    # A disk whose rays all have length 0 has no near level: leave it out of the
+    # plate-wide levels (it is reported unmeasured) instead of letting NaN spread.
+    near = near_all[np.isfinite(near_all)]
+    if near.size == 0:
+        return [_unmeasured(d) for d in disks], "unknown"
     if far.size == 0:
         far = near
     lawn = float(np.median(far))
@@ -386,11 +391,15 @@ def measure_zones(gray: np.ndarray, plate: Plate, disks: list[Disk], disk_mm: fl
     for r in rays:
         f = r["far"][sign * (r["far"] - mid) > 0]
         local_lawn.append(float(np.median(f)) if f.size >= 20 else lawn)
-    ratios = [r["near_level"] / max(lw, 1e-6) for r, lw in zip(rays, local_lawn)]
+    ratios = [r["near_level"] / max(lw, 1e-6) for r, lw in zip(rays, local_lawn)
+              if np.isfinite(r["near_level"])]
     clear_ratio = min(ratios) if sign > 0 else max(ratios)
 
     zones = []
     for d, r, lw in zip(disks, rays, local_lawn):
+        if not np.isfinite(r["near_level"]):
+            zones.append(_unmeasured(d))
+            continue
         clear = clear_ratio * lw
         if sign > 0:
             lo = min(r["near_level"], max(clear, clearest - 0.1 * abs(lawn - clearest)))
@@ -410,6 +419,11 @@ def measure_zones(gray: np.ndarray, plate: Plate, disks: list[Disk], disk_mm: fl
                     if "overlap" not in z.flags:
                         z.flags.append("overlap")
     return zones, polarity
+
+
+def _unmeasured(disk) -> Zone:
+    return Zone(disk.x, disk.y, disk.radius_px, float("nan"), float("nan"), 0.0, 0.0,
+                ["unmeasured", "low_confidence"])
 
 
 def _cast(sm, plate, disk, disks, angles, step, params):

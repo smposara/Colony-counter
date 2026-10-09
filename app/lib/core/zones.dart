@@ -98,10 +98,19 @@ class Zone {
     required this.confidence,
     required this.edgeWidthMm,
     List<String>? flags,
-  }) : flags = flags ?? [];
+    double? diskX,
+    double? diskY,
+  }) : flags = flags ?? [],
+       diskX = diskX ?? x,
+       diskY = diskY ?? y;
 
+  /// Centre of the zone circle (the fit may sit up to 1 mm off the disk).
   final double x;
   final double y;
+
+  /// Centre of the disk or well itself.
+  final double diskX;
+  final double diskY;
   final double diskRadiusPx;
 
   /// NaN when unmeasured.
@@ -123,6 +132,8 @@ class Zone {
   Zone scaled(double s) => Zone(
     x: x * s,
     y: y * s,
+    diskX: diskX * s,
+    diskY: diskY * s,
     diskRadiusPx: diskRadiusPx * s,
     radiusPx: radiusPx * s,
     diameterMm: diameterMm,
@@ -135,6 +146,7 @@ class Zone {
     'x': x,
     'y': y,
     'disk_r': diskRadiusPx,
+    if (diskX != x || diskY != y) ...{'disk_x': diskX, 'disk_y': diskY},
     'r': radiusPx.isFinite ? radiusPx : null,
     'mm': diameterMm.isFinite ? diameterMm : null,
     'conf': confidence,
@@ -146,6 +158,8 @@ class Zone {
     x: (j['x'] as num).toDouble(),
     y: (j['y'] as num).toDouble(),
     diskRadiusPx: (j['disk_r'] as num).toDouble(),
+    diskX: (j['disk_x'] as num?)?.toDouble(),
+    diskY: (j['disk_y'] as num?)?.toDouble(),
     radiusPx: (j['r'] as num?)?.toDouble() ?? double.nan,
     diameterMm: (j['mm'] as num?)?.toDouble() ?? double.nan,
     confidence: (j['conf'] as num?)?.toDouble() ?? 0,
@@ -760,7 +774,15 @@ class _Rays {
   ];
 
   // Lawn level: far ends of rays that reached open lawn (not stopped early).
-  final near = [for (final r in rays) r.nearLevel];
+  // A disk whose rays all have length 0 has no near level: leave it out of the
+  // plate-wide levels (it is reported unmeasured) instead of letting NaN spread.
+  final near = [
+    for (final r in rays)
+      if (r.nearLevel.isFinite) r.nearLevel,
+  ];
+  if (near.isEmpty) {
+    return ([for (final d in disks) _unmeasuredZone(d)], 'unknown');
+  }
   var far = [for (final r in rays) ...r.far];
   if (far.isEmpty) far = List.of(near);
   final lawn = median(List.of(far));
@@ -789,7 +811,8 @@ class _Rays {
   }
   final ratios = [
     for (var i = 0; i < rays.length; i++)
-      rays[i].nearLevel / math.max(localLawn[i], 1e-6),
+      if (rays[i].nearLevel.isFinite)
+        rays[i].nearLevel / math.max(localLawn[i], 1e-6),
   ];
   final clearRatio = sign > 0
       ? ratios.reduce(math.min)
@@ -797,6 +820,10 @@ class _Rays {
 
   final zones = <Zone>[];
   for (var i = 0; i < disks.length; i++) {
+    if (!rays[i].nearLevel.isFinite) {
+      zones.add(_unmeasuredZone(disks[i]));
+      continue;
+    }
     final clear = clearRatio * localLawn[i];
     final margin = 0.1 * (lawn - clearest).abs();
     final lo = sign > 0
@@ -905,6 +932,17 @@ _Rays _cast(
     nFar,
   );
 }
+
+Zone _unmeasuredZone(Disk disk) => Zone(
+  x: disk.x,
+  y: disk.y,
+  diskRadiusPx: disk.radiusPx,
+  radiusPx: double.nan,
+  diameterMm: double.nan,
+  confidence: 0,
+  edgeWidthMm: 0,
+  flags: ['unmeasured', 'low_confidence'],
+);
 
 Zone _measureOne(
   Disk disk,
@@ -1043,6 +1081,8 @@ Zone _measureOne(
   return Zone(
     x: cx,
     y: cy,
+    diskX: disk.x,
+    diskY: disk.y,
     diskRadiusPx: disk.radiusPx,
     radiusPx: rad,
     diameterMm: diameter,

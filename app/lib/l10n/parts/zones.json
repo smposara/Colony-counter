@@ -336,5 +336,14 @@
  "zoneDisclaimerOk": {
   "en": "I understand",
   "th": "เข้าใจแล้ว"
+ },
+ "zoneCouldNotMeasure": {
+  "en": "Could not measure this photo: {error}",
+  "th": "วัดภาพนี้ไม่ได้: {error}",
+  "placeholders": {
+   "error": {
+    "type": "String"
+   }
+  }
  }
 }

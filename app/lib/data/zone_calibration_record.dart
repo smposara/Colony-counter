@@ -34,10 +34,19 @@ class CalibrationZone {
     required this.userMm,
     required this.radialFraction,
     this.included = true,
+    this.x,
+    this.y,
+    this.label = '',
   });
 
-  /// Index of the mark on the zone plate.
+  /// Index of the mark on the zone plate when it was added (marks can later be
+  /// added, deleted or measured again: use [x], [y] to find the disk).
   final int mark;
+
+  /// Disk centre in photo pixels and the zone's label, as they were.
+  final double? x;
+  final double? y;
+  final String label;
   final List<double> appMm;
 
   /// One reading, or two at right angles for a zone that isn't round.
@@ -58,6 +67,9 @@ class CalibrationZone {
     'user_mm': userMm,
     'rf': radialFraction,
     if (!included) 'included': false,
+    'x': ?x,
+    'y': ?y,
+    if (label.isNotEmpty) 'label': label,
   };
 
   factory CalibrationZone.fromJson(Map<String, dynamic> j) => CalibrationZone(
@@ -66,6 +78,9 @@ class CalibrationZone {
     userMm: [for (final v in j['user_mm'] as List) (v as num).toDouble()],
     radialFraction: (j['rf'] as num?)?.toDouble() ?? 0,
     included: j['included'] as bool? ?? true,
+    x: (j['x'] as num?)?.toDouble(),
+    y: (j['y'] as num?)?.toDouble(),
+    label: j['label'] as String? ?? '',
   );
 }
 
@@ -79,6 +94,7 @@ class CalibrationPlate {
     this.appSpanMm,
     this.userSpanMm,
     this.spanPx,
+    this.spanDisks,
   });
 
   final String zoneRecordId;
@@ -92,6 +108,10 @@ class CalibrationPlate {
 
   /// The span in photo pixels (outer edge to outer edge).
   final double? spanPx;
+
+  /// Centres (photo pixels) of the two disks the span was measured across,
+  /// as they were ([spanMarks] can go stale when the plate is edited).
+  final ((double, double), (double, double))? spanDisks;
 
   /// True mm per photo pixel at agar height, from the user's span.
   double? get trueMmPerPx =>
@@ -129,20 +149,31 @@ class CalibrationPlate {
           appMm: app.isFinite ? [app] : const [],
           userMm: user,
           radialFraction: rf,
+          x: m.x,
+          y: m.y,
+          label: m.label,
           // Zones the detector was unsure of are left out unless chosen.
           included: !excluded.contains(i) && app.isFinite,
         ),
       );
     }
     final pair = spanPair(record);
+    // No reading (fewer than two disks, or left empty) is no span, not 0.
+    final span = userSpanMm != null && userSpanMm > 0 ? userSpanMm : null;
     return CalibrationPlate(
       zoneRecordId: record.id,
       addedAt: addedAt ?? DateTime.now(),
       zones: zones,
       spanMarks: pair,
       appSpanMm: pair == null ? null : recordSpanMm(record, pair),
-      userSpanMm: userSpanMm,
+      userSpanMm: pair == null ? null : span,
       spanPx: pair == null ? null : recordSpanMm(record, pair) / record.mmPerPx,
+      spanDisks: pair == null
+          ? null
+          : (
+              (record.marks[pair.$1].x, record.marks[pair.$1].y),
+              (record.marks[pair.$2].x, record.marks[pair.$2].y),
+            ),
     );
   }
 
@@ -154,10 +185,21 @@ class CalibrationPlate {
     'app_span_mm': ?appSpanMm,
     'user_span_mm': ?userSpanMm,
     'span_px': ?spanPx,
+    if (spanDisks != null)
+      'span_disks': [
+        [spanDisks!.$1.$1, spanDisks!.$1.$2],
+        [spanDisks!.$2.$1, spanDisks!.$2.$2],
+      ],
   };
 
   factory CalibrationPlate.fromJson(Map<String, dynamic> j) {
     final sm = j['span_marks'] as List?;
+    final sd = j['span_disks'] as List?;
+    (double, double) xy(Object? v) {
+      final l = v as List;
+      return ((l[0] as num).toDouble(), (l[1] as num).toDouble());
+    }
+
     return CalibrationPlate(
       zoneRecordId: j['zone_plate'] as String,
       addedAt: DateTime.parse(j['added_at'] as String),
@@ -171,6 +213,7 @@ class CalibrationPlate {
       appSpanMm: (j['app_span_mm'] as num?)?.toDouble(),
       userSpanMm: (j['user_span_mm'] as num?)?.toDouble(),
       spanPx: (j['span_px'] as num?)?.toDouble(),
+      spanDisks: sd == null || sd.length != 2 ? null : (xy(sd[0]), xy(sd[1])),
     );
   }
 }
@@ -360,11 +403,20 @@ CalibrationProfile? activeCalibration(
   required String camera,
   required int width,
   required int height,
+  double? rimRadiusPx,
 }) {
+  // With the rim known, a profile from the same stand height comes first.
   CalibrationProfile? best;
+  var bestSetup = false;
   for (final p in profiles) {
     if (!p.sameCamera(camera, width, height)) continue;
-    if (best == null || p.updatedAt.isAfter(best.updatedAt)) best = p;
+    final setup = rimRadiusPx != null && p.sameSetup(rimRadiusPx);
+    if (best == null ||
+        (setup && !bestSetup) ||
+        (setup == bestSetup && p.updatedAt.isAfter(best.updatedAt))) {
+      best = p;
+      bestSetup = setup;
+    }
   }
   return best;
 }
@@ -392,7 +444,8 @@ CalibrationStatus statusAgainst(
   if (rimRadiusPx != null && !profile.sameSetup(rimRadiusPx)) {
     return CalibrationStatus.setupChanged;
   }
-  if (at.difference(profile.updatedAt).inDays > kCalibrationMaxAgeDays) {
+  // Either way: a photo long before the calibration isn't covered by it either.
+  if (at.difference(profile.updatedAt).inDays.abs() > kCalibrationMaxAgeDays) {
     return CalibrationStatus.old;
   }
   return CalibrationStatus.calibrated;
@@ -412,6 +465,7 @@ CalibrationStatus statusAgainst(
         camera: record.camera,
         width: record.imageWidth,
         height: record.imageHeight,
+        rimRadiusPx: record.plate.radius,
       );
   return (
     statusAgainst(

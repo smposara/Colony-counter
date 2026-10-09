@@ -219,6 +219,18 @@ class PlateStore extends ChangeNotifier {
   /// Deletes the profile; its plates stay as ordinary zone plates.
   Future<void> deleteCalibration(CalibrationProfile profile) async {
     _calibrations.removeWhere((p) => p.id == profile.id);
+    // Its plates become ordinary zone plates again (readings are kept).
+    var changed = false;
+    for (var i = 0; i < _zoneRecords.length; i++) {
+      final r = _zoneRecords[i];
+      if (r.calibrationId != profile.id) continue;
+      _zoneRecords[i] = r.copyWith(
+        calibrationId: '',
+        usedForCalibration: false,
+      );
+      changed = true;
+    }
+    if (changed) await _saveZones();
     await _saveCalibrations();
   }
 

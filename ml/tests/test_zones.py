@@ -130,3 +130,33 @@ def test_zone_metrics_gate():
     assert good["mae_mm"] == pytest.approx(0.2, abs=1e-9)
     bad = zone_metrics(np.array([20.0, 15.0, 33.0]), np.array([22.5, 15.0, 30.0]))
     assert not bad["gate_pass"]
+
+
+def test_a_disk_without_a_near_level_does_not_poison_the_plate(monkeypatch):
+    """A disk whose rays all have length 0 (NaN near level) is reported
+    unmeasured; the other zones are measured as before (the Dart port does the
+    same, see zones.dart _measureAll)."""
+    import cv2
+    from pathlib import Path
+
+    from colonycounter import zones as Z
+
+    img = cv2.imread(str(Path(__file__).resolve().parents[2] / "app/test/fixtures/zones_reflected.jpg"))
+    base = Z.measure_plate(img)
+    real = Z._cast
+    calls = {"n": 0}
+
+    def cast(*args, **kwargs):
+        r = real(*args, **kwargs)
+        calls["n"] += 1
+        if calls["n"] == 2:
+            r = dict(r, near_level=float("nan"))
+        return r
+
+    monkeypatch.setattr(Z, "_cast", cast)
+    res = Z.measure_plate(img)
+    assert "unmeasured" in res.zones[1].flags
+    others = [z for i, z in enumerate(res.zones) if i != 1]
+    want = [z for i, z in enumerate(base.zones) if i != 1]
+    assert [round(float(z.diameter_mm), 1) for z in others] == \
+        [round(float(z.diameter_mm), 1) for z in want]
