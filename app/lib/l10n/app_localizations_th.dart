@@ -77,6 +77,13 @@ class AppLocalizationsTh extends AppLocalizations {
   String get aboutStand => 'แท่นถ่ายภาพพิมพ์ 3 มิติ';
 
   @override
+  String get aboutZonesTitle => 'โซนยับยั้ง (เบต้า)';
+
+  @override
+  String get aboutZones =>
+      'วัดเฉพาะเส้นผ่านศูนย์กลางของโซน ไม่แปลผลเป็นไว ปานกลาง หรือดื้อ ยังไม่ได้เทียบกับการวัดด้วยเวอร์เนียร์บนเพลตจริง ควรตรวจทุกโซน';
+
+  @override
   String get sampleKind => 'ชนิดตัวอย่าง';
 
   @override
@@ -1952,4 +1959,17 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get zoneExportCsv => 'ส่งออก CSV ของโซนยับยั้ง';
+
+  @override
+  String get zonesTitleBeta => 'โซนยับยั้ง (เบต้า)';
+
+  @override
+  String get zoneDisclaimerTitle => 'การวัดโซนยับยั้งยังเป็นรุ่นเบต้า';
+
+  @override
+  String get zoneDisclaimer =>
+      'แอปวัดเส้นผ่านศูนย์กลางของโซนยับยั้งรอบแผ่นกระดาษและหลุมวุ้น ขณะนี้ทดสอบกับเพลตจำลองเท่านั้น ยังไม่ได้เทียบกับการวัดด้วยเวอร์เนียร์บนเพลตจริง จึงควรตรวจทุกโซนบนภาพ\n\nแอปรายงานเฉพาะขนาด ไม่แปลผลเป็นไว ปานกลาง หรือดื้อ และไม่ใช่การทดสอบความไวต่อยาที่ผ่านการรับรอง หรือเครื่องมือวินิจฉัยโรค';
+
+  @override
+  String get zoneDisclaimerOk => 'เข้าใจแล้ว';
 }

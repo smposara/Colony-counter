@@ -129,6 +129,7 @@ class AboutScreen extends StatelessWidget {
             tr.aboutIntendedUse,
             tr.aboutIntendedUseText,
           ),
+          note(Icons.adjust, tr.aboutZonesTitle, tr.aboutZones),
           note(
             Icons.grid_on_outlined,
             tr.aboutPetrifilmTitle,

@@ -253,6 +253,23 @@ M5 and M6.
 - Thai terms to confirm with a Thai microbiologist: วงใส (clear zone), เส้นผ่านศูนย์กลาง,
   แผ่นยา / หลุม.
 
+**Progress (October 2026):** M6 is done for a beta, released as 0.8.0 (build 13).
+- The feature is marked **beta** on the Zones tab title, in the disclaimer and on the
+  About screen, because the real-photo gate (30–50 calliper-measured plates) has not been
+  run yet.
+- **Disclaimer:** shown once before the first zone plate; Cancel stops there. Accepting is
+  saved in the settings (`zone_disclaimer_seen`). It says the app reports diameters only,
+  with no S/I/R interpretation; has been tested on synthetic plates only; and is not a
+  validated susceptibility test or a diagnostic device.
+- **About:** a line on inhibition zones (beta).
+- **Text:** all zone strings are in English and Thai. The app uses โซนยับยั้ง for
+  inhibition zone and แผ่นกระดาษ / หลุมวุ้น for disk / well. These terms are still to be
+  confirmed with a Thai microbiologist.
+- **Docs and store:** the app README lists the feature. The Play listing (en/th) has an
+  "Inhibition zones (beta)" section with the disclaimer wording, and the 0.8.0 release
+  notes are in place. Privacy is unchanged, since everything stays on the device. There is
+  no zone screenshot yet, and no web help page exists to extend.
+
 ## 7. Tests
 
 | Level | File | Checks |

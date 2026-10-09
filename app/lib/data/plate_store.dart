@@ -42,6 +42,9 @@ class PlateStore extends ChangeNotifier {
   /// The last zone plate's setup, offered for the next one.
   ZoneSetup zoneSetup = const ZoneSetup();
 
+  /// The zone-measurement disclaimer has been accepted.
+  bool zoneDisclaimerSeen = false;
+
   static const _recordsKey = 'plates';
   static const _settingsKey = 'settings';
   static const _samplesKey = 'samples';
@@ -114,6 +117,7 @@ class PlateStore extends ChangeNotifier {
       zoneSetup = zs is Map<String, dynamic>
           ? ZoneSetup.fromJson(zs)
           : const ZoneSetup();
+      zoneDisclaimerSeen = s['zone_disclaimer_seen'] as bool? ?? false;
     }
     notifyListeners();
   }
@@ -223,6 +227,11 @@ class PlateStore extends ChangeNotifier {
     defaultMedium = medium ?? defaultMedium;
     defaultFormat = format ?? defaultFormat;
     this.accuracyCheckEvery = accuracyCheckEvery ?? this.accuracyCheckEvery;
+    await _saveSettings();
+  }
+
+  Future<void> acceptZoneDisclaimer() async {
+    zoneDisclaimerSeen = true;
     await _saveSettings();
   }
 
@@ -437,6 +446,7 @@ class PlateStore extends ChangeNotifier {
         'language': language,
         'theme': theme,
         'zone_setup': zoneSetup.toJson(),
+        'zone_disclaimer_seen': zoneDisclaimerSeen,
       }),
     );
     notifyListeners();

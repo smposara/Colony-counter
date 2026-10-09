@@ -54,7 +54,12 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          [tr.appTitle, tr.homeSamples, tr.homeCompare, tr.homeZones][_tab],
+          [
+            tr.appTitle,
+            tr.homeSamples,
+            tr.homeCompare,
+            tr.zonesTitleBeta,
+          ][_tab],
         ),
         actions: [
           if (_tab == 0 && !store.defaultFormat.isFilm)

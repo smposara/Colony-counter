@@ -46,6 +46,8 @@
   },
   "aboutPrivacyPolicy": "Privacy policy",
   "aboutStand": "3D-printed photo stand",
+  "aboutZonesTitle": "Inhibition zones (beta)",
+  "aboutZones": "Zone diameters are measured only: no susceptible, intermediate or resistant interpretation. Not yet checked against calliper readings on real plates; check every zone.",
   "sampleKind": "Sample",
   "sampleLiquid": "Liquid (CFU/mL)",
   "sampleSolid": "Solid (CFU/g)",
@@ -1298,5 +1300,9 @@
   },
   "zoneResultsNone": "No labelled zones yet. Give the disks labels to compare them.",
   "zoneResultsNote": "Mean ± SD of zone diameters over the replicate plates; a disk with no zone counts as the disk size (the grey line). Diameters only: the app does not interpret them as susceptible, intermediate or resistant.",
-  "zoneExportCsv": "Export zone CSVs"
+  "zoneExportCsv": "Export zone CSVs",
+  "zonesTitleBeta": "Zones (beta)",
+  "zoneDisclaimerTitle": "Zone measurement is in beta",
+  "zoneDisclaimer": "The app measures the diameter of inhibition zones around paper disks and agar wells. So far it has been tested on synthetic plates only, not yet against calliper readings on real plates, so check every zone on the photo.\n\nIt reports diameters only. It does not interpret them as susceptible, intermediate or resistant, and it is not a validated susceptibility test or a diagnostic device.",
+  "zoneDisclaimerOk": "I understand"
 }

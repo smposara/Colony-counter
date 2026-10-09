@@ -19,6 +19,12 @@ MORE PLATE TYPES
 • Time-lapse: photograph the same plate over time to see when colonies appear and how fast they grow.
 • Petrifilm® dry films: AC, EC (E. coli and coliforms), CC, EB and YM, with gas bubbles, yellow zones and estimates from the grid squares.
 
+INHIBITION ZONES (BETA)
+• Disk and agar-well diffusion: the app finds each disk or well and measures its zone diameter, in whole mm on screen and 0.1 mm in the CSV.
+• Check each zone: drag its edge, change it by 1 mm, mark "no zone", or add a disk the app missed.
+• Label the test items once and reuse the list; mean ± SD per item over replicate plates, as a table and a chart.
+• Diameters only: no susceptible / intermediate / resistant interpretation. Beta: not yet checked against calliper readings on real plates.
+
 TRUST THE COUNT
 • "Check this count" warnings for crowded plates, touching or faint colonies.
 • Accuracy tracking: check a plate colony by colony now and then, and see how accurate the app is on your own plates.
@@ -26,7 +32,7 @@ TRUST THE COUNT
 RECORDS AND EXPORT
 • Sample plans, experiment details (strain, medium, batch, incubation, operator, tags) and search.
 • Print QR plate labels and scan them to fill in the sample.
-• Export CSV (plates, samples, every colony), annotated photos, full backups, and training data for your own models.
+• Export CSV (plates, samples, every colony, zones), annotated photos, full backups, and training data for your own models.
 
 PRIVATE AND OFFLINE
 Counting runs on your phone. No account, no ads, no tracking, and no internet access. Your photos and results stay on your device unless you export them.

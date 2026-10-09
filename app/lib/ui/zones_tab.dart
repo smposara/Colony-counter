@@ -9,8 +9,41 @@ import 'photo_thumbnail.dart';
 import 'zone_review_screen.dart';
 import 'zone_setup_sheet.dart';
 
+/// Shown once, before the first zone plate: beta, diameters only. True when
+/// accepted (now or before).
+Future<bool> confirmZoneDisclaimer(
+  BuildContext context,
+  PlateStore store,
+) async {
+  if (store.zoneDisclaimerSeen) return true;
+  final ok = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      icon: const Icon(Icons.science_outlined),
+      title: Text(tr.zoneDisclaimerTitle),
+      content: SingleChildScrollView(child: Text(tr.zoneDisclaimer)),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: Text(tr.homeCancel),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(context, true),
+          child: Text(tr.zoneDisclaimerOk),
+        ),
+      ],
+    ),
+  );
+  if (ok != true) return false;
+  await store.acceptZoneDisclaimer();
+  return true;
+}
+
 /// Sets up, photographs and measures a new zone plate.
 Future<void> measureNewZonePlate(BuildContext context, PlateStore store) async {
+  if (!await confirmZoneDisclaimer(context, store) || !context.mounted) {
+    return;
+  }
   final choice = await showZoneSetupSheet(context, store);
   if (choice == null || !context.mounted) return;
   final photo = await takePlatePhoto(

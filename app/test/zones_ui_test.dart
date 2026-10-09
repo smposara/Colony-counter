@@ -475,9 +475,35 @@ void main() {
     await tester.tap(find.text('Zones').last);
     await tester.pumpAndSettle();
     expect(find.text('No zone plates yet'), findsOneWidget);
+    expect(find.text('Zones (beta)'), findsOneWidget);
+
+    // The disclaimer comes first; cancelling it stops there.
     await tester.tap(find.text('Measure zones'));
     await tester.pumpAndSettle();
+    expect(find.text('Zone measurement is in beta'), findsOneWidget);
+    expect(find.textContaining('does not interpret them'), findsOneWidget);
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+    expect(find.text('Paper disks'), findsNothing);
+    expect(store.zoneDisclaimerSeen, isFalse);
+
+    await tester.tap(find.text('Measure zones'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('I understand'));
+    await tester.pumpAndSettle();
     expect(find.text('Zone plate'), findsOneWidget);
+    expect(find.text('Paper disks'), findsOneWidget);
+    expect(store.zoneDisclaimerSeen, isTrue);
+
+    // Only once, also after a restart.
+    final again = PlateStore(store.backend);
+    await tester.runAsync(again.load);
+    expect(again.zoneDisclaimerSeen, isTrue);
+    await tester.tapAt(const Offset(180, 20));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Measure zones'));
+    await tester.pumpAndSettle();
+    expect(find.text('Zone measurement is in beta'), findsNothing);
     expect(find.text('Paper disks'), findsOneWidget);
   });
   testWidgets('Thai on a small phone: the Zones screens fit', (tester) async {
@@ -492,6 +518,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('ยังไม่มีเพลตวัดโซนยับยั้ง'), findsOneWidget);
     await tester.tap(find.text('วัดโซนยับยั้ง'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('เข้าใจแล้ว'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('หลุมวุ้น'));
     await tester.pumpAndSettle();

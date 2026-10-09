@@ -77,6 +77,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aboutStand => '3D-printed photo stand';
 
   @override
+  String get aboutZonesTitle => 'Inhibition zones (beta)';
+
+  @override
+  String get aboutZones =>
+      'Zone diameters are measured only: no susceptible, intermediate or resistant interpretation. Not yet checked against calliper readings on real plates; check every zone.';
+
+  @override
   String get sampleKind => 'Sample';
 
   @override
@@ -2073,4 +2080,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get zoneExportCsv => 'Export zone CSVs';
+
+  @override
+  String get zonesTitleBeta => 'Zones (beta)';
+
+  @override
+  String get zoneDisclaimerTitle => 'Zone measurement is in beta';
+
+  @override
+  String get zoneDisclaimer =>
+      'The app measures the diameter of inhibition zones around paper disks and agar wells. So far it has been tested on synthetic plates only, not yet against calliper readings on real plates, so check every zone on the photo.\n\nIt reports diameters only. It does not interpret them as susceptible, intermediate or resistant, and it is not a validated susceptibility test or a diagnostic device.';
+
+  @override
+  String get zoneDisclaimerOk => 'I understand';
 }

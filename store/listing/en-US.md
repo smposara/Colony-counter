@@ -12,7 +12,7 @@ Colony Counter – CFU counting
 Count bacterial colonies (CFU) on agar plates with your phone camera.
 ```
 
-## Full description (2462/4000 characters)
+## Full description (2988/4000 characters)
 
 ```
 Colony Counter counts bacterial and fungal colonies on agar plates from a photo, and turns plate counts into CFU/mL, CFU/g or CFU/100 mL. Built for microbiology research and teaching labs.
@@ -36,6 +36,12 @@ MORE PLATE TYPES
 • Time-lapse: photograph the same plate over time to see when colonies appear and how fast they grow.
 • Petrifilm® dry films: AC, EC (E. coli and coliforms), CC, EB and YM, with gas bubbles, yellow zones and estimates from the grid squares.
 
+INHIBITION ZONES (BETA)
+• Disk and agar-well diffusion: the app finds each disk or well and measures its zone diameter, in whole mm on screen and 0.1 mm in the CSV.
+• Check each zone: drag its edge, change it by 1 mm, mark "no zone", or add a disk the app missed.
+• Label the test items once and reuse the list; mean ± SD per item over replicate plates, as a table and a chart.
+• Diameters only: no susceptible / intermediate / resistant interpretation. Beta: not yet checked against calliper readings on real plates.
+
 TRUST THE COUNT
 • "Check this count" warnings for crowded plates, touching or faint colonies.
 • Accuracy tracking: check a plate colony by colony now and then, and see how accurate the app is on your own plates.
@@ -43,7 +49,7 @@ TRUST THE COUNT
 RECORDS AND EXPORT
 • Sample plans, experiment details (strain, medium, batch, incubation, operator, tags) and search.
 • Print QR plate labels and scan them to fill in the sample.
-• Export CSV (plates, samples, every colony), annotated photos, full backups, and training data for your own models.
+• Export CSV (plates, samples, every colony, zones), annotated photos, full backups, and training data for your own models.
 
 PRIVATE AND OFFLINE
 Counting runs on your phone. No account, no ads, no tracking, and no internet access. Your photos and results stay on your device unless you export them.
@@ -55,12 +61,11 @@ Reads Neogen® Petrifilm® plates. Petrifilm and Neogen are trademarks of Neogen
 Intended use: for research and teaching. Colony Counter is not a medical or diagnostic device. Always check the automatic count.
 ```
 
-## Release notes (What's new) (398/500 characters)
+## Release notes (What's new) (354/500 characters)
 
 ```
-Version 0.7.1
-• Drop plates: when no dilution is in the counting window, CFU/mL now comes from the closest one (it could show 0 before)
-• Stray colonies between the drops no longer shift a layout of rows, and a crowded plate is flagged for checking
-• Faster drop finding on photos with many specks
-• Clearer notes on estimates and "<" limits; the samples CSV names each sample's own counting window
+Version 0.8.0
+• New Zones tab (beta): measure inhibition zones around paper disks and agar wells, check and correct each zone, label the test items, and see mean ± SD per item over replicate plates
+• Zone CSVs, annotated zone photos, and zones in backups
+• Diameters only: no S/I/R interpretation; not yet checked against calliper readings on real plates
 ```

@@ -212,6 +212,18 @@ abstract class AppLocalizations {
   /// **'3D-printed photo stand'**
   String get aboutStand;
 
+  /// No description provided for @aboutZonesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Inhibition zones (beta)'**
+  String get aboutZonesTitle;
+
+  /// No description provided for @aboutZones.
+  ///
+  /// In en, this message translates to:
+  /// **'Zone diameters are measured only: no susceptible, intermediate or resistant interpretation. Not yet checked against calliper readings on real plates; check every zone.'**
+  String get aboutZones;
+
   /// No description provided for @sampleKind.
   ///
   /// In en, this message translates to:
@@ -3433,6 +3445,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Export zone CSVs'**
   String get zoneExportCsv;
+
+  /// No description provided for @zonesTitleBeta.
+  ///
+  /// In en, this message translates to:
+  /// **'Zones (beta)'**
+  String get zonesTitleBeta;
+
+  /// No description provided for @zoneDisclaimerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Zone measurement is in beta'**
+  String get zoneDisclaimerTitle;
+
+  /// No description provided for @zoneDisclaimer.
+  ///
+  /// In en, this message translates to:
+  /// **'The app measures the diameter of inhibition zones around paper disks and agar wells. So far it has been tested on synthetic plates only, not yet against calliper readings on real plates, so check every zone on the photo.\n\nIt reports diameters only. It does not interpret them as susceptible, intermediate or resistant, and it is not a validated susceptibility test or a diagnostic device.'**
+  String get zoneDisclaimer;
+
+  /// No description provided for @zoneDisclaimerOk.
+  ///
+  /// In en, this message translates to:
+  /// **'I understand'**
+  String get zoneDisclaimerOk;
 }
 
 class _AppLocalizationsDelegate

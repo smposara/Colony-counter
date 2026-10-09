@@ -1,99 +1,107 @@
 {
-  "aboutTitle": {
-    "en": "About",
-    "th": "เกี่ยวกับแอป"
-  },
-  "aboutTagline": {
-    "en": "Count colonies (CFU) on agar plates with your phone camera.",
-    "th": "นับโคโลนี (CFU) บนจานอาหารเลี้ยงเชื้อด้วยกล้องโทรศัพท์"
-  },
-  "aboutVersion": {
-    "en": "Version {version} (build {build})",
-    "th": "เวอร์ชัน {version} (บิลด์ {build})",
-    "placeholders": {
-      "version": {
-        "type": "String"
-      },
-      "build": {
-        "type": "int"
-      }
-    }
-  },
-  "aboutDeveloper": {
-    "en": "Developer",
-    "th": "ผู้พัฒนา"
-  },
-  "aboutEmail": {
-    "en": "Email",
-    "th": "อีเมล"
-  },
-  "aboutWebsite": {
-    "en": "Website",
-    "th": "เว็บไซต์"
-  },
-  "aboutSource": {
-    "en": "Source code",
-    "th": "ซอร์สโค้ด"
-  },
-  "aboutLicense": {
-    "en": "Licence",
-    "th": "สัญญาอนุญาต"
-  },
-  "aboutLicenseText": {
-    "en": "Free and open-source software. You may use, study, share and change it. Changed versions offered to others, including as a website, must share their source code under the same licence.",
-    "th": "ซอฟต์แวร์เสรีและโอเพนซอร์ส ใช้งาน ศึกษา แจกจ่าย และแก้ไขได้ หากนำฉบับที่แก้ไขไปให้ผู้อื่นใช้ รวมถึงให้บริการเป็นเว็บไซต์ ต้องเปิดเผยซอร์สโค้ดภายใต้สัญญาอนุญาตเดียวกัน"
-  },
-  "aboutOpenSource": {
-    "en": "Open-source licences",
-    "th": "สัญญาอนุญาตโอเพนซอร์ส"
-  },
-  "aboutOpenSourceSub": {
-    "en": "Libraries and fonts used by the app",
-    "th": "ไลบรารีและฟอนต์ที่แอปใช้"
-  },
-  "aboutPrivacy": {
-    "en": "Privacy",
-    "th": "ความเป็นส่วนตัว"
-  },
-  "aboutPrivacyText": {
-    "en": "Counting runs on this device. Photos and results stay on this device (or in this browser) unless you export or share them.",
-    "th": "การนับทำงานบนอุปกรณ์นี้ ภาพถ่ายและผลการนับเก็บไว้ในอุปกรณ์นี้ (หรือในเบราว์เซอร์นี้) เว้นแต่คุณส่งออกหรือแชร์เอง"
-  },
-  "aboutIntendedUse": {
-    "en": "Intended use",
-    "th": "วัตถุประสงค์การใช้งาน"
-  },
-  "aboutIntendedUseText": {
-    "en": "For research and teaching. Not a medical or diagnostic device. Always check the automatic count.",
-    "th": "สำหรับงานวิจัยและการเรียนการสอน ไม่ใช่เครื่องมือทางการแพทย์หรือการวินิจฉัย โปรดตรวจสอบผลการนับอัตโนมัติทุกครั้ง"
-  },
-  "aboutCopyright": {
-    "en": "© {year} {developer}",
-    "th": "© {year} {developer}",
-    "placeholders": {
-      "year": {
-        "type": "int"
-      },
-      "developer": {
-        "type": "String"
-      }
-    }
-  },
-  "aboutCannotOpen": {
-    "en": "Could not open {target}",
-    "th": "เปิด {target} ไม่ได้",
-    "placeholders": {
-      "target": {
-        "type": "String"
-      }
-    }
-  },
-  "aboutPrivacyPolicy": {
-    "en": "Privacy policy",
-    "th": "นโยบายความเป็นส่วนตัว"
-  },
-  "aboutStand": {
-    "en": "3D-printed photo stand",
-    "th": "แท่นถ่ายภาพพิมพ์ 3 มิติ"
+ "aboutTitle": {
+  "en": "About",
+  "th": "เกี่ยวกับแอป"
+ },
+ "aboutTagline": {
+  "en": "Count colonies (CFU) on agar plates with your phone camera.",
+  "th": "นับโคโลนี (CFU) บนจานอาหารเลี้ยงเชื้อด้วยกล้องโทรศัพท์"
+ },
+ "aboutVersion": {
+  "en": "Version {version} (build {build})",
+  "th": "เวอร์ชัน {version} (บิลด์ {build})",
+  "placeholders": {
+   "version": {
+    "type": "String"
+   },
+   "build": {
+    "type": "int"
+   }
   }
+ },
+ "aboutDeveloper": {
+  "en": "Developer",
+  "th": "ผู้พัฒนา"
+ },
+ "aboutEmail": {
+  "en": "Email",
+  "th": "อีเมล"
+ },
+ "aboutWebsite": {
+  "en": "Website",
+  "th": "เว็บไซต์"
+ },
+ "aboutSource": {
+  "en": "Source code",
+  "th": "ซอร์สโค้ด"
+ },
+ "aboutLicense": {
+  "en": "Licence",
+  "th": "สัญญาอนุญาต"
+ },
+ "aboutLicenseText": {
+  "en": "Free and open-source software. You may use, study, share and change it. Changed versions offered to others, including as a website, must share their source code under the same licence.",
+  "th": "ซอฟต์แวร์เสรีและโอเพนซอร์ส ใช้งาน ศึกษา แจกจ่าย และแก้ไขได้ หากนำฉบับที่แก้ไขไปให้ผู้อื่นใช้ รวมถึงให้บริการเป็นเว็บไซต์ ต้องเปิดเผยซอร์สโค้ดภายใต้สัญญาอนุญาตเดียวกัน"
+ },
+ "aboutOpenSource": {
+  "en": "Open-source licences",
+  "th": "สัญญาอนุญาตโอเพนซอร์ส"
+ },
+ "aboutOpenSourceSub": {
+  "en": "Libraries and fonts used by the app",
+  "th": "ไลบรารีและฟอนต์ที่แอปใช้"
+ },
+ "aboutPrivacy": {
+  "en": "Privacy",
+  "th": "ความเป็นส่วนตัว"
+ },
+ "aboutPrivacyText": {
+  "en": "Counting runs on this device. Photos and results stay on this device (or in this browser) unless you export or share them.",
+  "th": "การนับทำงานบนอุปกรณ์นี้ ภาพถ่ายและผลการนับเก็บไว้ในอุปกรณ์นี้ (หรือในเบราว์เซอร์นี้) เว้นแต่คุณส่งออกหรือแชร์เอง"
+ },
+ "aboutIntendedUse": {
+  "en": "Intended use",
+  "th": "วัตถุประสงค์การใช้งาน"
+ },
+ "aboutIntendedUseText": {
+  "en": "For research and teaching. Not a medical or diagnostic device. Always check the automatic count.",
+  "th": "สำหรับงานวิจัยและการเรียนการสอน ไม่ใช่เครื่องมือทางการแพทย์หรือการวินิจฉัย โปรดตรวจสอบผลการนับอัตโนมัติทุกครั้ง"
+ },
+ "aboutCopyright": {
+  "en": "© {year} {developer}",
+  "th": "© {year} {developer}",
+  "placeholders": {
+   "year": {
+    "type": "int"
+   },
+   "developer": {
+    "type": "String"
+   }
+  }
+ },
+ "aboutCannotOpen": {
+  "en": "Could not open {target}",
+  "th": "เปิด {target} ไม่ได้",
+  "placeholders": {
+   "target": {
+    "type": "String"
+   }
+  }
+ },
+ "aboutPrivacyPolicy": {
+  "en": "Privacy policy",
+  "th": "นโยบายความเป็นส่วนตัว"
+ },
+ "aboutStand": {
+  "en": "3D-printed photo stand",
+  "th": "แท่นถ่ายภาพพิมพ์ 3 มิติ"
+ },
+ "aboutZonesTitle": {
+  "en": "Inhibition zones (beta)",
+  "th": "โซนยับยั้ง (เบต้า)"
+ },
+ "aboutZones": {
+  "en": "Zone diameters are measured only: no susceptible, intermediate or resistant interpretation. Not yet checked against calliper readings on real plates; check every zone.",
+  "th": "วัดเฉพาะเส้นผ่านศูนย์กลางของโซน ไม่แปลผลเป็นไว ปานกลาง หรือดื้อ ยังไม่ได้เทียบกับการวัดด้วยเวอร์เนียร์บนเพลตจริง ควรตรวจทุกโซน"
+ }
 }

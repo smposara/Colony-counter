@@ -38,6 +38,8 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Licence: GNU AGPL-3.0'), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('Inhibition zones (beta)'), 200);
+    expect(find.textContaining('no susceptible, intermediate'), findsOneWidget);
   });
 
   testWidgets('open-source licences include the bundled fonts', (tester) async {
