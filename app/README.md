@@ -218,6 +218,10 @@ rewrite rules are needed, and the app works from a subfolder. Requirements:
   Apache add `AddType application/wasm .wasm`).
 - Fonts and the rendering engine are bundled; nothing loads from Google or any
   CDN.
+- App icons live in `app-icons/`, not Flutter's usual `icons/`: Apache keeps
+  `/icons/` for its own icons on many hosts, so files there come back 404 and Chrome
+  will not install the app. Open `install-check.html` on a phone to see what Chrome
+  gets (manifest, icons, service worker, and whether it offers to install).
 - **Offline:** `offline_sw.js` (a service worker written by
   `tool/make_offline_sw.py` when packaging) keeps the app's files in the browser
   after the first visit, so it opens and counts with no connection. It saves the

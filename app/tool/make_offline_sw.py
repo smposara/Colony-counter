@@ -30,6 +30,9 @@ const CACHE = 'colony-counter-' + VERSION;
 const CORE = __CORE__;
 const CHROMIUM = __CHROMIUM__;
 const STANDARD = __STANDARD__;
+// The app cannot start without these (the rest is icons, pages and fonts
+// that are also fetched on first use).
+const ESSENTIAL = /^(index\.html|flutter\.js|flutter_bootstrap\.js|main\.dart\.js|canvaskit\/)/;
 
 // The CanvasKit build this browser will load (as flutter.js decides).
 function engineFiles() {
@@ -45,8 +48,16 @@ const url = (path) => new URL(path, scope()).href;
 self.addEventListener('install', (event) => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE);
-    // index.html is also what the bare folder address ("./") shows.
-    await cache.addAll([...CORE, ...engineFiles()].map((p) => new Request(url(p), { cache: 'reload' })));
+    // File by file, so one file the server will not give (some hosts keep
+    // paths such as /icons/ for themselves) does not stop offline use; only
+    // the files the app cannot start without must all be saved.
+    const results = await Promise.allSettled([...CORE, ...engineFiles()].map(async (p) => {
+      const res = await fetch(new Request(url(p), { cache: 'reload' }));
+      if (!res.ok) throw new Error(p + ': ' + res.status);
+      await cache.put(url(p), res);
+    }));
+    const failed = [...CORE, ...engineFiles()].filter((p, i) => results[i].status === 'rejected');
+    if (failed.some((p) => ESSENTIAL.test(p))) throw new Error('offline copy incomplete: ' + failed.join(', '));
   })());
   // The first install has no earlier version to wait for.
   if (!self.registration.active) self.skipWaiting();

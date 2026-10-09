@@ -7,7 +7,7 @@ const { chromium } = require('playwright');
 const http = require('http'), fs = require('fs'), path = require('path'), { spawn } = require('child_process');
 // Files come from this folder, the app's fonts and icon, and the store screenshots.
 const repo = path.join(__dirname, '..', '..', '..');
-const roots = [__dirname, path.join(repo, 'app/assets/fonts'), path.join(repo, 'app/assets/icon'), path.join(repo, 'app/web/icons')];
+const roots = [__dirname, path.join(repo, 'app/assets/fonts'), path.join(repo, 'app/assets/icon'), path.join(repo, 'app/web/app-icons')];
 const find = (p) => roots.map(r => path.join(r, p)).find(f => fs.existsSync(f) && fs.statSync(f).isFile());
 const types = { '.html': 'text/html', '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml', '.ttf': 'font/ttf' };
 const server = http.createServer((req, res) => {

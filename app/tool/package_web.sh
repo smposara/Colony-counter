@@ -7,6 +7,9 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+# Start clean: flutter build keeps files left over from earlier builds (such
+# as a renamed folder), and they would end up in the zip.
+rm -rf build/web
 flutter build web --release --no-web-resources-cdn --no-wasm-dry-run
 
 out=build/web
