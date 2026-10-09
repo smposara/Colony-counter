@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base href="./">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1565C0">
+  <!-- The same manifest as the app, so Chrome judges this page the same way. -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <title>Install check</title>
+  <style>
+    :root { --fg: #1b1b1f; --bg: #f8f9ff; --card: #fff; --ok: #1b7f3b; --bad: #b3261e; --muted: #5d5f67; --line: #dde1ec; }
+    @media (prefers-color-scheme: dark) {
+      :root { --fg: #e3e2e6; --bg: #121318; --card: #1d1f25; --ok: #6fdc8c; --bad: #ffb4ab; --muted: #a9abb4; --line: #343741; }
+    }
+    body { margin: 0; padding: 16px; background: var(--bg); color: var(--fg); font: 15px/1.45 -apple-system, system-ui, sans-serif; }
+    h1 { font-size: 20px; margin: 0 0 4px; color: #1565C0; }
+    @media (prefers-color-scheme: dark) { h1 { color: #a9c7ff; } }
+    p.lead { margin: 0 0 12px; color: var(--muted); }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px; margin-bottom: 12px; }
+    .row { display: flex; gap: 8px; padding: 4px 0; border-bottom: 1px solid var(--line); }
+    .row:last-child { border-bottom: 0; }
+    .row .k { flex: 0 0 44%; color: var(--muted); }
+    .row .v { flex: 1; word-break: break-word; }
+    .ok { color: var(--ok); font-weight: 600; }
+    .bad { color: var(--bad); font-weight: 600; }
+    button { font: inherit; padding: 10px 16px; border-radius: 20px; border: 0; background: #1565C0; color: #fff; margin: 4px 8px 4px 0; }
+    button.secondary { background: transparent; color: inherit; border: 1px solid var(--line); }
+    #install { display: none; background: #FF9800; color: #2b1700; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <h1>Colony Counter: install check</h1>
+  <p class="lead">Checks what Chrome needs to install the web app. Wait about 10 seconds, then take a screenshot or copy the report.</p>
+  <div class="card" id="verdict">Checking…</div>
+  <button id="install">Install Colony Counter</button>
+  <button class="secondary" id="copy">Copy report</button>
+  <div class="card" id="rows"></div>
+  <script>
+    const rows = document.getElementById('rows');
+    const lines = [];
+    function add(k, v, good) {
+      const r = document.createElement('div'); r.className = 'row';
+      const a = document.createElement('div'); a.className = 'k'; a.textContent = k;
+      const b = document.createElement('div'); b.className = 'v' + (good === true ? ' ok' : good === false ? ' bad' : '');
+      b.textContent = v; r.append(a, b); rows.append(r);
+      lines.push(k + ': ' + v);
+    }
+    let promptEvent = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault(); promptEvent = e;
+      document.getElementById('install').style.display = 'inline-block';
+    });
+    document.getElementById('install').onclick = async () => {
+      if (!promptEvent) return;
+      promptEvent.prompt();
+      const r = await promptEvent.userChoice;
+      add('Install button', r.outcome, r.outcome === 'accepted');
+    };
+    document.getElementById('copy').onclick = async () => {
+      const text = document.getElementById('verdict').textContent + '\n' + lines.join('\n');
+      try { await navigator.clipboard.writeText(text); document.getElementById('copy').textContent = 'Copied'; }
+      catch (e) { prompt('Copy this report:', text); }
+    };
+
+    function imageSize(src) {
+      return new Promise((ok) => {
+        const im = new Image();
+        im.onload = () => ok(im.naturalWidth + '×' + im.naturalHeight);
+        im.onerror = () => ok(null);
+        im.src = src + (src.includes('?') ? '&' : '?') + 'check=' + Date.now();
+      });
+    }
+
+    (async () => {
+      const problems = [];
+      const brands = navigator.userAgentData ? navigator.userAgentData.brands.map((b) => b.brand + ' ' + b.version).join(', ') : '';
+      add('Browser', brands || navigator.userAgent);
+      add('User agent', navigator.userAgent);
+      add('Secure (HTTPS)', String(window.isSecureContext), window.isSecureContext);
+      if (!window.isSecureContext) problems.push('the page is not on HTTPS');
+      add('Opened as app', String(matchMedia('(display-mode: standalone)').matches));
+
+      // Manifest
+      let manifest = null;
+      try {
+        const res = await fetch('manifest.json', { cache: 'no-store' });
+        const type = res.headers.get('content-type') || '(none)';
+        add('Manifest', res.status + ' · ' + type, res.ok);
+        const text = await res.text();
+        try { manifest = JSON.parse(text); add('Manifest JSON', 'valid', true); }
+        catch (e) { add('Manifest JSON', 'not valid: ' + text.slice(0, 60), false); problems.push('manifest.json is not valid JSON'); }
+      } catch (e) { add('Manifest', 'could not load: ' + e, false); problems.push('manifest.json does not load'); }
+      if (manifest) {
+        add('name / short_name', (manifest.name || '—') + ' / ' + (manifest.short_name || '—'), !!(manifest.name || manifest.short_name));
+        add('start_url → ', new URL(manifest.start_url || '.', location.href).href);
+        add('display', String(manifest.display), ['standalone', 'fullscreen', 'minimal-ui'].includes(manifest.display));
+        for (const icon of manifest.icons || []) {
+          const src = new URL(icon.src, new URL('manifest.json', location.href)).href;
+          let status = '', type = '';
+          try { const r = await fetch(src, { cache: 'no-store' }); status = r.status; type = r.headers.get('content-type') || '(none)'; }
+          catch (e) { status = 'error'; }
+          const size = await imageSize(src);
+          const good = size !== null && String(status) === '200';
+          if (!good) problems.push('icon ' + icon.src + ' does not load as an image');
+          add('Icon ' + icon.src.split('/').pop() + (icon.purpose ? ' (' + icon.purpose + ')' : ''),
+            status + ' · ' + type + ' · ' + (size || 'not an image') + ' (says ' + icon.sizes + ')', good);
+        }
+      }
+
+      // Service worker
+      try {
+        const res = await fetch('offline_sw.js', { cache: 'no-store' });
+        const head = (await res.text()).slice(0, 40);
+        const good = res.ok && head.includes('use strict');
+        add('offline_sw.js', res.status + (good ? ' · found' : ' · missing or wrong file'), good);
+        if (!good) problems.push('offline_sw.js is not on the server');
+      } catch (e) { add('offline_sw.js', 'could not load', false); problems.push('offline_sw.js does not load'); }
+      if ('serviceWorker' in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        add('Service workers', regs.length ? regs.map((r) => (r.active ? r.active.scriptURL.split('/').pop() + ' ' + r.active.state : 'installing')).join(', ') : 'none', regs.length > 0);
+        add('Page controlled', String(!!navigator.serviceWorker.controller), !!navigator.serviceWorker.controller);
+        if (!regs.length) problems.push('no service worker: open the app page once, wait, then reopen this check');
+      } else { add('Service workers', 'not supported', false); }
+
+      // Chrome's own verdict: it fires beforeinstallprompt only for an installable site.
+      await new Promise((r) => setTimeout(r, 8000));
+      const v = document.getElementById('verdict');
+      if (matchMedia('(display-mode: standalone)').matches) {
+        v.innerHTML = '<span class="ok">Already opened as an installed app.</span>';
+      } else if (promptEvent) {
+        v.innerHTML = '<span class="ok">Chrome says the app can be installed.</span> Tap the orange button below.';
+      } else {
+        v.innerHTML = '<span class="bad">Chrome did not offer to install.</span> ' +
+          (problems.length ? 'Problems: ' + problems.join('; ') + '.' : 'Every file checked is fine; send this report.');
+      }
+      add('Chrome offered install', String(!!promptEvent), !!promptEvent);
+    })();
+  </script>
+</body>
+</html>

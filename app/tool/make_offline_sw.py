@@ -17,7 +17,7 @@ import sys
 
 # Not needed to run the app: the 3D-printed phone stand's files and page,
 # and Flutter's own (self-removing) service worker.
-SKIP_PREFIXES = ("stand/", "stand.html", "offline_sw.js", "flutter_service_worker.js")
+SKIP_PREFIXES = ("stand/", "stand.html", "offline_sw.js", "flutter_service_worker.js", "install-check.html")
 # The two CanvasKit builds; a browser loads only one of them.
 CHROMIUM = ("canvaskit/chromium/",)
 STANDARD = ("canvaskit/canvaskit.js", "canvaskit/canvaskit.wasm")
@@ -68,6 +68,10 @@ self.addEventListener('message', (event) => {
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET' || !req.url.startsWith(scope())) return; // e.g. analytics
+  // The install check always looks at the server, never the saved copy.
+  const path = new URL(req.url).pathname;
+  if (/(offline_sw\.js|install-check\.html)$/.test(path)) return;
+  if (new URL(req.referrer || req.url).pathname.endsWith('install-check.html')) return;
   event.respondWith((async () => {
     const cache = await caches.open(CACHE);
     // Page loads (any address in the app's folder) get the saved index.html.
