@@ -23,6 +23,7 @@ INHIBITION ZONES (BETA)
 • Disk and agar-well diffusion: the app finds each disk or well and measures its zone diameter, in whole mm on screen and 0.1 mm in the CSV.
 • Check each zone: drag its edge, change it by 1 mm, mark "no zone", or add a disk the app missed.
 • Label the test items once and reuse the list; mean ± SD per item over replicate plates, as a table and a chart.
+• Calibrate against your own calliper or ruler on a used plate: the app shows how closely it agrees with you, and reminds you to check again.
 • Diameters only: no susceptible / intermediate / resistant interpretation. Beta: not yet checked against calliper readings on real plates.
 
 TRUST THE COUNT

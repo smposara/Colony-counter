@@ -433,6 +433,29 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your last calibration is more than 90 days old. A quick check with a used plate and your calliper keeps the zone sizes trustworthy.';
 
   @override
+  String get calShareData => 'Share as test data';
+
+  @override
+  String get calShareSubject => 'Zone calibration test data';
+
+  @override
+  String get calShareInfo =>
+      'The photos of your calibration plates and your readings, in one zip. It stays on this phone until you share it.';
+
+  @override
+  String calGate(int plates, int need, String mean, int pct) {
+    return 'Test data: $plates of $need calliper plates · mean error $mean mm · $pct % within 2 mm';
+  }
+
+  @override
+  String get calGateMet =>
+      'Enough calliper data to review the beta label: share it with the developer.';
+
+  @override
+  String get calGateHelp =>
+      'Calliper plates also help take the zone feature out of beta.';
+
+  @override
   String get sampleKind => 'Sample';
 
   @override

@@ -1,7 +1,7 @@
 /// Facts shown on the About page. [kAppVersion] and [kAppBuild] must match
 /// `version:` in pubspec.yaml (a test checks this).
-const kAppVersion = '0.8.0';
-const kAppBuild = 13;
+const kAppVersion = '0.9.0';
+const kAppBuild = 14;
 const kDeveloper = 'Pongsak Sarapukdee';
 const kEmail = 'sarapukdee@gmail.com';
 const kWebsite = 'https://cc.amphur.in.th';

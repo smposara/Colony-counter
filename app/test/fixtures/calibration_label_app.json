@@ -1,0 +1,89 @@
+{
+ "plate_mm": 90.0,
+ "assay": "disk",
+ "disk_mm": 6.0,
+ "tool": "calliper",
+ "span_mm": 59.60527616245821,
+ "span_disks": [
+  {
+   "x": 588.7,
+   "y": 302.0
+  },
+  {
+   "x": 627.8,
+   "y": 900.3
+  }
+ ],
+ "camera": "0",
+ "setup": "stand",
+ "platform": "android",
+ "profile": "c1",
+ "image_width": 1200,
+ "image_height": 1200,
+ "photographed_at": "2026-10-09T00:00:00.000",
+ "zones": [
+  {
+   "x": 843.1,
+   "y": 439.3,
+   "diameter_mm": 11.28,
+   "readings_mm": [
+    11.283682861284984
+   ],
+   "app_mm": 11.48
+  },
+  {
+   "x": 854.0,
+   "y": 732.9,
+   "diameter_mm": 16.86,
+   "readings_mm": [
+    16.86211074373999
+   ],
+   "app_mm": 17.06,
+   "flags": [
+    "colonies_in_zone"
+   ]
+  },
+  {
+   "x": 627.8,
+   "y": 900.3,
+   "diameter_mm": 8.52,
+   "readings_mm": [
+    8.516544738304875
+   ],
+   "app_mm": 8.72
+  },
+  {
+   "x": 363.5,
+   "y": 780.1,
+   "diameter_mm": 13.25,
+   "readings_mm": [
+    13.246756955286303
+   ],
+   "app_mm": 13.45
+  },
+  {
+   "x": 325.1,
+   "y": 495.7,
+   "diameter_mm": 13.71,
+   "readings_mm": [
+    13.714446571068711
+   ],
+   "app_mm": 13.91
+  }
+ ],
+ "excluded": [
+  {
+   "x": 588.7,
+   "y": 302.0,
+   "diameter_mm": 5.8,
+   "readings_mm": [
+    5.8
+   ],
+   "app_mm": 6.0,
+   "flags": [
+    "no_zone"
+   ],
+   "no_zone": true
+  }
+ ]
+}

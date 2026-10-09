@@ -426,6 +426,29 @@ class AppLocalizationsTh extends AppLocalizations {
       'การปรับเทียบครั้งล่าสุดเก่าเกิน 90 วันแล้ว การตรวจสั้น ๆ ด้วยเพลตที่ใช้แล้วและเวอร์เนียร์ช่วยให้ขนาดโซนน่าเชื่อถือ';
 
   @override
+  String get calShareData => 'แชร์เป็นข้อมูลทดสอบ';
+
+  @override
+  String get calShareSubject => 'ข้อมูลทดสอบการปรับเทียบการวัดโซน';
+
+  @override
+  String get calShareInfo =>
+      'ภาพเพลตที่ใช้ปรับเทียบและค่าที่คุณวัด รวมในไฟล์ zip เดียว ข้อมูลอยู่ในเครื่องนี้จนกว่าคุณจะแชร์';
+
+  @override
+  String calGate(int plates, int need, String mean, int pct) {
+    return 'ข้อมูลทดสอบ: $plates จาก $need เพลตที่วัดด้วยเวอร์เนียร์ · ความคลาดเคลื่อนเฉลี่ย $mean มม. · $pct % ต่างกันไม่เกิน 2 มม.';
+  }
+
+  @override
+  String get calGateMet =>
+      'มีข้อมูลจากเวอร์เนียร์มากพอสำหรับพิจารณายกเลิกสถานะเบต้าแล้ว: แชร์ให้ผู้พัฒนา';
+
+  @override
+  String get calGateHelp =>
+      'เพลตที่วัดด้วยเวอร์เนียร์ยังช่วยให้ฟีเจอร์วัดโซนพ้นจากสถานะเบต้าได้';
+
+  @override
   String get sampleKind => 'ชนิดตัวอย่าง';
 
   @override

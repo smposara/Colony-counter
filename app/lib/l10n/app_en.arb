@@ -286,6 +286,28 @@
   "calCalibrate": "Calibrate",
   "calAgainTitle": "Calibrate again?",
   "calAgainBody": "Your last calibration is more than 90 days old. A quick check with a used plate and your calliper keeps the zone sizes trustworthy.",
+  "calShareData": "Share as test data",
+  "calShareSubject": "Zone calibration test data",
+  "calShareInfo": "The photos of your calibration plates and your readings, in one zip. It stays on this phone until you share it.",
+  "calGate": "Test data: {plates} of {need} calliper plates · mean error {mean} mm · {pct} % within 2 mm",
+  "@calGate": {
+    "placeholders": {
+      "plates": {
+        "type": "int"
+      },
+      "need": {
+        "type": "int"
+      },
+      "mean": {
+        "type": "String"
+      },
+      "pct": {
+        "type": "int"
+      }
+    }
+  },
+  "calGateMet": "Enough calliper data to review the beta label: share it with the developer.",
+  "calGateHelp": "Calliper plates also help take the zone feature out of beta.",
   "sampleKind": "Sample",
   "sampleLiquid": "Liquid (CFU/mL)",
   "sampleSolid": "Solid (CFU/g)",

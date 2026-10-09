@@ -1,4 +1,4 @@
-Version 0.8.0
-• New Zones tab (beta): measure inhibition zones around paper disks and agar wells, check and correct each zone, label the test items, and see mean ± SD per item over replicate plates
-• Zone CSVs, annotated zone photos, and zones in backups
-• Diameters only: no S/I/R interpretation; not yet checked against calliper readings on real plates
+Version 0.9.0
+• Zone calibration: photograph a used zone plate, measure it with your calliper or ruler, and see how closely the app agrees with you (bias, limits of agreement, scale check)
+• Every zone plate shows its calibration, with a reminder after 90 days or when the camera or stand height changes
+• Zones CSV gains your calliper readings; calibration plates can be shared as test data

@@ -149,3 +149,26 @@ def test_evaluate_zones_prints_the_calibration(tmp_path, capsys):
     assert abs(cal["bias_mm"]) < 0.25
     assert abs(cal["scale_error_pct"]) < 1
     assert cal["verdict"] == "good"
+
+
+def test_evaluate_zones_reads_the_app_export(tmp_path, capsys):
+    """A label written by the app's "Share as test data" (calibration_export.dart):
+    its span pair includes a no-zone disk the user left out of the zones."""
+    import argparse
+    import shutil
+
+    from colonycounter.cli import cmd_evaluate_zones
+
+    shutil.copy(FIXTURES / "zones_reflected.jpg", tmp_path / "zone_a.jpg")
+    shutil.copy(FIXTURES / "calibration_label_app.json", tmp_path / "zone_a.json")
+    label = json.loads((tmp_path / "zone_a.json").read_text())
+    assert len(label["zones"]) == 5 and len(label["excluded"]) == 1
+    args = argparse.Namespace(folder=str(tmp_path), assay="disk", disk_mm=6.0, plate_mm=90.0)
+    assert cmd_evaluate_zones(args) == 0
+    out = capsys.readouterr().out
+    cal = json.loads(out[out.index('{\n  "calibration"'):])["calibration"]
+    assert cal["n"] == 5
+    assert cal["bias_mm"] == pytest.approx(0.2, abs=0.05)
+    # The named span disks are used, not the farthest of the matched zones.
+    assert abs(cal["scale_error_pct"]) < 0.5
+    assert cal["verdict"] == "too_few"  # 5 zones: a calliper needs 6

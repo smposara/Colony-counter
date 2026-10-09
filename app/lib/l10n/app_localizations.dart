@@ -794,6 +794,42 @@ abstract class AppLocalizations {
   /// **'Your last calibration is more than 90 days old. A quick check with a used plate and your calliper keeps the zone sizes trustworthy.'**
   String get calAgainBody;
 
+  /// No description provided for @calShareData.
+  ///
+  /// In en, this message translates to:
+  /// **'Share as test data'**
+  String get calShareData;
+
+  /// No description provided for @calShareSubject.
+  ///
+  /// In en, this message translates to:
+  /// **'Zone calibration test data'**
+  String get calShareSubject;
+
+  /// No description provided for @calShareInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'The photos of your calibration plates and your readings, in one zip. It stays on this phone until you share it.'**
+  String get calShareInfo;
+
+  /// No description provided for @calGate.
+  ///
+  /// In en, this message translates to:
+  /// **'Test data: {plates} of {need} calliper plates · mean error {mean} mm · {pct} % within 2 mm'**
+  String calGate(int plates, int need, String mean, int pct);
+
+  /// No description provided for @calGateMet.
+  ///
+  /// In en, this message translates to:
+  /// **'Enough calliper data to review the beta label: share it with the developer.'**
+  String get calGateMet;
+
+  /// No description provided for @calGateHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Calliper plates also help take the zone feature out of beta.'**
+  String get calGateHelp;
+
   /// No description provided for @sampleKind.
   ///
   /// In en, this message translates to:

@@ -12,7 +12,7 @@ Colony Counter – CFU counting
 Count bacterial colonies (CFU) on agar plates with your phone camera.
 ```
 
-## Full description (2988/4000 characters)
+## Full description (3130/4000 characters)
 
 ```
 Colony Counter counts bacterial and fungal colonies on agar plates from a photo, and turns plate counts into CFU/mL, CFU/g or CFU/100 mL. Built for microbiology research and teaching labs.
@@ -40,6 +40,7 @@ INHIBITION ZONES (BETA)
 • Disk and agar-well diffusion: the app finds each disk or well and measures its zone diameter, in whole mm on screen and 0.1 mm in the CSV.
 • Check each zone: drag its edge, change it by 1 mm, mark "no zone", or add a disk the app missed.
 • Label the test items once and reuse the list; mean ± SD per item over replicate plates, as a table and a chart.
+• Calibrate against your own calliper or ruler on a used plate: the app shows how closely it agrees with you, and reminds you to check again.
 • Diameters only: no susceptible / intermediate / resistant interpretation. Beta: not yet checked against calliper readings on real plates.
 
 TRUST THE COUNT
@@ -61,11 +62,11 @@ Reads Neogen® Petrifilm® plates. Petrifilm and Neogen are trademarks of Neogen
 Intended use: for research and teaching. Colony Counter is not a medical or diagnostic device. Always check the automatic count.
 ```
 
-## Release notes (What's new) (354/500 characters)
+## Release notes (What's new) (391/500 characters)
 
 ```
-Version 0.8.0
-• New Zones tab (beta): measure inhibition zones around paper disks and agar wells, check and correct each zone, label the test items, and see mean ± SD per item over replicate plates
-• Zone CSVs, annotated zone photos, and zones in backups
-• Diameters only: no S/I/R interpretation; not yet checked against calliper readings on real plates
+Version 0.9.0
+• Zone calibration: photograph a used zone plate, measure it with your calliper or ruler, and see how closely the app agrees with you (bias, limits of agreement, scale check)
+• Every zone plate shows its calibration, with a reminder after 90 days or when the camera or stand height changes
+• Zones CSV gains your calliper readings; calibration plates can be shared as test data
 ```

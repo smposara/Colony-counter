@@ -9,7 +9,7 @@ tapping, and turn plate counts into CFU/mL. Everything runs on the phone, offlin
 
 _Screenshots from the web build in Chromium on synthetic plates and demo data._
 
-## Features (v0.8.0)
+## Features (v0.9.0)
 - **Thai and English** (`lib/l10n/`): every screen is in both languages. The app
   follows the phone's language, or choose it in Settings → *Language*. Thai text uses
   the bundled IBM Plex Sans Thai font, also on printed plate labels. CSV files,
@@ -74,6 +74,17 @@ _Screenshots from the web build in Chromium on synthetic plates and demo data._
   - Results: mean ± SD per test item over replicate plates, as bars and a table;
     `zones.csv` and `zone_summary.csv` (Zones tab menu and backups); annotated
     zone photos.
+  - **Calibration** (Zones menu → *Calibrate against a calliper*; see
+    `docs/ZONE_CALIBRATION_IMPLEMENTATION.md`):
+    - Photograph a used zone plate and measure one disk-to-disk span and each zone
+      with your calliper or ruler. The app's sizes are hidden while you read.
+    - The app reports the bias, limits of agreement, a scale check and a hint at the
+      cause (`core/zone_calibration.dart`). Check only: no measurement is changed.
+    - Every zone plate shows its calibration and warns when its scale disagrees. It
+      asks you to calibrate again after 90 days or when the camera or stand height
+      changes.
+    - Calibration plates can be shared as test data for `colonycounter
+      evaluate-zones`.
 - **Colony colours**: *Blue / white* (X-gal screening) or *Two colours* (chromogenic
   agar). Each colony's colour is classified automatically, the app shows counts per
   class and the percentage, and you tap a colony to switch its class.
@@ -150,7 +161,8 @@ lib/
   core/   gray_image, plate (round/square finders, several plates), normalize,
           grid (membrane grid removal), classical, pipeline   ← counting (pure Dart)
           colour (Lab, blue/white), spots (drop plates), timelapse (tracking)
-          zones (inhibition zones: disks, wells, zone edges)
+          zones (inhibition zones: disks, wells, zone edges),
+          zone_calibration (agreement with the user's calliper)
           annotate (marked-up photo), labels (QR payload, read from photo)
           calculator, stats (replicates, log reduction), capture_quality
   l10n/   app_en.arb, app_th.arb (generated from parts/*.json by
@@ -158,12 +170,13 @@ lib/
   data/   plate_record, sample_info (plans, slots, details), plate_store,
           export (CSV, backup), label_sheet (PDF labels), accuracy,
           training_export, timelapse_data, zone_record (zone plates,
-          labels, summaries)
+          labels, summaries), zone_calibration_record (calibration
+          profiles, matching), calibration_export (test data, gate)
           storage/ (files on phones, IndexedDB on web)
   ui/     home (tabs), capture, photo_flow, review, save sheet,
           samples, sample_setup, compare (table + chart), accuracy,
           multi_plate, timelapse, zones_tab, zone_setup_sheet,
-          zone_review_screen, zone_results_screen
+          zone_review_screen, zone_results_screen, zone_calibration_screen
 test/
   core_test.dart     golden plates: accuracy vs truth and vs the Python pipeline
   widget_test.dart   count → tap-edit → undo → save, end to end
@@ -185,6 +198,9 @@ test/
   zones_data_test.dart  zone records, labels, summaries, store, mixed backups
   zones_ui_test.dart    zone setup, review (edit, drag, add), disclaimer, Zones tab
   zones_export_test.dart  zone CSVs, annotated photo, results screen
+  zone_calibration_*_test.dart, calibration_export_test.dart
+                        calibration: agreement vs Python, profiles, wizard,
+                        plates, test data
   fixtures/          synthetic plates + labels (ml/scripts/make_app_fixtures.py)
 tool/compare.dart    prints Dart vs Python vs true counts
 ```

@@ -142,8 +142,9 @@ def cmd_evaluate_zones(args) -> int:
     x/y are the disk centres in image pixels (to pair readings with disks);
     plate_mm, assay and disk_mm fall back to the command-line options. The optional
     span_mm is the user's outer-edge to outer-edge reading across the two disks farthest
-    apart, and tool is "calliper" or "ruler"; with them the calibration summary (bias,
-    limits of agreement, scale error, verdict) is printed too.
+    apart (span_disks, [{"x", "y"}, {"x", "y"}], names them; the app's export does), and
+    tool is "calliper" or "ruler"; with them the calibration summary (bias, limits of
+    agreement, scale error, verdict) is printed too.
     """
     folder = Path(args.folder)
     preds, trues = [], []
@@ -175,10 +176,16 @@ def cmd_evaluate_zones(args) -> int:
             rf = math.hypot(z.x - res.plate.cx, z.y - res.plate.cy) / res.plate.radius
             cal_zones.append(CalZone(app_mm=[float(z.diameter_mm)], user_mm=[trues[-1]],
                                      radial_fraction=float(rf)))
-        if "span_mm" in label and len(pairs) >= 2:
+        if "span_mm" in label and len(res.zones) >= 2:
             matched = [res.zones[pi] for pi, _ in pairs]
-            disks = [(z.x, z.y, z.disk_radius_px) for z in matched]
-            a, b = farthest_pair(disks)
+            if len(label.get("span_disks", [])) == 2:
+                # The two disks the user measured across (an app export names them).
+                disks = [(z.x, z.y, z.disk_radius_px) for z in res.zones]
+                a, b = [min(range(len(disks)), key=lambda k: (disks[k][0] - d["x"]) ** 2
+                            + (disks[k][1] - d["y"]) ** 2) for d in label["span_disks"]]
+            else:
+                disks = [(z.x, z.y, z.disk_radius_px) for z in matched]
+                a, b = farthest_pair(disks)
             measured = [z for z in matched if z.diameter_rounded is not None and z.radius_px > 0]
             if measured:
                 mm_per_px = float(measured[0].diameter_mm) / (2 * float(measured[0].radius_px))

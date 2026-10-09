@@ -331,6 +331,28 @@ It matches `colonycounter evaluate-zones`. It's opt-in and stays on the phone un
 user shares it. When the pooled readings reach n ≥ 30 plates and meet the gate's limits,
 the profile says so. The beta label is only dropped by a release, not by the app itself.
 
+**Progress (October 2026):** C5 is done; released as 0.9.0 (build 14).
+- **Test data:** `calibration_export.dart` builds the zip. For each calibration plate it
+  writes `<photo>.jpg` and `<photo>.json`, the label `colonycounter evaluate-zones` reads:
+  - included zones with `x`, `y`, `diameter_mm` (the mean of `readings_mm`) and `app_mm`;
+  - the zones the user left out, under `excluded`;
+  - `span_mm`, `span_disks`, tool, camera and setup.
+
+  Plus `profiles.json` (every profile with its summary and the gate progress) and a
+  README. Shared from the calibrations screen after a short note that it stays on the
+  phone until shared.
+- **Gate progress:** `gateProgress` pools calliper plates only. The screen shows "Test data:
+  N of 30 calliper plates · mean error · % within 2 mm", and says when the gate's limits
+  are met. The app never drops the beta label itself.
+- **Checked end to end:** a zip written by the app was scored by the Python CLI, which got
+  the same bias. That run showed the CLI took the span across the farthest *matched*
+  zones, which differs when a span disk (here a no-zone disk) is left out of the zones.
+  It now uses the label's `span_disks` (fixture `app/test/fixtures/calibration_label_app.json`).
+- **Store and docs:** 0.9.0 release notes and a full-description line (en/th), the app
+  README.
+- **Tests:** `app/test/calibration_export_test.dart` (6) and a Python test on the
+  app-written label (13 in `test_zone_calibration.py`).
+
 ## Python reference (`ml/colonycounter/zones.py`)
 
 - `evaluate_zones` gains the same summary as the Dart analysis: span check, bias, limits,

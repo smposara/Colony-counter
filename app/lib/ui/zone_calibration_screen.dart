@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 
 import '../core/zone_calibration.dart';
 import '../core/zones.dart';
+import '../data/calibration_export.dart';
 import '../data/plate_store.dart';
 import '../data/zone_calibration_record.dart';
 import '../data/zone_record.dart';
@@ -13,6 +14,7 @@ import '../l10n/l10n.dart';
 import 'chart_colours.dart';
 import 'format.dart';
 import 'insets.dart';
+import 'photo_flow.dart';
 import 'zones_tab.dart';
 
 /// Calibration of zone measurement against the user's own calliper (or ruler)
@@ -150,7 +152,21 @@ class ZoneCalibrationScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(tr.calTitle)),
+      appBar: AppBar(
+        title: Text(tr.calTitle),
+        actions: [
+          ListenableBuilder(
+            listenable: store,
+            builder: (context, _) => IconButton(
+              tooltip: tr.calShareData,
+              icon: const Icon(Icons.ios_share),
+              onPressed: store.calibrations.any((p) => p.plates.isNotEmpty)
+                  ? () => _shareTestData(context)
+                  : null,
+            ),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => Navigator.of(context).push(
           MaterialPageRoute<void>(
@@ -183,10 +199,83 @@ class ZoneCalibrationScreen extends StatelessWidget {
               const EdgeInsets.fromLTRB(16, 8, 16, 96),
             ),
             children: [
+              _GateCard(progress: gateProgress(list)),
               for (final p in list) _ProfileCard(store: store, profile: p),
             ],
           );
         },
+      ),
+    );
+  }
+
+  Future<void> _shareTestData(BuildContext context) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(tr.calShareData),
+        content: Text(tr.calShareInfo),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(tr.homeCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(tr.calShareData),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    final zip = await buildCalibrationTestData(store);
+    final stamp = DateTime.now()
+        .toIso8601String()
+        .substring(0, 19)
+        .replaceAll(':', '-');
+    await shareBytes(
+      zip,
+      'zone-calibration_$stamp.zip',
+      'application/zip',
+      subject: tr.calShareSubject,
+    );
+  }
+}
+
+/// Progress towards the zone feature's real-photo gate.
+class _GateCard extends StatelessWidget {
+  const _GateCard({required this.progress});
+
+  final GateProgress progress;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    final g = progress;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            g.zones == 0
+                ? tr.calGateHelp
+                : tr.calGate(
+                    g.plates,
+                    kGatePlates,
+                    _mm(g.meanAbsError),
+                    (g.within2mm * 100).round(),
+                  ),
+            key: const ValueKey('calGate'),
+            style: t.bodySmall,
+          ),
+          if (g.met)
+            Text(
+              tr.calGateMet,
+              style: t.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+        ],
       ),
     );
   }

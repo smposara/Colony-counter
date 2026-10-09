@@ -487,5 +487,43 @@
  "calAgainBody": {
   "en": "Your last calibration is more than 90 days old. A quick check with a used plate and your calliper keeps the zone sizes trustworthy.",
   "th": "การปรับเทียบครั้งล่าสุดเก่าเกิน 90 วันแล้ว การตรวจสั้น ๆ ด้วยเพลตที่ใช้แล้วและเวอร์เนียร์ช่วยให้ขนาดโซนน่าเชื่อถือ"
+ },
+ "calShareData": {
+  "en": "Share as test data",
+  "th": "แชร์เป็นข้อมูลทดสอบ"
+ },
+ "calShareSubject": {
+  "en": "Zone calibration test data",
+  "th": "ข้อมูลทดสอบการปรับเทียบการวัดโซน"
+ },
+ "calShareInfo": {
+  "en": "The photos of your calibration plates and your readings, in one zip. It stays on this phone until you share it.",
+  "th": "ภาพเพลตที่ใช้ปรับเทียบและค่าที่คุณวัด รวมในไฟล์ zip เดียว ข้อมูลอยู่ในเครื่องนี้จนกว่าคุณจะแชร์"
+ },
+ "calGate": {
+  "en": "Test data: {plates} of {need} calliper plates · mean error {mean} mm · {pct} % within 2 mm",
+  "th": "ข้อมูลทดสอบ: {plates} จาก {need} เพลตที่วัดด้วยเวอร์เนียร์ · ความคลาดเคลื่อนเฉลี่ย {mean} มม. · {pct} % ต่างกันไม่เกิน 2 มม.",
+  "placeholders": {
+   "plates": {
+    "type": "int"
+   },
+   "need": {
+    "type": "int"
+   },
+   "mean": {
+    "type": "String"
+   },
+   "pct": {
+    "type": "int"
+   }
+  }
+ },
+ "calGateMet": {
+  "en": "Enough calliper data to review the beta label: share it with the developer.",
+  "th": "มีข้อมูลจากเวอร์เนียร์มากพอสำหรับพิจารณายกเลิกสถานะเบต้าแล้ว: แชร์ให้ผู้พัฒนา"
+ },
+ "calGateHelp": {
+  "en": "Calliper plates also help take the zone feature out of beta.",
+  "th": "เพลตที่วัดด้วยเวอร์เนียร์ยังช่วยให้ฟีเจอร์วัดโซนพ้นจากสถานะเบต้าได้"
  }
 }
