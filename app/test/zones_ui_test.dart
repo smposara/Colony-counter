@@ -215,7 +215,10 @@ void main() {
     // Five hazy edges; the no-zone disk needs no check.
     expect(find.text('5 to check'), findsOneWidget);
     final chips = find.byWidgetPredicate(
-      (w) => w is ActionChip && w.avatar != null,
+      (w) =>
+          w is ActionChip &&
+          w.avatar != null &&
+          w.key != const ValueKey('calChip'),
     );
     while (chips.evaluate().isNotEmpty) {
       await _tapChip(tester, chips.first);
@@ -234,7 +237,7 @@ void main() {
       setup: _setup.copyWith(assay: ZoneAssay.well, diskMm: 8),
     );
     expect(find.textContaining('Long-press to add a well'), findsOneWidget);
-    await _tapChip(tester, find.byType(ActionChip).first);
+    await _tapChip(tester, find.byKey(const ValueKey('zoneChip0')));
     expect(find.text('Well 1'), findsOneWidget);
     await tester.tap(find.text('No zone'));
     await tester.pump();
@@ -547,7 +550,7 @@ void main() {
     await _settleReal(tester, _idle);
     await tester.pumpAndSettle();
     expect(find.text('6 โซน'), findsOneWidget);
-    await _tapChip(tester, find.byType(ActionChip).at(2));
+    await _tapChip(tester, find.byKey(const ValueKey('zoneChip2')));
     expect(find.text('แผ่นที่ 3'), findsOneWidget);
     expect(find.text('มีโคโลนีในโซน'), findsOneWidget);
   });

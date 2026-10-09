@@ -15,6 +15,7 @@ import '../l10n/l10n.dart';
 import 'format.dart';
 import 'insets.dart';
 import 'photo_flow.dart';
+import 'zone_calibration_screen.dart';
 import 'zone_setup_sheet.dart';
 
 /// Shows the measured inhibition zones over the photo and lets the user
@@ -475,7 +476,16 @@ class _ZoneReviewScreenState extends State<ZoneReviewScreen> {
           plate: r.plate,
           colonies: const [],
           zones: zoneAnnotations(r),
-          header: zoneAnnotationHeader(r),
+          header: zoneAnnotationHeader(
+            r,
+            calibration: () {
+              final (status, profile) = recordCalibration(
+                r,
+                store.calibrations,
+              );
+              return calibrationBannerLine(r, status, profile);
+            }(),
+          ),
           rimFraction: 1,
         ),
       );
@@ -719,7 +729,9 @@ class _ZoneReviewScreenState extends State<ZoneReviewScreen> {
     final t = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
     final toCheck = r.marks.where((m) => m.lowConfidence && !m.opened).length;
+    final (calStatus, calProfile) = recordCalibration(r, store.calibrations);
     final warnings = [
+      ...calibrationNotes(r, calStatus, calProfile),
       if (r.flags.contains('scale_mismatch')) tr.zoneScaleMismatch,
       if (r.flags.contains('scale_unchecked')) tr.zoneScaleUnchecked,
       if (r.marks.isEmpty) _wells ? tr.zoneNoWells : tr.zoneNoDisks,
@@ -788,6 +800,27 @@ class _ZoneReviewScreenState extends State<ZoneReviewScreen> {
                         ),
                       ),
                   ],
+                ),
+                Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: ActionChip(
+                    key: const ValueKey('calChip'),
+                    avatar: Icon(
+                      calStatus == CalibrationStatus.calibrated ||
+                              r.usedForCalibration
+                          ? Icons.straighten
+                          : Icons.info_outline,
+                      size: 18,
+                    ),
+                    label: Text(
+                      calibrationChipText(r, calStatus, calProfile),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    visualDensity: VisualDensity.compact,
+                    onPressed: _busy
+                        ? null
+                        : () => openZoneCalibration(context, store),
+                  ),
                 ),
                 for (final w in warnings)
                   Padding(
@@ -858,7 +891,7 @@ List<AnnotatedZone> zoneAnnotations(ZoneRecord r) => [
 
 /// Banner lines for a shared zone photo (the image fonts are ASCII only, so
 /// it is in English like the colony photos).
-List<String> zoneAnnotationHeader(ZoneRecord r) => [
+List<String> zoneAnnotationHeader(ZoneRecord r, {String? calibration}) => [
   [
     r.experiment.isEmpty ? 'Zone plate' : r.experiment,
     if (r.organism.isNotEmpty) r.organism,
@@ -868,6 +901,7 @@ List<String> zoneAnnotationHeader(ZoneRecord r) => [
       '${_mmNum(r.diskMm)} mm - ${r.marks.length} zones - '
       '${r.checked ? 'all checked' : 'not all checked'}',
   '${shortDate(r.createdAt)} - zone diameters only, no S/I/R interpretation',
+  ?calibration,
 ];
 
 /// A pan that only joins the gesture arena when [accept] says so for the

@@ -291,6 +291,33 @@ The profile never changes a measured zone or the scale it was measured at.
 - **CSV:** `zones.csv` gains `calliper_mm`, `calibration_id`, `calibration_verdict` and
   `calibration_bias_mm`. `zone_summary.csv` is unchanged.
 
+**Progress (October 2026):** C4 is done.
+- **True scale:** calibration plates also keep their span in pixels (`spanPx`). From the
+  user's span reading, the profile has the true mm per pixel at agar height
+  (`trueMmPerPx`, the mean over plates).
+- **Scale check:** `scaleAgainstCalibration` compares a plate's own scale (disks, or the rim
+  for wells) with that true scale. It only applies when the plate is calibrated on the
+  stand profile, which has a fixed height. Above 2 % (`kScaleDisagree`) the plate says
+  "Zones may read about N % small/large", with "check the disk size and the plate type"
+  for disks or the dish-rim explanation for wells. One formula covers both, because a disk
+  plate's scale and a well plate's rim scale are compared with the same true value.
+- **Review screen:** a calibration chip shows *Calibrated: good · bias +0.2 mm*,
+  *Not calibrated*, *Calibrate again* or *Calibration plate*, and opens the calibrations
+  screen. Notes give the reason to calibrate again (more than 90 days older than the photo,
+  another camera or photo size, a changed stand height) and any scale disagreement.
+- **Zones tab:** a banner shows *Not calibrated*, *more than 90 days old* (both with
+  Calibrate) or *Calibrated: verdict · date*.
+- **Before a new plate:** "Calibrate again?" is offered when the newest calibration is
+  older than 90 days. A setup change can only be seen after the photo, so it shows on the
+  plate.
+- **Exports:**
+  - `zones.csv` gains `calliper_mm` (the mean of the readings), `used_for_calibration`,
+    `calibration_id`, `calibration_status`, `calibration_verdict` and
+    `calibration_bias_mm`.
+  - The shared photo's banner gains a calibration line.
+  - Status is worked out when exporting, not stored, so it never goes stale.
+- **Tests:** `app/test/zone_calibration_plates_test.dart` (13).
+
 ## Gate data export
 
 The calibration readings are real photos paired with calliper values, which is exactly

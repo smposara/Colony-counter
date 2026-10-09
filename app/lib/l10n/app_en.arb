@@ -231,6 +231,61 @@
   "calSave": "Save calibration",
   "calTryAgain": "Try again without this plate",
   "calMenu": "Calibrate against a calliper",
+  "calShortGood": "good",
+  "calShortUsable": "usable",
+  "calShortPoor": "not good enough",
+  "calShortTooFew": "too few zones",
+  "calChipCalibrated": "Calibrated: {verdict} · bias {bias} mm",
+  "@calChipCalibrated": {
+    "placeholders": {
+      "verdict": {
+        "type": "String"
+      },
+      "bias": {
+        "type": "String"
+      }
+    }
+  },
+  "calChipNone": "Not calibrated",
+  "calChipAgain": "Calibrate again",
+  "calChipPlate": "Calibration plate",
+  "calReasonOld": "Calibrate again: the calibration is more than 90 days older than this photo.",
+  "calReasonCamera": "Calibrate again: this photo is from another camera or photo size than the calibration.",
+  "calReasonSetup": "Calibrate again: the plate looks a different size in the photo, so the stand height has probably changed.",
+  "calScaleSmall": "Zones may read about {pct} % small: this plate's scale is off the calibrated one.",
+  "@calScaleSmall": {
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "calScaleLarge": "Zones may read about {pct} % large: this plate's scale is off the calibrated one.",
+  "@calScaleLarge": {
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "calScaleDisksHint": "Check the disk size and the plate type.",
+  "calScaleWellsHint": "Well plates take their scale from the dish rim, which sits above the agar. Read borderline zones by hand.",
+  "calBannerNone": "Not calibrated: check the app against your calliper.",
+  "calBannerOld": "Your calibration is more than 90 days old: calibrate again.",
+  "calBannerOk": "Calibrated: {verdict} · {date}",
+  "@calBannerOk": {
+    "placeholders": {
+      "verdict": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "calCalibrate": "Calibrate",
+  "calAgainTitle": "Calibrate again?",
+  "calAgainBody": "Your last calibration is more than 90 days old. A quick check with a used plate and your calliper keeps the zone sizes trustworthy.",
   "sampleKind": "Sample",
   "sampleLiquid": "Liquid (CFU/mL)",
   "sampleSolid": "Solid (CFU/g)",

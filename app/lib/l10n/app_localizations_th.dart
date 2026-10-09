@@ -348,6 +348,84 @@ class AppLocalizationsTh extends AppLocalizations {
   String get calMenu => 'ปรับเทียบกับเวอร์เนียร์';
 
   @override
+  String get calShortGood => 'ดี';
+
+  @override
+  String get calShortUsable => 'ใช้ได้';
+
+  @override
+  String get calShortPoor => 'ยังไม่ดีพอ';
+
+  @override
+  String get calShortTooFew => 'โซนน้อยเกินไป';
+
+  @override
+  String calChipCalibrated(String verdict, String bias) {
+    return 'ปรับเทียบแล้ว: $verdict · เบี่ยงเบน $bias มม.';
+  }
+
+  @override
+  String get calChipNone => 'ยังไม่ได้ปรับเทียบ';
+
+  @override
+  String get calChipAgain => 'ควรปรับเทียบใหม่';
+
+  @override
+  String get calChipPlate => 'เพลตสำหรับปรับเทียบ';
+
+  @override
+  String get calReasonOld =>
+      'ควรปรับเทียบใหม่: การปรับเทียบเก่ากว่าภาพนี้เกิน 90 วัน';
+
+  @override
+  String get calReasonCamera =>
+      'ควรปรับเทียบใหม่: ภาพนี้ถ่ายด้วยกล้องหรือขนาดภาพต่างจากตอนปรับเทียบ';
+
+  @override
+  String get calReasonSetup =>
+      'ควรปรับเทียบใหม่: เพลตในภาพมีขนาดต่างไป ความสูงของขาตั้งน่าจะเปลี่ยน';
+
+  @override
+  String calScaleSmall(String pct) {
+    return 'โซนอาจวัดได้เล็กไปประมาณ $pct %: มาตราส่วนของเพลตนี้ต่างจากที่ปรับเทียบไว้';
+  }
+
+  @override
+  String calScaleLarge(String pct) {
+    return 'โซนอาจวัดได้ใหญ่ไปประมาณ $pct %: มาตราส่วนของเพลตนี้ต่างจากที่ปรับเทียบไว้';
+  }
+
+  @override
+  String get calScaleDisksHint => 'ตรวจขนาดแผ่นและชนิดจาน';
+
+  @override
+  String get calScaleWellsHint =>
+      'เพลตแบบหลุมใช้มาตราส่วนจากขอบจาน ซึ่งอยู่สูงกว่าผิววุ้น ควรวัดโซนที่ก้ำกึ่งด้วยมือ';
+
+  @override
+  String get calBannerNone =>
+      'ยังไม่ได้ปรับเทียบ: ตรวจแอปเทียบกับเวอร์เนียร์ของคุณ';
+
+  @override
+  String get calBannerOld =>
+      'การปรับเทียบเก่าเกิน 90 วันแล้ว: ควรปรับเทียบใหม่';
+
+  @override
+  String calBannerOk(String verdict, String date) {
+    return 'ปรับเทียบแล้ว: $verdict · $date';
+  }
+
+  @override
+  String get calCalibrate => 'ปรับเทียบ';
+
+  @override
+  String get calAgainTitle => 'ปรับเทียบใหม่ไหม';
+
+  @override
+  String get calAgainBody =>
+      'การปรับเทียบครั้งล่าสุดเก่าเกิน 90 วันแล้ว การตรวจสั้น ๆ ด้วยเพลตที่ใช้แล้วและเวอร์เนียร์ช่วยให้ขนาดโซนน่าเชื่อถือ';
+
+  @override
   String get sampleKind => 'ชนิดตัวอย่าง';
 
   @override

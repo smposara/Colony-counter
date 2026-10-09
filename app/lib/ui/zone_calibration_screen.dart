@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../core/zone_calibration.dart';
+import '../core/zones.dart';
 import '../data/plate_store.dart';
 import '../data/zone_calibration_record.dart';
 import '../data/zone_record.dart';
@@ -54,6 +55,86 @@ String verdictText(CalibrationVerdict v) => switch (v) {
   CalibrationVerdict.poor => tr.calVerdictPoor,
   CalibrationVerdict.tooFew => tr.calVerdictTooFew,
 };
+
+String verdictShort(CalibrationVerdict v) => switch (v) {
+  CalibrationVerdict.good => tr.calShortGood,
+  CalibrationVerdict.usable => tr.calShortUsable,
+  CalibrationVerdict.poor => tr.calShortPoor,
+  CalibrationVerdict.tooFew => tr.calShortTooFew,
+};
+
+/// The calibration chip's text for a zone plate.
+String calibrationChipText(
+  ZoneRecord r,
+  CalibrationStatus status,
+  CalibrationProfile? profile,
+) {
+  if (r.usedForCalibration) return tr.calChipPlate;
+  return switch (status) {
+    CalibrationStatus.calibrated when profile != null => () {
+      final s = profile.summary;
+      return tr.calChipCalibrated(
+        verdictShort(s.verdict),
+        s.bias.isFinite ? _signed(s.bias) : '–',
+      );
+    }(),
+    CalibrationStatus.uncalibrated => tr.calChipNone,
+    _ => tr.calChipAgain,
+  };
+}
+
+/// Lines to show on a zone plate about its calibration: why to calibrate
+/// again, and a scale that disagrees with the calibrated one.
+List<String> calibrationNotes(
+  ZoneRecord r,
+  CalibrationStatus status,
+  CalibrationProfile? profile,
+) {
+  if (r.usedForCalibration) return const [];
+  final notes = <String>[
+    if (status == CalibrationStatus.old) tr.calReasonOld,
+    if (status == CalibrationStatus.otherCamera) tr.calReasonCamera,
+    if (status == CalibrationStatus.setupChanged) tr.calReasonSetup,
+  ];
+  final d = scaleAgainstCalibration(r, status, profile);
+  if (d != null && d.abs() > kScaleDisagree) {
+    final pct = (d.abs() * 100).toStringAsFixed(0);
+    notes.add(
+      '${d < 0 ? tr.calScaleSmall(pct) : tr.calScaleLarge(pct)} '
+      '${r.assay == ZoneAssay.well ? tr.calScaleWellsHint : tr.calScaleDisksHint}',
+    );
+  }
+  return notes;
+}
+
+/// The calibration line of a shared zone photo (the image fonts are ASCII only,
+/// so it is in English like the rest of the banner).
+String calibrationBannerLine(
+  ZoneRecord r,
+  CalibrationStatus status,
+  CalibrationProfile? profile,
+) {
+  if (r.usedForCalibration) return 'Calibration plate (calliper readings)';
+  return switch (status) {
+    CalibrationStatus.calibrated when profile != null => () {
+      final s = profile.summary;
+      final v = switch (s.verdict) {
+        CalibrationVerdict.good => 'good',
+        CalibrationVerdict.usable => 'usable',
+        CalibrationVerdict.poor => 'not good enough',
+        CalibrationVerdict.tooFew => 'too few zones',
+      };
+      return 'Calibrated against a calliper: $v, bias '
+          '${s.bias.isFinite ? s.bias.toStringAsFixed(1) : '-'} mm '
+          '(${shortDate(profile.updatedAt)})';
+    }(),
+    CalibrationStatus.uncalibrated => 'Not calibrated against a calliper',
+    CalibrationStatus.old => 'Calibration more than 90 days old',
+    CalibrationStatus.otherCamera => 'Calibrated for another camera',
+    CalibrationStatus.setupChanged => 'Calibrated at another stand height',
+    CalibrationStatus.calibrated => 'Not calibrated against a calliper',
+  };
+}
 
 String profileTitle(CalibrationProfile p) => p.name.isNotEmpty
     ? p.name

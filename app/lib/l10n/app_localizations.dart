@@ -668,6 +668,132 @@ abstract class AppLocalizations {
   /// **'Calibrate against a calliper'**
   String get calMenu;
 
+  /// No description provided for @calShortGood.
+  ///
+  /// In en, this message translates to:
+  /// **'good'**
+  String get calShortGood;
+
+  /// No description provided for @calShortUsable.
+  ///
+  /// In en, this message translates to:
+  /// **'usable'**
+  String get calShortUsable;
+
+  /// No description provided for @calShortPoor.
+  ///
+  /// In en, this message translates to:
+  /// **'not good enough'**
+  String get calShortPoor;
+
+  /// No description provided for @calShortTooFew.
+  ///
+  /// In en, this message translates to:
+  /// **'too few zones'**
+  String get calShortTooFew;
+
+  /// No description provided for @calChipCalibrated.
+  ///
+  /// In en, this message translates to:
+  /// **'Calibrated: {verdict} · bias {bias} mm'**
+  String calChipCalibrated(String verdict, String bias);
+
+  /// No description provided for @calChipNone.
+  ///
+  /// In en, this message translates to:
+  /// **'Not calibrated'**
+  String get calChipNone;
+
+  /// No description provided for @calChipAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Calibrate again'**
+  String get calChipAgain;
+
+  /// No description provided for @calChipPlate.
+  ///
+  /// In en, this message translates to:
+  /// **'Calibration plate'**
+  String get calChipPlate;
+
+  /// No description provided for @calReasonOld.
+  ///
+  /// In en, this message translates to:
+  /// **'Calibrate again: the calibration is more than 90 days older than this photo.'**
+  String get calReasonOld;
+
+  /// No description provided for @calReasonCamera.
+  ///
+  /// In en, this message translates to:
+  /// **'Calibrate again: this photo is from another camera or photo size than the calibration.'**
+  String get calReasonCamera;
+
+  /// No description provided for @calReasonSetup.
+  ///
+  /// In en, this message translates to:
+  /// **'Calibrate again: the plate looks a different size in the photo, so the stand height has probably changed.'**
+  String get calReasonSetup;
+
+  /// No description provided for @calScaleSmall.
+  ///
+  /// In en, this message translates to:
+  /// **'Zones may read about {pct} % small: this plate\'s scale is off the calibrated one.'**
+  String calScaleSmall(String pct);
+
+  /// No description provided for @calScaleLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'Zones may read about {pct} % large: this plate\'s scale is off the calibrated one.'**
+  String calScaleLarge(String pct);
+
+  /// No description provided for @calScaleDisksHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Check the disk size and the plate type.'**
+  String get calScaleDisksHint;
+
+  /// No description provided for @calScaleWellsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Well plates take their scale from the dish rim, which sits above the agar. Read borderline zones by hand.'**
+  String get calScaleWellsHint;
+
+  /// No description provided for @calBannerNone.
+  ///
+  /// In en, this message translates to:
+  /// **'Not calibrated: check the app against your calliper.'**
+  String get calBannerNone;
+
+  /// No description provided for @calBannerOld.
+  ///
+  /// In en, this message translates to:
+  /// **'Your calibration is more than 90 days old: calibrate again.'**
+  String get calBannerOld;
+
+  /// No description provided for @calBannerOk.
+  ///
+  /// In en, this message translates to:
+  /// **'Calibrated: {verdict} · {date}'**
+  String calBannerOk(String verdict, String date);
+
+  /// No description provided for @calCalibrate.
+  ///
+  /// In en, this message translates to:
+  /// **'Calibrate'**
+  String get calCalibrate;
+
+  /// No description provided for @calAgainTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Calibrate again?'**
+  String get calAgainTitle;
+
+  /// No description provided for @calAgainBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your last calibration is more than 90 days old. A quick check with a used plate and your calliper keeps the zone sizes trustworthy.'**
+  String get calAgainBody;
+
   /// No description provided for @sampleKind.
   ///
   /// In en, this message translates to:

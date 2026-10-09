@@ -355,6 +355,84 @@ class AppLocalizationsEn extends AppLocalizations {
   String get calMenu => 'Calibrate against a calliper';
 
   @override
+  String get calShortGood => 'good';
+
+  @override
+  String get calShortUsable => 'usable';
+
+  @override
+  String get calShortPoor => 'not good enough';
+
+  @override
+  String get calShortTooFew => 'too few zones';
+
+  @override
+  String calChipCalibrated(String verdict, String bias) {
+    return 'Calibrated: $verdict · bias $bias mm';
+  }
+
+  @override
+  String get calChipNone => 'Not calibrated';
+
+  @override
+  String get calChipAgain => 'Calibrate again';
+
+  @override
+  String get calChipPlate => 'Calibration plate';
+
+  @override
+  String get calReasonOld =>
+      'Calibrate again: the calibration is more than 90 days older than this photo.';
+
+  @override
+  String get calReasonCamera =>
+      'Calibrate again: this photo is from another camera or photo size than the calibration.';
+
+  @override
+  String get calReasonSetup =>
+      'Calibrate again: the plate looks a different size in the photo, so the stand height has probably changed.';
+
+  @override
+  String calScaleSmall(String pct) {
+    return 'Zones may read about $pct % small: this plate\'s scale is off the calibrated one.';
+  }
+
+  @override
+  String calScaleLarge(String pct) {
+    return 'Zones may read about $pct % large: this plate\'s scale is off the calibrated one.';
+  }
+
+  @override
+  String get calScaleDisksHint => 'Check the disk size and the plate type.';
+
+  @override
+  String get calScaleWellsHint =>
+      'Well plates take their scale from the dish rim, which sits above the agar. Read borderline zones by hand.';
+
+  @override
+  String get calBannerNone =>
+      'Not calibrated: check the app against your calliper.';
+
+  @override
+  String get calBannerOld =>
+      'Your calibration is more than 90 days old: calibrate again.';
+
+  @override
+  String calBannerOk(String verdict, String date) {
+    return 'Calibrated: $verdict · $date';
+  }
+
+  @override
+  String get calCalibrate => 'Calibrate';
+
+  @override
+  String get calAgainTitle => 'Calibrate again?';
+
+  @override
+  String get calAgainBody =>
+      'Your last calibration is more than 90 days old. A quick check with a used plate and your calliper keeps the zone sizes trustworthy.';
+
+  @override
   String get sampleKind => 'Sample';
 
   @override

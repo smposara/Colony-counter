@@ -377,5 +377,115 @@
  "calMenu": {
   "en": "Calibrate against a calliper",
   "th": "ปรับเทียบกับเวอร์เนียร์"
+ },
+ "calShortGood": {
+  "en": "good",
+  "th": "ดี"
+ },
+ "calShortUsable": {
+  "en": "usable",
+  "th": "ใช้ได้"
+ },
+ "calShortPoor": {
+  "en": "not good enough",
+  "th": "ยังไม่ดีพอ"
+ },
+ "calShortTooFew": {
+  "en": "too few zones",
+  "th": "โซนน้อยเกินไป"
+ },
+ "calChipCalibrated": {
+  "en": "Calibrated: {verdict} · bias {bias} mm",
+  "th": "ปรับเทียบแล้ว: {verdict} · เบี่ยงเบน {bias} มม.",
+  "placeholders": {
+   "verdict": {
+    "type": "String"
+   },
+   "bias": {
+    "type": "String"
+   }
+  }
+ },
+ "calChipNone": {
+  "en": "Not calibrated",
+  "th": "ยังไม่ได้ปรับเทียบ"
+ },
+ "calChipAgain": {
+  "en": "Calibrate again",
+  "th": "ควรปรับเทียบใหม่"
+ },
+ "calChipPlate": {
+  "en": "Calibration plate",
+  "th": "เพลตสำหรับปรับเทียบ"
+ },
+ "calReasonOld": {
+  "en": "Calibrate again: the calibration is more than 90 days older than this photo.",
+  "th": "ควรปรับเทียบใหม่: การปรับเทียบเก่ากว่าภาพนี้เกิน 90 วัน"
+ },
+ "calReasonCamera": {
+  "en": "Calibrate again: this photo is from another camera or photo size than the calibration.",
+  "th": "ควรปรับเทียบใหม่: ภาพนี้ถ่ายด้วยกล้องหรือขนาดภาพต่างจากตอนปรับเทียบ"
+ },
+ "calReasonSetup": {
+  "en": "Calibrate again: the plate looks a different size in the photo, so the stand height has probably changed.",
+  "th": "ควรปรับเทียบใหม่: เพลตในภาพมีขนาดต่างไป ความสูงของขาตั้งน่าจะเปลี่ยน"
+ },
+ "calScaleSmall": {
+  "en": "Zones may read about {pct} % small: this plate's scale is off the calibrated one.",
+  "th": "โซนอาจวัดได้เล็กไปประมาณ {pct} %: มาตราส่วนของเพลตนี้ต่างจากที่ปรับเทียบไว้",
+  "placeholders": {
+   "pct": {
+    "type": "String"
+   }
+  }
+ },
+ "calScaleLarge": {
+  "en": "Zones may read about {pct} % large: this plate's scale is off the calibrated one.",
+  "th": "โซนอาจวัดได้ใหญ่ไปประมาณ {pct} %: มาตราส่วนของเพลตนี้ต่างจากที่ปรับเทียบไว้",
+  "placeholders": {
+   "pct": {
+    "type": "String"
+   }
+  }
+ },
+ "calScaleDisksHint": {
+  "en": "Check the disk size and the plate type.",
+  "th": "ตรวจขนาดแผ่นและชนิดจาน"
+ },
+ "calScaleWellsHint": {
+  "en": "Well plates take their scale from the dish rim, which sits above the agar. Read borderline zones by hand.",
+  "th": "เพลตแบบหลุมใช้มาตราส่วนจากขอบจาน ซึ่งอยู่สูงกว่าผิววุ้น ควรวัดโซนที่ก้ำกึ่งด้วยมือ"
+ },
+ "calBannerNone": {
+  "en": "Not calibrated: check the app against your calliper.",
+  "th": "ยังไม่ได้ปรับเทียบ: ตรวจแอปเทียบกับเวอร์เนียร์ของคุณ"
+ },
+ "calBannerOld": {
+  "en": "Your calibration is more than 90 days old: calibrate again.",
+  "th": "การปรับเทียบเก่าเกิน 90 วันแล้ว: ควรปรับเทียบใหม่"
+ },
+ "calBannerOk": {
+  "en": "Calibrated: {verdict} · {date}",
+  "th": "ปรับเทียบแล้ว: {verdict} · {date}",
+  "placeholders": {
+   "verdict": {
+    "type": "String"
+   },
+   "date": {
+    "type": "String"
+   }
+  }
+ },
+ "calCalibrate": {
+  "en": "Calibrate",
+  "th": "ปรับเทียบ"
+ },
+ "calAgainTitle": {
+  "en": "Calibrate again?",
+  "th": "ปรับเทียบใหม่ไหม"
+ },
+ "calAgainBody": {
+  "en": "Your last calibration is more than 90 days old. A quick check with a used plate and your calliper keeps the zone sizes trustworthy.",
+  "th": "การปรับเทียบครั้งล่าสุดเก่าเกิน 90 วันแล้ว การตรวจสั้น ๆ ด้วยเพลตที่ใช้แล้วและเวอร์เนียร์ช่วยให้ขนาดโซนน่าเชื่อถือ"
  }
 }

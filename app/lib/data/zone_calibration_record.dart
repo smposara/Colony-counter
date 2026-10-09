@@ -78,6 +78,7 @@ class CalibrationPlate {
     this.spanMarks,
     this.appSpanMm,
     this.userSpanMm,
+    this.spanPx,
   });
 
   final String zoneRecordId;
@@ -88,6 +89,15 @@ class CalibrationPlate {
   final (int, int)? spanMarks;
   final double? appSpanMm;
   final double? userSpanMm;
+
+  /// The span in photo pixels (outer edge to outer edge).
+  final double? spanPx;
+
+  /// True mm per photo pixel at agar height, from the user's span.
+  double? get trueMmPerPx =>
+      userSpanMm != null && userSpanMm! > 0 && spanPx != null && spanPx! > 0
+      ? userSpanMm! / spanPx!
+      : null;
 
   bool get hasSpan =>
       appSpanMm != null &&
@@ -132,6 +142,7 @@ class CalibrationPlate {
       spanMarks: pair,
       appSpanMm: pair == null ? null : recordSpanMm(record, pair),
       userSpanMm: userSpanMm,
+      spanPx: pair == null ? null : recordSpanMm(record, pair) / record.mmPerPx,
     );
   }
 
@@ -142,6 +153,7 @@ class CalibrationPlate {
     if (spanMarks != null) 'span_marks': [spanMarks!.$1, spanMarks!.$2],
     'app_span_mm': ?appSpanMm,
     'user_span_mm': ?userSpanMm,
+    'span_px': ?spanPx,
   };
 
   factory CalibrationPlate.fromJson(Map<String, dynamic> j) {
@@ -158,6 +170,7 @@ class CalibrationPlate {
           : ((sm[0] as num).toInt(), (sm[1] as num).toInt()),
       appSpanMm: (j['app_span_mm'] as num?)?.toDouble(),
       userSpanMm: (j['user_span_mm'] as num?)?.toDouble(),
+      spanPx: (j['span_px'] as num?)?.toDouble(),
     );
   }
 }
@@ -244,6 +257,13 @@ class CalibrationProfile {
       userSpan: ratio == null ? null : 1.0,
       tool: tool,
     );
+  }
+
+  /// True mm per photo pixel at agar height on this setup (mean over plates),
+  /// or null without a span.
+  double? get trueMmPerPx {
+    final v = [for (final p in plates) ?p.trueMmPerPx];
+    return v.isEmpty ? null : v.reduce((a, b) => a + b) / v.length;
   }
 
   bool isOld(DateTime now) =>
@@ -415,3 +435,22 @@ List<String> calibrationFlags(CalibrationStatus status) => switch (status) {
   CalibrationStatus.otherCamera => const ['calibration_other_camera'],
   CalibrationStatus.setupChanged => const ['calibration_setup_changed'],
 };
+
+/// A plate's scale (mm per pixel, from the disks or for wells the rim) against
+/// the true scale its calibration measured on this setup: the fraction by which
+/// its zones read large (+) or small (−). Null unless [status] is calibrated, the
+/// profile is from the stand (a fixed height) and has a span.
+double? scaleAgainstCalibration(
+  ZoneRecord record,
+  CalibrationStatus status,
+  CalibrationProfile? profile,
+) {
+  if (status != CalibrationStatus.calibrated || profile == null) return null;
+  if (profile.setup != CalibrationSetup.stand) return null;
+  final truth = profile.trueMmPerPx;
+  if (truth == null || truth <= 0) return null;
+  return record.mmPerPx / truth - 1;
+}
+
+/// Above this fraction the plate's scale and the calibration's disagree.
+const double kScaleDisagree = 0.02;

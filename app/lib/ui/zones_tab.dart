@@ -101,6 +101,32 @@ Future<void> measureNewZonePlate(BuildContext context, PlateStore store) async {
       return;
     }
   }
+  final newest = store.calibrations.firstOrNull;
+  if (!first && newest != null && newest.isOld(DateTime.now())) {
+    final now = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        icon: const Icon(Icons.straighten),
+        title: Text(tr.calAgainTitle),
+        content: Text(tr.calAgainBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(tr.calLater),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(tr.calNow),
+          ),
+        ],
+      ),
+    );
+    if (!context.mounted) return;
+    if (now == true) {
+      await openZoneCalibration(context, store, wizard: true);
+      return;
+    }
+  }
   await photographZonePlate(context, store);
 }
 
@@ -116,15 +142,74 @@ class ZonesTab extends StatelessWidget {
       listenable: store,
       builder: (context, _) {
         final records = store.zoneRecords;
-        if (records.isEmpty) return const _EmptyZones();
-        return ListView.separated(
-          padding: const EdgeInsets.only(bottom: 96),
-          itemCount: records.length,
-          separatorBuilder: (_, _) => const Divider(height: 1),
-          itemBuilder: (context, i) =>
-              ZoneRecordTile(store: store, record: records[i]),
+        return Column(
+          children: [
+            _CalibrationBanner(store: store),
+            Expanded(
+              child: records.isEmpty
+                  ? const _EmptyZones()
+                  : ListView.separated(
+                      padding: const EdgeInsets.only(bottom: 96),
+                      itemCount: records.length,
+                      separatorBuilder: (_, _) => const Divider(height: 1),
+                      itemBuilder: (context, i) =>
+                          ZoneRecordTile(store: store, record: records[i]),
+                    ),
+            ),
+          ],
         );
       },
+    );
+  }
+}
+
+/// The newest calibration's state, with a way to calibrate (again).
+class _CalibrationBanner extends StatelessWidget {
+  const _CalibrationBanner({required this.store});
+
+  final PlateStore store;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final t = Theme.of(context).textTheme;
+    final newest = store.calibrations.firstOrNull;
+    final old = newest != null && newest.isOld(DateTime.now());
+    final ok = newest != null && !old;
+    final text = newest == null
+        ? tr.calBannerNone
+        : old
+        ? tr.calBannerOld
+        : tr.calBannerOk(
+            verdictShort(newest.summary.verdict),
+            shortDate(newest.updatedAt),
+          );
+    return Material(
+      key: const ValueKey('calBanner'),
+      color: ok ? cs.surfaceContainerLow : cs.tertiaryContainer,
+      child: InkWell(
+        onTap: () => openZoneCalibration(context, store, wizard: !ok),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+          child: Row(
+            children: [
+              Icon(
+                ok ? Icons.straighten : Icons.info_outline,
+                size: 20,
+                color: ok ? cs.primary : cs.onTertiaryContainer,
+              ),
+              const SizedBox(width: 12),
+              Expanded(child: Text(text, style: t.bodyMedium)),
+              if (!ok)
+                TextButton(
+                  onPressed: () =>
+                      openZoneCalibration(context, store, wizard: true),
+                  child: Text(tr.calCalibrate),
+                ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

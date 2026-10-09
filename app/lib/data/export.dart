@@ -9,6 +9,7 @@ import '../core/drop_stats.dart';
 import '../core/petrifilm.dart';
 import '../core/plate.dart';
 import '../core/spots.dart';
+import '../core/zone_calibration.dart';
 import 'drop_results.dart';
 import 'plate_record.dart';
 import 'plate_store.dart';
@@ -463,9 +464,17 @@ String zonesCsv(PlateStore store) {
       'x_mm',
       'y_mm',
       'image',
+      'calliper_mm',
+      'used_for_calibration',
+      'calibration_id',
+      'calibration_status',
+      'calibration_verdict',
+      'calibration_bias_mm',
     ],
   ];
   for (final r in store.zoneRecords.reversed) {
+    final (status, profile) = recordCalibration(r, store.calibrations);
+    final summary = profile?.summary;
     for (var i = 0; i < r.marks.length; i++) {
       final m = r.marks[i];
       final v = m.reportedMm(r.diskMm);
@@ -490,11 +499,36 @@ String zonesCsv(PlateStore store) {
         r3((m.x - r.plate.cx) * r.mmPerPx),
         r3((m.y - r.plate.cy) * r.mmPerPx),
         r.imagePath,
+        m.calliperMm.isEmpty
+            ? null
+            : r1(m.calliperMm.reduce((a, b) => a + b) / m.calliperMm.length),
+        r.usedForCalibration,
+        profile?.id ?? '',
+        _statusName(status),
+        summary == null ? '' : _verdictName(summary.verdict),
+        summary == null || !summary.bias.isFinite
+            ? null
+            : (summary.bias * 100).round() / 100,
       ]);
     }
   }
   return _csv(rows);
 }
+
+String _statusName(CalibrationStatus s) => switch (s) {
+  CalibrationStatus.calibrated => 'calibrated',
+  CalibrationStatus.uncalibrated => 'uncalibrated',
+  CalibrationStatus.old => 'old',
+  CalibrationStatus.otherCamera => 'other_camera',
+  CalibrationStatus.setupChanged => 'setup_changed',
+};
+
+String _verdictName(CalibrationVerdict v) => switch (v) {
+  CalibrationVerdict.good => 'good',
+  CalibrationVerdict.usable => 'usable',
+  CalibrationVerdict.poor => 'poor',
+  CalibrationVerdict.tooFew => 'too_few',
+};
 
 /// Mean ± SD zone diameter per experiment, organism and label (replicate
 /// plates pooled; unlabelled and unmeasured zones left out).
