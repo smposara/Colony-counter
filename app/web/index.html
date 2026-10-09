@@ -48,5 +48,19 @@
 <body>
   <div id="loading"><div class="ring"></div>Loading Colony Counter…</div>
   <script src="flutter_bootstrap.js" async></script>
+  <script>
+    // Offline use: offline_sw.js (made when packaging) keeps the app's files
+    // in the browser after the first visit. A newer version found on an
+    // earlier visit takes over now, at launch, never while the app is in use.
+    if ('serviceWorker' in navigator && window.isSecureContext) {
+      navigator.serviceWorker.register('offline_sw.js').then(function (reg) {
+        if (reg.waiting && navigator.serviceWorker.controller) {
+          navigator.serviceWorker.addEventListener('controllerchange',
+            function () { location.reload(); }, { once: true });
+          reg.waiting.postMessage('skipWaiting');
+        }
+      }).catch(function () {});
+    }
+  </script>
 </body>
 </html>

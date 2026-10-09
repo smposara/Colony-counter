@@ -206,7 +206,7 @@ within ±5 % of Python's.
 The same app also builds as a web app that runs in Safari on iPhone, or in any
 modern browser:
 ```
-app/tool/package_web.sh        # → dist/colony-counter-web.zip (about 6 MB)
+app/tool/package_web.sh        # → dist/colony-counter-web.zip (about 7 MB)
 ```
 CI builds the same files on every push: download the **colony-counter-web**
 artifact from the run's page. It is a single zip with `index.html` at the top.
@@ -218,6 +218,15 @@ rewrite rules are needed, and the app works from a subfolder. Requirements:
   Apache add `AddType application/wasm .wasm`).
 - Fonts and the rendering engine are bundled; nothing loads from Google or any
   CDN.
+- **Offline:** `offline_sw.js` (a service worker written by
+  `tool/make_offline_sw.py` when packaging) keeps the app's files in the browser
+  after the first visit, so it opens and counts with no connection. It saves the
+  app (about 8 MB) and the one CanvasKit build the browser uses; the stand files
+  are left out. Its version is a hash of the files: a new release installs in the
+  background on the next online visit and takes over at the launch after that, never
+  while the app is in use. Flutter's own service worker (now a stub that removes
+  itself) is not registered: `web/flutter_bootstrap.js` loads the app without it.
+  Upload every file of a new zip, `offline_sw.js` included.
 
 **On the iPhone:** open the URL in Safari, then Share → *Add to Home Screen* so it
 opens full screen like an app.
