@@ -43,8 +43,13 @@ String _platform() => kIsWeb
       };
 
 String _mm(double v) => v.toStringAsFixed(1);
-String _signed(double v) =>
-    '${v >= 0 ? '+' : '−'}${v.abs().toStringAsFixed(1)}';
+
+/// Signed to 0.1 mm; a value that rounds to zero has no sign ("0.0").
+String _signed(double v) {
+  final t = v.abs().toStringAsFixed(1);
+  if (t == '0.0') return t;
+  return '${v >= 0 ? '+' : '−'}$t';
+}
 
 double? _parseMm(String s) {
   final t = s.trim().replaceAll(',', '.');
