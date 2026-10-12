@@ -22,6 +22,7 @@ import '../l10n/labels.dart';
 import 'drop_table.dart';
 import 'format.dart';
 import 'insets.dart';
+import 'review_layout.dart';
 import 'photo_flow.dart';
 import 'save_sheet.dart';
 import 'timelapse_screen.dart';
@@ -74,6 +75,10 @@ class _ReviewScreenState extends State<ReviewScreen> {
   Uint8List? _photo;
 
   bool _busy = false;
+  bool _saving = false;
+  bool _recounted = false;
+  PlateRecord? _pendingSave;
+  final _draftId = DateTime.now().microsecondsSinceEpoch.toString();
   String? _error;
   _Mode _mode = _Mode.edit;
 
@@ -230,6 +235,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
           _drop = false;
           _undo.clear();
           _dirty = true;
+          _pendingSave = null;
+          _recounted = true;
         });
         return;
       }
@@ -271,6 +278,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
         }
         _undo.clear();
         _dirty = true;
+        _pendingSave = null;
+        _recounted = true;
         if (_drop && _spots.isEmpty) _spots = _suggestSpots();
       });
     } catch (e) {
@@ -413,6 +422,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
           : spots;
       _undo.clear();
       _dirty = true;
+      _pendingSave = null;
+      _recounted = true;
     });
   }
 
@@ -543,6 +554,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
   void _push() {
     _undo.add((_colonies, _spots, _rejected, _excluded));
     _dirty = true;
+    _pendingSave = null;
   }
 
   /// Taps that would change marks nobody can see do nothing; say why.
@@ -691,100 +703,125 @@ class _ReviewScreenState extends State<ReviewScreen> {
     );
     if (value == null || value == _kSigma) return;
     if (!await _confirmDiscardEdits()) return;
+    final previous = _kSigma;
     _kSigma = value;
     await _recount(plate: _plate);
+    if (_error != null && mounted) setState(() => _kSigma = previous);
   }
 
   Future<void> _save() async {
     final plate = _plate;
-    if (plate == null) return;
-    final existing = widget.record;
-    final base = widget.laterPhotoOf;
-    final draft = PlateRecord(
-      id: existing?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
-      createdAt: existing?.createdAt ?? DateTime.now(),
-      imagePath: existing?.imagePath ?? '',
-      imageWidth: _imageW,
-      imageHeight: _imageH,
-      plate: plate,
-      colonies: _colonies,
-      autoCount: _autoCount,
-      flags: _flags,
-      sampleId:
-          existing?.sampleId ??
-          base?.sampleId ??
-          widget.preset?.info.sampleId ??
-          '',
-      dilutionExp:
-          existing?.dilutionExp ??
-          base?.dilutionExp ??
-          widget.preset?.slot.dilutionExp ??
-          0,
-      // A plate switched between a dish and a dry film takes the new type's
-      // volume (films are 1 mL), not the one saved with the old type.
-      volumeMl:
-          _sameKind(existing)?.volumeMl ??
-          _sameKind(base)?.volumeMl ??
-          (widget.preset?.info.isFilm == _film
-              ? widget.preset?.info.unitVolumeMl
-              : null) ??
-          (_drop
-              ? 0.01
-              : _format.membrane
-              ? 100
-              : _film
-              ? 1
-              : widget.store.defaultVolumeMl),
-      notes: existing?.notes ?? '',
-      spreader: existing?.spreader ?? _flags.contains('spreader'),
-      // A film estimated from grid squares is counted, not "too many".
-      tntc:
-          existing?.tntc ??
-          (_flags.contains('tntc') && !(_film && _filmTally.estimates != null)),
-      guided: existing?.guided ?? widget.guided,
-      kSigma: _kSigma,
-      replicate:
-          existing?.replicate ??
-          base?.replicate ??
-          widget.preset?.slot.replicate ??
-          1,
-      spots: _drop ? _spots : const [],
-      colourMode: _colourMode,
-      format: _format,
-      rejected: _rejected,
-      verified: existing?.verified ?? _accuracyCheckDue,
-      seriesId:
-          existing?.seriesId ??
-          (base == null
-              ? ''
-              : (base.seriesId.isEmpty ? base.id : base.seriesId)),
-      incubationH: existing?.incubationH ?? _suggestedHours(base),
-      filmGrid: _film ? _filmGrid : null,
-      excludedSquares: _film ? _excluded.toList() : const [],
-    );
-    final result = await showModalBottomSheet<PlateRecord>(
-      context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
-      builder: (context) => SaveSheet(
-        store: widget.store,
-        draft: draft,
-        fixedSample: widget.preset != null || base != null,
-      ),
-    );
-    if (result == null) return;
-    var record = result;
-    if (existing == null) {
-      final name = await widget.store.savePhoto(_photo!, record.id);
-      record = PlateRecord.fromJson({...record.toJson(), 'image': name});
+    if (plate == null || _saving || _busy) return;
+    setState(() => _saving = true);
+    try {
+      final existing = widget.record;
+      final base = widget.laterPhotoOf;
+      final details = _pendingSave ?? existing;
+      final draft = PlateRecord(
+        id: existing?.id ?? _draftId,
+        createdAt: existing?.createdAt ?? DateTime.now(),
+        imagePath: existing?.imagePath ?? '',
+        imageWidth: _imageW,
+        imageHeight: _imageH,
+        plate: plate,
+        colonies: List.of(_colonies),
+        autoCount: _autoCount,
+        flags: _flags,
+        sampleId:
+            details?.sampleId ??
+            base?.sampleId ??
+            widget.preset?.info.sampleId ??
+            '',
+        dilutionExp:
+            details?.dilutionExp ??
+            base?.dilutionExp ??
+            widget.preset?.slot.dilutionExp ??
+            0,
+        // A plate switched between a dish and a dry film takes the new type's
+        // volume (films are 1 mL), not the one saved with the old type.
+        volumeMl:
+            _sameKind(details)?.volumeMl ??
+            _sameKind(base)?.volumeMl ??
+            (widget.preset?.info.isFilm == _film
+                ? widget.preset?.info.unitVolumeMl
+                : null) ??
+            (_drop
+                ? 0.01
+                : _format.membrane
+                ? 100
+                : _film
+                ? 1
+                : widget.store.defaultVolumeMl),
+        notes: details?.notes ?? '',
+        spreader:
+            _pendingSave?.spreader ??
+            (!_recounted && existing != null
+                ? existing.spreader
+                : _flags.contains('spreader')),
+        // A film estimated from grid squares is counted, not "too many".
+        tntc:
+            _pendingSave?.tntc ??
+            (!_recounted ? existing?.tntc : null) ??
+            (_flags.contains('tntc') &&
+                !(_film && _filmTally.estimates != null)),
+        guided: existing?.guided ?? widget.guided,
+        kSigma: _kSigma,
+        replicate:
+            details?.replicate ??
+            base?.replicate ??
+            widget.preset?.slot.replicate ??
+            1,
+        spots: _drop ? _spots : const [],
+        colourMode: _colourMode,
+        format: _format,
+        rejected: _rejected,
+        verified:
+            _pendingSave?.verified ??
+            ((existing?.verified ?? false) && !_dirty && !_recounted),
+        seriesId:
+            existing?.seriesId ??
+            (base == null
+                ? ''
+                : (base.seriesId.isEmpty ? base.id : base.seriesId)),
+        incubationH: details?.incubationH ?? _suggestedHours(base),
+        filmGrid: _film ? _filmGrid : null,
+        excludedSquares: _film ? _excluded.toList() : const [],
+      );
+      final result = await showModalBottomSheet<PlateRecord>(
+        context: context,
+        isScrollControlled: true,
+        showDragHandle: true,
+        builder: (context) => SaveSheet(
+          store: widget.store,
+          draft: draft,
+          fixedSample: widget.preset != null || base != null,
+        ),
+      );
+      if (result == null) return;
+      _pendingSave = result;
+      final record = await widget.store.saveCapture(
+        result,
+        existing == null ? _photo : null,
+        firstFrame: base != null && base.seriesId.isEmpty
+            ? base.copyWith(seriesId: base.id)
+            : null,
+      );
+      _dirty = false;
+      if (mounted) Navigator.of(context).pop(record);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(tr.saveFailed('$e'))));
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
     }
-    if (base != null && base.seriesId.isEmpty) {
-      // The first photo starts the time-lapse series.
-      await widget.store.upsert(base.copyWith(seriesId: base.id));
-    }
-    await widget.store.upsert(record);
-    _dirty = false;
-    if (mounted) Navigator.of(context).pop(record);
+  }
+
+  @override
+  void dispose() {
+    _viewer.dispose();
+    super.dispose();
   }
 
   /// Centre of the [k]-th complete grid square, in image pixels (tests).
@@ -1049,9 +1086,9 @@ class _ReviewScreenState extends State<ReviewScreen> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: !_dirty,
+      canPop: !_dirty && !_saving,
       onPopInvokedWithResult: (didPop, _) async {
-        if (didPop) return;
+        if (didPop || _saving) return;
         final leave = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
@@ -1180,11 +1217,12 @@ class _ReviewScreenState extends State<ReviewScreen> {
             ),
           ],
         ),
-        body: Column(
-          children: [
-            Expanded(child: _buildImage()),
-            if (_plate != null) _buildPanel(),
-          ],
+        body: AbsorbPointer(
+          absorbing: _saving,
+          child: ReviewLayout(
+            image: _buildImage(),
+            panel: _plate == null ? null : _buildPanel(),
+          ),
         ),
       ),
     );
@@ -1193,7 +1231,22 @@ class _ReviewScreenState extends State<ReviewScreen> {
   Widget _buildImage() {
     if (_error != null) {
       return Center(
-        child: Padding(padding: const EdgeInsets.all(24), child: Text(_error!)),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(_error!, textAlign: TextAlign.center),
+              const SizedBox(height: 12),
+              FilledButton(
+                onPressed: _busy || _photo == null
+                    ? null
+                    : () => _recount(plate: _plate),
+                child: Text(tr.retry),
+              ),
+            ],
+          ),
+        ),
       );
     }
     final photo = _photo;
@@ -1255,6 +1308,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                               Image.memory(
                                 photo,
                                 fit: BoxFit.fill,
+                                cacheWidth: math.min(_imageW, 3000),
                                 gaplessPlayback: true,
                               ),
                               CustomPaint(
@@ -1495,12 +1549,15 @@ class _ReviewScreenState extends State<ReviewScreen> {
                     Padding(
                       padding: const EdgeInsets.only(top: 6),
                       child: FilledButton.icon(
-                        onPressed: _busy || _plate == null || _photo == null
+                        onPressed:
+                            _busy || _saving || _plate == null || _photo == null
                             ? null
                             : _save,
                         icon: const Icon(Icons.check),
                         label: Text(
-                          widget.record == null
+                          _saving
+                              ? tr.saving
+                              : widget.record == null
                               ? tr.reviewSavePlate
                               : tr.reviewSaveChanges,
                         ),

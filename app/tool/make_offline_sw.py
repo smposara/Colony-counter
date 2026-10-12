@@ -32,7 +32,7 @@ const CHROMIUM = __CHROMIUM__;
 const STANDARD = __STANDARD__;
 // The app cannot start without these (the rest is icons, pages and fonts
 // that are also fetched on first use).
-const ESSENTIAL = /^(index\.html|flutter\.js|flutter_bootstrap\.js|main\.dart\.js|canvaskit\/)/;
+const ESSENTIAL = /^(index\.html|flutter\.js|flutter_bootstrap\.js|main\.dart\.js|photo_worker\.dart\.js|canvaskit\/)/;
 
 // The CanvasKit build this browser will load (as flutter.js decides).
 function engineFiles() {

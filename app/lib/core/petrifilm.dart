@@ -6,8 +6,8 @@ import 'package:image/image.dart' as img;
 import 'calculator.dart';
 import 'classical.dart';
 import 'gray_image.dart';
+import 'image_limits.dart';
 import 'normalize.dart';
-import 'pipeline.dart' show kWorkShortSide;
 import 'plate.dart';
 import 'zones.dart'
     show RingTaps, fitCircle, kRingSectors, sampleBilinear, sobel3;
@@ -1131,10 +1131,8 @@ class FilmJob {
 }
 
 FilmResult countFilmJob(FilmJob job) {
-  final decoded = img.decodeImage(job.bytes);
-  if (decoded == null) throw const FormatException('Unsupported image');
-  final photo = img.bakeOrientation(decoded);
-  final s = math.min(1.0, kWorkShortSide / math.min(photo.width, photo.height));
+  final photo = decodePlatePhoto(job.bytes);
+  final s = analysisScale(photo.width, photo.height);
   final work = s < 1
       ? img.copyResize(
           photo,

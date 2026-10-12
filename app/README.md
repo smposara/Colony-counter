@@ -277,8 +277,10 @@ opens full screen like an app.
 - **Storage:** plates are saved in the browser's IndexedDB. Safari may clear a site's
   data if it is unused for about 7 days unless it was added to the Home Screen, so
   export the CSV regularly.
-- **Speed:** counting runs on the page's main thread (browsers have no isolates), so
-  the screen pauses for a few seconds while counting.
+- **Speed:** colony, film, drop-plate and zone analysis runs in a dedicated Web
+  Worker. Package the site with `tool/package_web.sh` so `photo_worker.dart.js` is
+  included. Worker failures are reported instead of falling back to blocking the
+  page. Other export/annotation operations still need performance profiling.
 
 
 - **Not yet tried on a physical phone.** The build environment had no Android SDK or
@@ -292,3 +294,72 @@ opens full screen like an app.
   tiled full-resolution detection is added together with the trained model.
 - The classical detector is the baseline. A trained detector (LiteRT / Core ML) will
   plug in behind `countColonies`, and the review screen stays the same.
+
+
+## Reliability and performance changes
+
+- Accuracy reminders do not mark a plate as verified. The user must explicitly
+  select **Checked every colony**. Recounting or editing a checked result clears
+  verification; metadata-only saves retain it.
+- Metadata mutations are queued. A durable transaction journal commits related
+  documents together and supplies authoritative values if materialisation is
+  interrupted. Replaying the journal happens before the next write. Native JSON
+  and photo writes use unique temporary files and atomic rename. Record deletions
+  commit before deleting their photos; failed photo cleanup can leave an unused
+  photo but does not break a live record.
+- Native and browser colony/zone save flows retain edits and report storage errors.
+  New captures and the initial time-lapse frame commit together. Browser startup
+  refuses to silently use temporary memory when persistent storage is unavailable.
+  Startup errors provide a Retry screen without deleting saved data.
+- Plate and zone records migrate from aggregate JSON to individual documents on
+  their first mutation. The old metadata is replaced only within the journaled
+  commit. This format is forward-only: export a backup before downgrading to an
+  older app; backups keep the existing portable schema.
+- Encoded-photo caching uses a 24 MiB budget. Work images are bounded by 3,000 px
+  on either side and 4.5 million pixels. Encoded inputs over 40 MiB or decoded
+  images over 24 megapixels are rejected before full pixel decoding. Imported
+  images are resized to at most 3,000 px by the image picker. Very large guided
+  camera captures may need a lower camera resolution.
+- Sample lookups use a cached index. Desktop review screens place the image beside
+  a 400 px controls panel. Home uses a navigation rail at wide widths and retains
+  the visited tabs' search, selection and scroll state.
+- Backups preserve language, appearance, zone setup and disclaimer preferences.
+
+### Web development
+
+For `flutter run -d chrome`, compile the worker into the web source folder first:
+
+```sh
+dart compile js -O2 tool/photo_worker.dart -o web/photo_worker.dart.js
+flutter run -d chrome
+```
+
+Production hosting should use `tool/package_web.sh`. It builds the worker before
+creating the offline cache. Serve JavaScript with a JavaScript MIME type and allow
+same-origin workers in any Content-Security-Policy (`worker-src 'self'`).
+
+### Validation status
+
+Standalone Dart analysis and tests cover worker codecs, image bounds, journal
+recovery and queue failures. The storage/reliability tests have also run outside
+Flutter with test-only adapters for notification and platform-directory plumbing;
+this checks the data logic and native file operations, not Flutter integration.
+The JavaScript worker/client transport has run under a Node worker-thread harness:
+it preserved the original photo buffer and left the main event loop responsive.
+
+Full Flutter analysis, widget tests, release builds and real browser testing remain
+pending. The Flutter setup in the implementation environment was stopped by an
+automatic security review after attempting cloud metadata access. Chromium setup
+also failed because its download was not a valid archive.
+
+Before release, run `flutter analyze`, `flutter test`, and `tool/package_web.sh`,
+then check:
+
+1. Android/iOS camera permissions, capture, EXIF rotation and guided capture.
+2. Chrome and Safari mobile/desktop counting, worker errors and offline launch.
+3. Verification after a reminder, recount, edit, retry and metadata-only save.
+4. Saving/deleting/restoring under low disk space, interrupted writes and browser
+   quota failures, including restarting after an interrupted migration.
+5. Small phones, large text, Thai, dark mode, desktop panels and tab continuity.
+6. Processing time and peak memory on real plates and datasets of 100/1,000 plates.
+   Backup creation still builds an archive in memory and needs large-dataset checks.

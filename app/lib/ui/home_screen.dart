@@ -41,17 +41,36 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _tab = 0;
+  final _visitedTabs = <int>{0};
+
+  void _selectTab(int i) => setState(() {
+    _visitedTabs.add(i);
+    _tab = i;
+  });
 
   PlateStore get store => widget.store;
 
   @override
   Widget build(BuildContext context) {
-    final body = switch (_tab) {
-      0 => _PlatesTab(store: store),
-      1 => SamplesTab(store: store),
-      2 => CompareTab(store: store),
-      _ => ZonesTab(store: store),
-    };
+    final body = IndexedStack(
+      index: _tab,
+      children: [
+        _PlatesTab(store: store),
+        if (_visitedTabs.contains(1))
+          SamplesTab(store: store)
+        else
+          const SizedBox(),
+        if (_visitedTabs.contains(2))
+          CompareTab(store: store)
+        else
+          const SizedBox(),
+        if (_visitedTabs.contains(3))
+          ZonesTab(store: store)
+        else
+          const SizedBox(),
+      ],
+    );
+    final wide = MediaQuery.sizeOf(context).width >= 900;
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -104,7 +123,42 @@ class _HomeScreenState extends State<HomeScreen> {
           _DataMenu(store: store, zones: _tab == 3),
         ],
       ),
-      body: body,
+      body: Row(
+        children: [
+          if (wide)
+            NavigationRail(
+              selectedIndex: _tab,
+              onDestinationSelected: _selectTab,
+              labelType: NavigationRailLabelType.all,
+              destinations: [
+                NavigationRailDestination(
+                  icon: const Icon(Icons.blur_circular),
+                  label: Text(tr.homePlates),
+                ),
+                NavigationRailDestination(
+                  icon: const Icon(Icons.science_outlined),
+                  label: Text(tr.homeSamples),
+                ),
+                NavigationRailDestination(
+                  icon: const Icon(Icons.show_chart),
+                  label: Text(tr.homeCompare),
+                ),
+                NavigationRailDestination(
+                  icon: const Icon(Icons.adjust),
+                  label: Text(tr.homeZones),
+                ),
+              ],
+            ),
+          Expanded(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1200),
+                child: body,
+              ),
+            ),
+          ),
+        ],
+      ),
       floatingActionButton: switch (_tab) {
         0 => FloatingActionButton.extended(
           onPressed: () => countNewPlate(context, store),
@@ -123,28 +177,30 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         _ => null,
       },
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _tab,
-        onDestinationSelected: (i) => setState(() => _tab = i),
-        destinations: [
-          NavigationDestination(
-            icon: const Icon(Icons.blur_circular),
-            label: tr.homePlates,
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.science_outlined),
-            label: tr.homeSamples,
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.show_chart),
-            label: tr.homeCompare,
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.adjust),
-            label: tr.homeZones,
-          ),
-        ],
-      ),
+      bottomNavigationBar: wide
+          ? null
+          : NavigationBar(
+              selectedIndex: _tab,
+              onDestinationSelected: _selectTab,
+              destinations: [
+                NavigationDestination(
+                  icon: const Icon(Icons.blur_circular),
+                  label: tr.homePlates,
+                ),
+                NavigationDestination(
+                  icon: const Icon(Icons.science_outlined),
+                  label: tr.homeSamples,
+                ),
+                NavigationDestination(
+                  icon: const Icon(Icons.show_chart),
+                  label: tr.homeCompare,
+                ),
+                NavigationDestination(
+                  icon: const Icon(Icons.adjust),
+                  label: tr.homeZones,
+                ),
+              ],
+            ),
     );
   }
 }

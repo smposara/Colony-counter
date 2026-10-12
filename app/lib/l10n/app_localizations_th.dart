@@ -2342,4 +2342,18 @@ class AppLocalizationsTh extends AppLocalizations {
   String zoneCouldNotMeasure(String error) {
     return 'วัดภาพนี้ไม่ได้: $error';
   }
+
+  @override
+  String saveFailed(String error) =>
+      'บันทึกไม่สำเร็จ การแก้ไขยังอยู่ กรุณาลองอีกครั้ง $error';
+
+  @override
+  String get saving => 'กำลังบันทึก…';
+
+  @override
+  String get storageOpenFailed =>
+      'เปิดข้อมูลที่บันทึกไว้ไม่ได้ ไฟล์ของคุณยังไม่ถูกลบ';
+
+  @override
+  String get retry => 'ลองอีกครั้ง';
 }

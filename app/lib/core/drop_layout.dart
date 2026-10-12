@@ -7,6 +7,7 @@ import 'classical.dart';
 import 'colour.dart';
 import 'drop_stats.dart';
 import 'gray_image.dart';
+import 'image_limits.dart';
 import 'normalize.dart';
 import 'pipeline.dart';
 import 'plate.dart';
@@ -970,11 +971,8 @@ typedef DropJob = (
 /// colony's colour.
 DropPlateResult countDropPlateInPhoto(DropJob job) {
   final (bytes, template, dilutions, volumeUl, format, plate) = job;
-  final decoded = img.decodeImage(bytes);
-  if (decoded == null) throw const FormatException('Unsupported image');
-  final photo = img.bakeOrientation(decoded);
-  final short = math.min(photo.width, photo.height);
-  final scale = math.min(1.0, kWorkShortSide / short);
+  final photo = decodePlatePhoto(bytes);
+  final scale = analysisScale(photo.width, photo.height);
   final work = scale < 1
       ? img.copyResize(
           photo,

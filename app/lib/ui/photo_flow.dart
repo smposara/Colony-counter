@@ -15,7 +15,7 @@ import 'review_screen.dart';
 /// Web photos are scaled to at most this many pixels on the long side. The
 /// browser also applies the photo's rotation while scaling, so the pixels are
 /// upright, and storage stays small.
-const double _webMaxSide = 3000;
+const double _photoMaxSide = 3000;
 
 /// What is already known about the plate about to be photographed.
 class PlatePreset {
@@ -43,9 +43,9 @@ Future<PlatePhoto?> takePlatePhoto(
   if (fromGallery || kIsWeb) {
     final picked = await ImagePicker().pickImage(
       source: fromGallery ? ImageSource.gallery : ImageSource.camera,
-      maxWidth: kIsWeb ? _webMaxSide : null,
-      maxHeight: kIsWeb ? _webMaxSide : null,
-      imageQuality: kIsWeb ? 92 : null,
+      maxWidth: _photoMaxSide,
+      maxHeight: _photoMaxSide,
+      imageQuality: 92,
     );
     if (picked == null) return null;
     return (bytes: await picked.readAsBytes(), guided: false, camera: '');

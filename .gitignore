@@ -8,3 +8,6 @@ dist/
 *.stl
 /data/
 /out/
+
+# Local worker build for flutter run; production packaging compiles its own copy.
+app/web/photo_worker.dart.js*

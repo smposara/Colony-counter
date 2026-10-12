@@ -4081,6 +4081,13 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not measure this photo: {error}'**
   String zoneCouldNotMeasure(String error);
+  String saveFailed(String error);
+
+  String get saving;
+
+  String get storageOpenFailed;
+
+  String get retry;
 }
 
 class _AppLocalizationsDelegate

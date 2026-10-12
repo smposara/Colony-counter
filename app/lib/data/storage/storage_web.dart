@@ -10,7 +10,9 @@ const _photoStore = 'photos';
 
 Future<StorageBackend> openDefaultStorage() async {
   final factory = getIdbFactory();
-  if (factory == null) return MemoryStorage();
+  if (factory == null) {
+    throw StateError('Persistent browser storage is unavailable');
+  }
   final db = await factory.open(
     _dbName,
     version: 1,

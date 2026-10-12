@@ -4,6 +4,8 @@ import 'dart:typed_data';
 import 'package:image/image.dart' as img;
 
 import 'classical.dart';
+import 'image_limits.dart';
+export 'image_limits.dart' show kWorkShortSide;
 import 'colour.dart';
 import 'gray_image.dart';
 import 'grid.dart';
@@ -13,10 +15,6 @@ import 'plate.dart';
 /// Above this many colonies a plate is "too numerous to count" for any preset.
 const int kTntcCount = 300;
 const double kTntcCoverage = 0.30;
-
-/// Photos are analysed with their shorter side reduced to about this many pixels.
-/// A 90 mm dish filling 80 % of the frame is then ~1400 px across (~65 µm/px).
-const int kWorkShortSide = 1800;
 
 class CountOptions {
   const CountOptions({
@@ -148,11 +146,8 @@ CountResult countPhoto(
   Uint8List bytes, [
   CountOptions o = const CountOptions(),
 ]) {
-  final decoded = img.decodeImage(bytes);
-  if (decoded == null) throw const FormatException('Unsupported image');
-  final photo = img.bakeOrientation(decoded);
-  final short = math.min(photo.width, photo.height);
-  final scale = math.min(1.0, kWorkShortSide / short);
+  final photo = decodePlatePhoto(bytes);
+  final scale = analysisScale(photo.width, photo.height);
   final work = scale < 1
       ? img.copyResize(
           photo,
@@ -199,9 +194,7 @@ class PlatesInPhoto {
 /// Finds every round plate in a photo (see [findPlates]). Takes a record so
 /// it can run in a background isolate with `compute`.
 PlatesInPhoto findPlatesInPhoto((Uint8List, PlateFormat) job) {
-  final decoded = img.decodeImage(job.$1);
-  if (decoded == null) throw const FormatException('Unsupported image');
-  final photo = img.bakeOrientation(decoded);
+  final photo = decodePlatePhoto(job.$1);
   final scale = math.min(1.0, 1200 / math.max(photo.width, photo.height));
   final work = img.copyResize(
     photo,
@@ -220,7 +213,7 @@ PlatesInPhoto findPlatesInPhoto((Uint8List, PlateFormat) job) {
 /// Cuts one plate out of a photo with a small margin, as a JPEG, and returns
 /// the plate's position in the cut-out.
 (Uint8List, Plate) cropToPlate((Uint8List, Plate) job) {
-  final photo = img.bakeOrientation(img.decodeImage(job.$1)!);
+  final photo = decodePlatePhoto(job.$1);
   final p = job.$2;
   final half = p.radius * (p.isSquare ? math.sqrt2 : 1) * 1.08;
   final x0 = math.max(0, (p.cx - half).floor());

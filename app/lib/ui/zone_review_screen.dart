@@ -6,6 +6,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import '../core/annotate.dart';
+import '../core/background.dart';
 import '../core/plate.dart';
 import '../core/zones.dart';
 import '../data/plate_store.dart';
@@ -14,6 +15,7 @@ import '../data/zone_record.dart';
 import '../l10n/l10n.dart';
 import 'format.dart';
 import 'insets.dart';
+import 'review_layout.dart';
 import 'photo_flow.dart';
 import 'zone_calibration_screen.dart';
 import 'zone_setup_sheet.dart';
@@ -117,7 +119,7 @@ class _ZoneReviewScreenState extends State<ZoneReviewScreen> {
     if (photo == null) return;
     setState(() => _busy = true);
     try {
-      final res = await compute(measureZonesInPhoto, (
+      final res = await measureZonesInBackground((
         photo,
         ZoneOptions(
           format: _format,
@@ -314,7 +316,7 @@ class _ZoneReviewScreenState extends State<ZoneReviewScreen> {
     setState(() => _busy = true);
     ZoneMark mark;
     try {
-      final res = await compute(measureZonesInPhoto, (
+      final res = await measureZonesInBackground((
         photo,
         ZoneOptions(
           format: _format,
@@ -458,33 +460,37 @@ class _ZoneReviewScreenState extends State<ZoneReviewScreen> {
   Future<void> _save() async {
     var r = _rec;
     final photo = _photo;
-    if (r == null || photo == null) return;
+    if (r == null || photo == null || _busy) return;
     setState(() => _busy = true);
-    if (r.imagePath.isEmpty) {
-      final name = await store.savePhoto(photo, 'zone_${r.id}');
-      r = ZoneRecord.fromJson({...r.toJson(), 'image': name});
-    }
-    // The plate as stored may have changed while this screen was open (e.g.
-    // calibrated from its chip): keep its calibration and readings.
-    final stored = store.zoneRecords.where((x) => x.id == r!.id).firstOrNull;
-    if (stored != null) {
-      r = r.copyWith(
-        marks: carryUserData(stored.marks, r.marks),
-        calibrationId: stored.calibrationId,
-        usedForCalibration: stored.usedForCalibration,
-      );
-    } else if (widget.record == null && !widget.forCalibration) {
-      // A new plate keeps the calibration it was measured under. (Plates
-      // photographed for calibration are marked by the wizard when it saves.)
-      final (status, profile) = recordCalibration(r, store.calibrations);
-      if (status == CalibrationStatus.calibrated && profile != null) {
-        r = r.copyWith(calibrationId: profile.id);
+    try {
+      // The plate as stored may have changed while this screen was open (e.g.
+      // calibrated from its chip): keep its calibration and readings.
+      final stored = store.zoneRecords.where((x) => x.id == r!.id).firstOrNull;
+      if (stored != null) {
+        r = r.copyWith(
+          marks: carryUserData(stored.marks, r.marks),
+          calibrationId: stored.calibrationId,
+          usedForCalibration: stored.usedForCalibration,
+        );
+      } else if (widget.record == null && !widget.forCalibration) {
+        // A new plate keeps the calibration it was measured under. (Plates
+        // photographed for calibration are marked by the wizard when it saves.)
+        final (status, profile) = recordCalibration(r, store.calibrations);
+        if (status == CalibrationStatus.calibrated && profile != null) {
+          r = r.copyWith(calibrationId: profile.id);
+        }
       }
+      r = await store.saveZoneCapture(r, r.imagePath.isEmpty ? photo : null);
+      if (!mounted) return;
+      _dirty = false;
+      Navigator.of(context).pop(r);
+    } catch (e) {
+      if (mounted)
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(tr.saveFailed('$e'))));
+    } finally {
+      if (mounted) setState(() => _busy = false);
     }
-    await store.upsertZone(r);
-    if (!mounted) return;
-    _dirty = false;
-    Navigator.of(context).pop(r);
   }
 
   Future<void> _shareAnnotated() async {
@@ -563,9 +569,9 @@ class _ZoneReviewScreenState extends State<ZoneReviewScreen> {
         ? tr.zoneSetupTitle
         : r.experiment;
     return PopScope(
-      canPop: !_dirty,
+      canPop: !_dirty && !_busy,
       onPopInvokedWithResult: (didPop, _) async {
-        if (didPop) return;
+        if (didPop || _busy) return;
         if (await _confirmLeave() && context.mounted) {
           _dirty = false;
           Navigator.of(context).pop();
@@ -601,11 +607,9 @@ class _ZoneReviewScreenState extends State<ZoneReviewScreen> {
             ),
           ],
         ),
-        body: Column(
-          children: [
-            Expanded(child: _buildImage()),
-            if (r != null) _buildPanel(r),
-          ],
+        body: ReviewLayout(
+          image: _buildImage(),
+          panel: r == null ? null : _buildPanel(r),
         ),
       ),
     );

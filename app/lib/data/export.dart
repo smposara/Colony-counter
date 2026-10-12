@@ -559,6 +559,10 @@ Future<Uint8List> buildBackup(PlateStore store) async {
       'medium': store.defaultMedium,
       'format': store.defaultFormat.name,
       'accuracy_every': store.accuracyCheckEvery,
+      'language': store.language,
+      'theme': store.theme,
+      'zone_setup': store.zoneSetup.toJson(),
+      'zone_disclaimer_seen': store.zoneDisclaimerSeen,
     },
     'samples': [for (final s in store.samplePlans) s.toJson()],
     'plates': [for (final r in store.records) r.toJson()],
@@ -683,5 +687,17 @@ Future<void> _restoreSettings(PlateStore store, Map<String, dynamic> s) async {
     medium: s['medium'] is String ? s['medium'] as String : null,
     format: byName(PlateFormat.values, s['format']),
     accuracyCheckEvery: every is int && every >= 0 ? every : null,
+    language: const ['system', 'en', 'th'].contains(s['language'])
+        ? s['language'] as String
+        : null,
+    theme: const ['system', 'light', 'dark'].contains(s['theme'])
+        ? s['theme'] as String
+        : null,
+    zoneSetup: s['zone_setup'] is Map<String, dynamic>
+        ? ZoneSetup.fromJson(s['zone_setup'] as Map<String, dynamic>)
+        : null,
+    zoneDisclaimerSeen: s['zone_disclaimer_seen'] is bool
+        ? s['zone_disclaimer_seen'] as bool
+        : null,
   );
 }

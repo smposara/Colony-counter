@@ -2470,4 +2470,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String zoneCouldNotMeasure(String error) {
     return 'Could not measure this photo: $error';
   }
+
+  @override
+  String saveFailed(String error) =>
+      'Could not save. Your edits are kept; try again. $error';
+
+  @override
+  String get saving => 'Saving…';
+
+  @override
+  String get storageOpenFailed =>
+      'Could not open saved data. Your files have not been removed.';
+
+  @override
+  String get retry => 'Retry';
 }

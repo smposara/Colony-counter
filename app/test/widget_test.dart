@@ -115,6 +115,14 @@ void main() {
       'Lake-A',
     );
     await tester.pump();
+    final verified = find.widgetWithText(
+      SwitchListTile,
+      'Checked every colony',
+    );
+    expect(tester.widget<SwitchListTile>(verified).value, isFalse);
+    await tester.ensureVisible(verified);
+    await tester.tap(verified);
+    await tester.pump();
     final save = find.widgetWithText(FilledButton, 'Save');
     await tester.ensureVisible(save);
     await tester.pumpAndSettle();

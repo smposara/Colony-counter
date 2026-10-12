@@ -4,7 +4,8 @@ import 'dart:typed_data';
 import 'package:image/image.dart' as img;
 
 import 'gray_image.dart';
-import 'pipeline.dart' show grayFromImage, kWorkShortSide;
+import 'image_limits.dart';
+import 'pipeline.dart' show grayFromImage;
 import 'plate.dart';
 
 // Inhibition zone measurement (mirrors ml/colonycounter/zones.py; keep the two
@@ -221,11 +222,9 @@ class ZoneOptions {
 /// Decodes a photo, measures a downscaled copy and returns results in the
 /// photo's full-resolution pixels. Takes a record so it can run in `compute`.
 ZoneResult measureZonesInPhoto((Uint8List, ZoneOptions) job) {
-  final decoded = img.decodeImage(job.$1);
-  if (decoded == null) throw const FormatException('Unsupported image');
-  final photo = img.bakeOrientation(decoded);
+  final photo = decodePlatePhoto(job.$1);
   final o = job.$2;
-  final s = math.min(1.0, kWorkShortSide / math.min(photo.width, photo.height));
+  final s = analysisScale(photo.width, photo.height);
   final work = s < 1
       ? img.copyResize(
           photo,

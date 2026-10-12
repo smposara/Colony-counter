@@ -34,5 +34,26 @@
   "restoreNotBackup": {
     "en": "This zip is not a Colony Counter backup.",
     "th": "ไฟล์ zip นี้ไม่ใช่ไฟล์สำรองข้อมูลของ Colony Counter"
+  },
+  "saveFailed": {
+    "en": "Could not save. Your edits are kept; try again. {error}",
+    "th": "บันทึกไม่สำเร็จ การแก้ไขยังอยู่ กรุณาลองอีกครั้ง {error}",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "saving": {
+    "en": "Saving…",
+    "th": "กำลังบันทึก…"
+  },
+  "storageOpenFailed": {
+    "en": "Could not open saved data. Your files have not been removed.",
+    "th": "เปิดข้อมูลที่บันทึกไว้ไม่ได้ ไฟล์ของคุณยังไม่ถูกลบ"
+  },
+  "retry": {
+    "en": "Retry",
+    "th": "ลองอีกครั้ง"
   }
 }

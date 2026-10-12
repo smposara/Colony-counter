@@ -11,8 +11,65 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   _registerFontLicences();
-  final store = await PlateStore.open();
-  runApp(ColonyCounterApp(store: store));
+  runApp(const StorageBootstrap());
+}
+
+/// Show a recoverable failure instead of leaving the app blank at launch.
+class StorageBootstrap extends StatefulWidget {
+  const StorageBootstrap({super.key});
+  @override
+  State<StorageBootstrap> createState() => _StorageBootstrapState();
+}
+
+class _StorageBootstrapState extends State<StorageBootstrap> {
+  late Future<PlateStore> _opening = PlateStore.open();
+
+  @override
+  Widget build(BuildContext context) => FutureBuilder<PlateStore>(
+    future: _opening,
+    builder: (context, snapshot) {
+      if (snapshot.hasData) return ColonyCounterApp(store: snapshot.data!);
+      return MaterialApp(
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        home: Builder(
+          builder: (context) {
+            final strings = AppLocalizations.of(context)!;
+            return Scaffold(
+              body: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: snapshot.hasError
+                      ? Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              strings.storageOpenFailed,
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 16),
+                            FilledButton(
+                              onPressed: () => setState(() {
+                                _opening = PlateStore.open();
+                              }),
+                              child: Text(strings.retry),
+                            ),
+                          ],
+                        )
+                      : const CircularProgressIndicator(),
+                ),
+              ),
+            );
+          },
+        ),
+      );
+    },
+  );
 }
 
 /// The bundled fonts' licences, listed under About → Open-source licences
