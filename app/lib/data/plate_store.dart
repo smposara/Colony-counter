@@ -175,8 +175,9 @@ class PlateStore extends ChangeNotifier implements ExportSource {
   Future<void> _deletePhotoAfterCommit(String name) async {
     _afterCommit!.add(() async {
       if (_records.any((r) => r.imagePath == name) ||
-          _zoneRecords.any((r) => r.imagePath == name))
+          _zoneRecords.any((r) => r.imagePath == name)) {
         return;
+      }
       await backend.deletePhoto(name);
     });
   }
@@ -187,6 +188,7 @@ class PlateStore extends ChangeNotifier implements ExportSource {
   final List<ZoneRecord> _zoneRecords = [];
   final List<ZonePanel> _zonePanels = [];
   final List<CalibrationProfile> _calibrations = [];
+  @override
   CountingRule rule = CountingRule.fdaBam;
   double defaultVolumeMl = 0.1;
 
@@ -234,15 +236,18 @@ class PlateStore extends ChangeNotifier implements ExportSource {
     return store;
   }
 
+  @override
   List<PlateRecord> get records => List.unmodifiable(_records);
 
   /// Inhibition-zone plates, newest first.
+  @override
   List<ZoneRecord> get zoneRecords => List.unmodifiable(_zoneRecords);
 
   /// Saved label panels for zone plates.
   List<ZonePanel> get zonePanels => List.unmodifiable(_zonePanels);
 
   /// Zone calibration profiles (calliper against the app), newest first.
+  @override
   List<CalibrationProfile> get calibrations => List.unmodifiable(_calibrations);
 
   Future<void> load() async {
@@ -542,11 +547,13 @@ class PlateStore extends ChangeNotifier implements ExportSource {
       if (e.key.isNotEmpty) e.key: List.of(e.value),
   };
 
+  @override
   List<PlateRecord> platesOf(String sampleId) =>
       List.of(_indexedSamples[sampleId] ?? const <PlateRecord>[]);
 
   /// Every known sample: those set up in advance and those with plates,
   /// newest first.
+  @override
   List<SampleInfo> allSamples() {
     final ids = {
       ..._samples.keys,
@@ -558,6 +565,7 @@ class PlateStore extends ChangeNotifier implements ExportSource {
   }
 
   /// The saved plan for [id], or one inferred from its plates.
+  @override
   SampleInfo sampleInfo(String id) =>
       _samples[id] ?? SampleInfo.inferred(id, platesOf(id));
 

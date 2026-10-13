@@ -15,7 +15,6 @@ import '../l10n/l10n.dart';
 import 'chart_colours.dart';
 import 'format.dart';
 import 'insets.dart';
-import 'photo_flow.dart';
 import 'zones_tab.dart';
 
 /// Calibration of zone measurement against the user's own calliper (or ruler)

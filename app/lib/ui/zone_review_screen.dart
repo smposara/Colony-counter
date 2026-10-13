@@ -485,9 +485,10 @@ class _ZoneReviewScreenState extends State<ZoneReviewScreen> {
       _dirty = false;
       Navigator.of(context).pop(r);
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(tr.saveFailed('$e'))));
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }

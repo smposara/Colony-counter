@@ -4,7 +4,7 @@ class SerialQueue {
 
   Future<T> run<T>(Future<T> Function() operation) {
     final result = _tail.then((_) => operation());
-    _tail = result.then<void>((_) {}, onError: (Object _, StackTrace __) {});
+    _tail = result.then<void>((_) {}, onError: (Object _, StackTrace stack) {});
     return result;
   }
 }
