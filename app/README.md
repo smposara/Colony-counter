@@ -280,7 +280,8 @@ opens full screen like an app.
 - **Speed:** colony, film, drop-plate and zone analysis runs in a dedicated Web
   Worker. Package the site with `tool/package_web.sh` so `photo_worker.dart.js` is
   included. Worker failures are reported instead of falling back to blocking the
-  page. Other export/annotation operations still need performance profiling.
+  page. QR scanning, annotated photos, multi-plate detection/cropping, CSV analysis
+  and training-label generation also use workers.
 
 
 - **Not yet tried on a physical phone.** The build environment had no Android SDK or
@@ -320,8 +321,8 @@ opens full screen like an app.
   images over 24 megapixels are rejected before full pixel decoding. Imported
   images are resized to at most 3,000 px by the image picker. Very large guided
   camera captures may need a lower camera resolution.
-- Sample lookups use a cached index. Desktop review screens place the image beside
-  a 400 px controls panel. Home uses a navigation rail at wide widths and retains
+- Sample lookups use a cached index. Review opens in Zoom mode; select Edit to change colony marks. Desktop review
+  screens place the image beside a 400 px controls panel. Home uses a navigation rail at wide widths and retains
   the visited tabs' search, selection and scroll state.
 - Backups preserve language, appearance, zone setup and disclaimer preferences.
 
@@ -362,4 +363,46 @@ then check:
    quota failures, including restarting after an interrupted migration.
 5. Small phones, large text, Thai, dark mode, desktop panels and tab continuity.
 6. Processing time and peak memory on real plates and datasets of 100/1,000 plates.
-   Backup creation still builds an archive in memory and needs large-dataset checks.
+   Backup creation streams ZIP entries and needs real-device large-dataset checks.
+
+
+## Streaming exports and remaining browser work
+
+The Backup, Training export and Calibration test-data actions now consume ZIP
+streams. Each photo is loaded once, bypassing the UI cache, emitted in 64 KiB
+blocks, and released before loading the next. The stream retains only small ZIP
+central-directory records. Streaming exports hold a read snapshot so mutations
+wait until completion or cancellation, preserving metadata/photo consistency.
+Files use standard stored ZIP entries with UTF-8 names,
+CRC-32 and data descriptors, readable by existing restore and evaluation tools.
+Compatibility APIs such as `buildBackup()` still collect the stream for callers
+that explicitly request bytes; interactive sharing does not use those APIs.
+
+Native apps write the stream to a temporary file and share that file, cleaning it
+up afterwards. Browsers supporting `showSaveFilePicker` write directly to the
+selected file with backpressure and abort an incomplete write on failure. Other
+browsers download a composed Blob without accumulating the whole ZIP in a Dart
+byte list. The fallback still retains the finished Blob in browser-managed storage;
+its memory/disk behavior and maximum size vary by browser. ZIP output is limited
+to less than 4 GiB and fewer than 65,536 entries (ZIP64 is not implemented).
+
+CSV calculations and training annotations run in the detector worker on browsers
+and in an isolate on native apps. Preparing the portable record snapshot yields
+between batches. Metadata remains proportional to the dataset; photos no longer
+accumulate with archive size. Binary annotation/crop results transfer typed buffers
+rather than JSON byte arrays. Multi-plate and QR failures produce a localized
+message and release their busy state. Review starts in Zoom mode; changing format/options and applying a plate circle
+also return to a safe mode. Tap and long-press edits require an explicit editing
+mode.
+
+Follow-up validation: 26 standalone regression tests plus 11 existing data and
+calibration-export tests passed, with test-only framework adapters. The JavaScript
+worker/client binary transport, direct writer and Blob fallback ran under a Node
+harness; Python verified the resulting ZIP CRCs and contents. A standalone stream
+wrote a 256 MiB ZIP under a 128 MiB Dart old-generation heap limit: peak RSS grew
+from about 159 MiB to 174 MiB, and Python verified all 256 photo entries. This is a
+software stress check, not a browser/phone performance measurement. Static
+analysis and worker JavaScript compilation passed. Flutter widget tests, platform
+share sheets, browser save dialogs, actual Chrome/Safari behavior and camera/device
+timing checks remain pending. Large ZIP restore still uses the existing in-memory
+reader and needs a separate streaming-restore implementation for very large files.

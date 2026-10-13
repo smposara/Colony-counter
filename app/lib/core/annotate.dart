@@ -1,6 +1,8 @@
 import 'dart:math' as math;
 import 'dart:typed_data';
 
+import 'image_limits.dart';
+
 import 'package:image/image.dart' as img;
 
 import 'classical.dart';
@@ -65,9 +67,7 @@ class AnnotationJob {
 /// green = automatic, pink = added by hand, orange = cluster (×N), blue/pink =
 /// colour class 1.
 Uint8List annotatePhoto(AnnotationJob job) {
-  final decoded = img.decodeImage(job.photo);
-  if (decoded == null) throw const FormatException('Unsupported image');
-  var photo = img.bakeOrientation(decoded);
+  var photo = decodePlatePhoto(job.photo);
   final s = math.min(1.0, job.maxSide / math.max(photo.width, photo.height));
   if (s < 1) {
     photo = img.copyResize(

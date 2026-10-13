@@ -2484,4 +2484,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get retry => 'Retry';
+  @override
+  String photoProcessFailed(String error) =>
+      'Could not process the photo: $error';
 }

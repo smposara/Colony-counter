@@ -775,6 +775,14 @@
   "saving": "Saving…",
   "storageOpenFailed": "Could not open saved data. Your files have not been removed.",
   "retry": "Retry",
+  "photoProcessFailed": "Could not process the photo: {error}",
+  "@photoProcessFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "methodFilm": "Petrifilm (dry film)",
   "formatFilmAc": "Petrifilm AC (aerobic count)",
   "formatFilmEc": "Petrifilm EC (E. coli/coliform)",

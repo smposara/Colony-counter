@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
-import 'package:archive/archive.dart';
+import 'streaming_zip.dart';
 
 import '../core/zone_calibration.dart';
 import 'plate_store.dart';
@@ -84,54 +84,71 @@ GateProgress gateProgress(List<CalibrationProfile> profiles) {
 /// `colonycounter evaluate-zones` reads them: `<photo>.jpg` next to
 /// `<photo>.json` with the calliper diameters per disk, plus `profiles.json`
 /// and a README. Opt-in: the user shares it.
-Future<Uint8List> buildCalibrationTestData(PlateStore store) async {
-  final archive = Archive();
-  void addText(String name, String text) {
-    final bytes = utf8.encode(text);
-    archive.addFile(ArchiveFile(name, bytes.length, bytes));
-  }
-
-  final records = {for (final r in store.zoneRecords) r.id: r};
-  final written = <String>{};
-  for (final profile in store.calibrations) {
-    for (final plate in profile.plates) {
-      final r = records[plate.zoneRecordId];
-      if (r == null || !written.add(r.id)) continue;
-      final photo = await store.readPhotoPath(r.imagePath);
-      if (photo == null) continue;
-      final stem = r.imagePath.endsWith('.jpg')
-          ? r.imagePath.substring(0, r.imagePath.length - 4)
-          : r.imagePath;
-      archive.addFile(ArchiveFile.noCompress('$stem.jpg', photo.length, photo));
-      addText(
-        '$stem.json',
-        const JsonEncoder.withIndent(' ')
-            .convert(calibrationLabel(r, plate, profile)),
+Stream<Uint8List> buildCalibrationTestDataStream(PlateStore store) {
+  return store.readSnapshot(() {
+    final profiles = store.calibrations;
+    Stream<ZipEntrySource> entries() async* {
+      ZipEntrySource textEntry(String name, String text) => ZipEntrySource(
+        name,
+        () async => Uint8List.fromList(utf8.encode(text)),
       );
+
+      final records = {for (final r in store.zoneRecords) r.id: r};
+      final written = <String>{};
+      for (final profile in profiles) {
+        for (final plate in profile.plates) {
+          final r = records[plate.zoneRecordId];
+          if (r == null || !written.add(r.id)) continue;
+          final stem = r.imagePath.endsWith('.jpg')
+              ? r.imagePath.substring(0, r.imagePath.length - 4)
+              : r.imagePath;
+          var present = false;
+          yield ZipEntrySource('$stem.jpg', () async {
+            final photo = await store.backend.readPhoto(r.imagePath);
+            present = photo != null;
+            return photo;
+          });
+          if (!present) continue;
+          yield textEntry(
+            '$stem.json',
+            const JsonEncoder.withIndent(' ')
+                .convert(calibrationLabel(r, plate, profile)),
+          );
+        }
+      }
+      final gate = gateProgress(profiles);
+      yield textEntry(
+        'profiles.json',
+        const JsonEncoder.withIndent(' ').convert({
+          'format': 'colony-counter-zone-calibration',
+          'version': 1,
+          'created_at': DateTime.now().toIso8601String(),
+          'gate': {
+            'plates': gate.plates,
+            'zones': gate.zones,
+            'mean_abs_error_mm': _r3(gate.meanAbsError),
+            'within_2mm': _r3(gate.within2mm),
+            'met': gate.met,
+          },
+          'profiles': [
+            for (final p in profiles)
+              {...p.toJson(), 'summary': _summaryJson(p.summary)},
+          ],
+        }),
+      );
+      yield textEntry('README.txt', _readme);
     }
+
+    return streamZip(entries());
+  });
+}
+
+Future<Uint8List> buildCalibrationTestData(PlateStore store) async {
+  final out = BytesBuilder(copy: false);
+  await for (final chunk in buildCalibrationTestDataStream(store)) {
+    out.add(chunk);
   }
-  final gate = gateProgress(store.calibrations);
-  addText(
-    'profiles.json',
-    const JsonEncoder.withIndent(' ').convert({
-      'format': 'colony-counter-zone-calibration',
-      'version': 1,
-      'created_at': DateTime.now().toIso8601String(),
-      'gate': {
-        'plates': gate.plates,
-        'zones': gate.zones,
-        'mean_abs_error_mm': _r3(gate.meanAbsError),
-        'within_2mm': _r3(gate.within2mm),
-        'met': gate.met,
-      },
-      'profiles': [
-        for (final p in store.calibrations)
-          {...p.toJson(), 'summary': _summaryJson(p.summary)},
-      ],
-    }),
-  );
-  addText('README.txt', _readme);
-  return Uint8List.fromList(ZipEncoder().encode(archive));
+  return out.takeBytes();
 }
 
 /// The label of one calibration plate (see [buildCalibrationTestData]).

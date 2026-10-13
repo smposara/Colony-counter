@@ -9,6 +9,8 @@ import '../core/calculator.dart';
 import '../core/pipeline.dart';
 import '../core/plate.dart';
 import '../data/export.dart';
+import '../data/export_jobs.dart';
+import '../data/zip_delivery/zip_delivery.dart';
 import '../data/plate_record.dart';
 import '../data/plate_store.dart';
 import '../data/training_export.dart';
@@ -262,25 +264,25 @@ class _DataMenu extends StatelessWidget {
     );
   }
 
-  Future<void> _exportCsv() async {
-    final stamp = _stamp();
-    if (zones) {
+  Future<void> _exportCsv(BuildContext context) async {
+    try {
+      final stamp = _stamp();
+      final result = await prepareExport(store, zonesOnly: zones);
+      final files = (result['files'] as Map).cast<String, String>();
       await _share([
-        ('zones_$stamp.csv', utf8.encode(zonesCsv(store)), 'text/csv'),
-        (
-          'zone_summary_$stamp.csv',
-          utf8.encode(zoneSummaryCsv(store)),
-          'text/csv',
-        ),
-      ], tr.zoneShareSubject);
-      return;
+        for (final e in files.entries)
+          (
+            '${e.key.substring(0, e.key.length - 4)}_$stamp.csv',
+            utf8.encode(e.value),
+            'text/csv',
+          ),
+      ], zones ? tr.zoneShareSubject : tr.homeShareCounts);
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(tr.saveFailed('$e'))));
+      }
     }
-    await _share([
-      ('plates_$stamp.csv', utf8.encode(platesCsv(store)), 'text/csv'),
-      ('samples_$stamp.csv', utf8.encode(samplesCsv(store)), 'text/csv'),
-      ('colonies_$stamp.csv', utf8.encode(coloniesCsv(store)), 'text/csv'),
-      ('drops_$stamp.csv', utf8.encode(dropsCsv(store)), 'text/csv'),
-    ], tr.homeShareCounts);
   }
 
   Future<void> _trainingExport(BuildContext context) async {
@@ -310,21 +312,39 @@ class _DataMenu extends StatelessWidget {
     }
     final messenger = ScaffoldMessenger.of(context);
     messenger.showSnackBar(SnackBar(content: Text(tr.homePreparingExport)));
-    final zip = await buildTrainingExport(store, selection: selection);
+    try {
+      await deliverZip(
+        buildTrainingExportStream(store, selection: selection),
+        'training_${_stamp()}.zip',
+        tr.homeShareTraining,
+      );
+    } catch (e) {
+      messenger.hideCurrentSnackBar();
+      if (context.mounted) {
+        messenger.showSnackBar(SnackBar(content: Text(tr.saveFailed('$e'))));
+      }
+      return;
+    }
     messenger.hideCurrentSnackBar();
-    await _share([
-      ('training_${_stamp()}.zip', zip, 'application/zip'),
-    ], tr.homeShareTraining);
   }
 
   Future<void> _backup(BuildContext context) async {
     final messenger = ScaffoldMessenger.of(context);
     messenger.showSnackBar(SnackBar(content: Text(tr.homePreparingBackup)));
-    final zip = await buildBackup(store);
+    try {
+      await deliverZip(
+        buildBackupStream(store),
+        'colony-counter-backup_${_stamp()}.zip',
+        tr.homeShareBackup,
+      );
+    } catch (e) {
+      messenger.hideCurrentSnackBar();
+      if (context.mounted) {
+        messenger.showSnackBar(SnackBar(content: Text(tr.saveFailed('$e'))));
+      }
+      return;
+    }
     messenger.hideCurrentSnackBar();
-    await _share([
-      ('colony-counter-backup_${_stamp()}.zip', zip, 'application/zip'),
-    ], tr.homeShareBackup);
   }
 
   Future<void> _restore(BuildContext context) async {
@@ -369,7 +389,7 @@ class _DataMenu extends StatelessWidget {
         store.zoneRecords.isEmpty;
     return PopupMenuButton<String>(
       onSelected: (v) => switch (v) {
-        'csv' => _exportCsv(),
+        'csv' => _exportCsv(context),
         'backup' => _backup(context),
         'restore' => _restore(context),
         'accuracy' => Navigator.of(context).push(

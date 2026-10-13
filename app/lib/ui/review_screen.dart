@@ -80,7 +80,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
   PlateRecord? _pendingSave;
   final _draftId = DateTime.now().microsecondsSinceEpoch.toString();
   String? _error;
-  _Mode _mode = _Mode.edit;
+  _Mode _mode = _Mode.zoom;
 
   /// Marks drawn over the photo; off for an unmarked look at the plate.
   bool _showMarks = true;
@@ -478,7 +478,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
       _drop = drop;
       if (drop && _spots.isEmpty) _spots = _suggestSpots();
       if (!drop) _spots = [];
-      _mode = drop ? _Mode.spots : _Mode.edit;
+      _mode = _Mode.zoom;
     });
   }
 
@@ -487,7 +487,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
       _push();
       _colourMode = mode;
       _colonies = _classified(_colonies, mode);
-      _mode = mode == ColourMode.none ? _Mode.edit : _Mode.colour;
+      _mode = _Mode.zoom;
     });
   }
 
@@ -692,7 +692,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
   Future<void> _applyPlate() async {
     if (!await _confirmDiscardEdits()) return;
     await _recount(plate: _plate);
-    if (mounted) setState(() => _mode = _Mode.edit);
+    if (mounted) setState(() => _mode = _Mode.zoom);
   }
 
   Future<void> _adjustSensitivity() async {
@@ -1051,8 +1051,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
     if (photo == null || plate == null) return;
     setState(() => _busy = true);
     try {
-      final jpeg = await compute(
-        annotatePhoto,
+      final jpeg = await annotateInBackground(
         AnnotationJob(
           photo: photo,
           plate: plate,
@@ -1382,7 +1381,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
       if (_gridOk && _filmAboveRange)
         (_Mode.squares, Icons.grid_on, tr.reviewModeSquares),
     ];
-    if (!modes.any((m) => m.$1 == _mode)) _mode = _Mode.edit;
+    if (!modes.any((m) => m.$1 == _mode)) _mode = _Mode.zoom;
     final compact = modes.length > 3;
     return Material(
       elevation: 3,

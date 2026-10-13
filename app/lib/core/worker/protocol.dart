@@ -1,6 +1,12 @@
 import 'dart:typed_data';
 
 import '../classical.dart';
+import '../annotate.dart';
+import '../colour.dart';
+import '../labels.dart';
+import '../spots.dart';
+import '../../data/export_metadata.dart';
+import '../../data/training_metadata.dart';
 import '../drop_layout.dart';
 import '../normalize.dart';
 import '../petrifilm.dart';
@@ -181,10 +187,76 @@ ZoneResult readZones(Map<String, dynamic> j) => ZoneResult(
   imageHeight: j['height'] as int,
 );
 
+Map<String, dynamic> annotationJob(AnnotationJob job) => {
+  'kind': 'annotate',
+  'plate': job.plate.toJson(),
+  'colonies': [for (final c in job.colonies) c.toJson()],
+  'spots': [for (final s in job.spots) s.toJson()],
+  'zones': [
+    for (final z in job.zones)
+      [
+        z.x,
+        z.y,
+        z.diskRadiusPx,
+        z.radiusPx.isFinite ? z.radiusPx : null,
+        z.text,
+        z.unsure,
+      ],
+  ],
+  'colour': job.colourMode.name,
+  'header': job.header,
+  'rim': job.rimFraction,
+  'max_side': job.maxSide,
+};
+
 /// Pure-Dart dispatch, also exercised by native regression tests.
 Map<String, dynamic> processPhotoJob(Uint8List bytes, Map<String, dynamic> j) {
   final plate = optionalPlate(j['plate']);
   switch (j['kind']) {
+    case 'training':
+      return {'files': trainingMetadata(j)};
+    case 'export':
+      return exportMetadata(j);
+    case 'find_plates':
+      final r = findPlatesInPhoto((
+        bytes,
+        PlateFormat.byName(j['format'] as String),
+      ));
+      return {
+        'plates': [for (final p in r.plates) p.toJson()],
+        'width': r.width,
+        'height': r.height,
+      };
+    case 'crop':
+      final (crop, p) = cropToPlate((bytes, plate!));
+      return {'binary': crop, 'plate': p.toJson()};
+    case 'label':
+      return {'label': readLabelFromPhoto(bytes)?.encode()};
+    case 'annotate':
+      final result = annotatePhoto(
+        AnnotationJob(
+          photo: bytes,
+          plate: plate!,
+          colonies: colonies(j['colonies']),
+          spots: [for (final s in j['spots'] as List) Spot.fromJson(object(s))],
+          zones: [
+            for (final z in j['zones'] as List)
+              AnnotatedZone(
+                number(z[0]),
+                number(z[1]),
+                number(z[2]),
+                z[3] == null ? double.nan : number(z[3]),
+                z[4] as String,
+                unsure: z[5] as bool,
+              ),
+          ],
+          colourMode: ColourMode.values.byName(j['colour'] as String),
+          header: strings(j['header']),
+          rimFraction: number(j['rim']),
+          maxSide: j['max_side'] as int,
+        ),
+      );
+      return {'binary': result};
     case 'count':
       final p = j['params'] as List;
       final r = countPhoto(

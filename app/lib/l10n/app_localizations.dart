@@ -4088,6 +4088,7 @@ abstract class AppLocalizations {
   String get storageOpenFailed;
 
   String get retry;
+  String photoProcessFailed(String error);
 }
 
 class _AppLocalizationsDelegate

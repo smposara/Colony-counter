@@ -1,10 +1,12 @@
 import 'dart:convert';
+import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
 import '../core/calculator.dart';
 import '../core/plate.dart';
 import 'plate_record.dart';
+import 'export_source.dart';
 import 'sample_info.dart';
 import 'zone_calibration_record.dart';
 import 'zone_record.dart';
@@ -14,7 +16,7 @@ import 'storage/serial_queue.dart';
 
 /// Saved plates and settings, on top of a [StorageBackend] (files on phones,
 /// IndexedDB in the browser).
-class PlateStore extends ChangeNotifier {
+class PlateStore extends ChangeNotifier implements ExportSource {
   PlateStore(StorageBackend backend)
     : backend = backend is JournaledStorage
           ? backend
@@ -147,6 +149,24 @@ class PlateStore extends ChangeNotifier {
           _newPhotos = null;
         }
       });
+
+  /// Hold the mutation queue while a streaming export reads live photos.
+  /// Cancellation/error releases the queue; no lock is acquired until listened to.
+  Stream<T> readSnapshot<T>(Stream<T> Function() build) async* {
+    final ready = Completer<void>();
+    final release = Completer<void>();
+    final gate = _mutations.run(() async {
+      ready.complete();
+      await release.future;
+    });
+    await ready.future;
+    try {
+      yield* build();
+    } finally {
+      release.complete();
+      await gate;
+    }
+  }
 
   Future<void> _writeDocument(String key, String value) async {
     _pendingWrites![key] = value;

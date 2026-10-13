@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../core/labels.dart';
+import '../core/background.dart';
 import '../core/plate.dart';
 import '../data/plate_record.dart';
 import '../data/plate_store.dart';
@@ -117,7 +118,18 @@ Future<PlateLabel?> scanPlateLabel(
       duration: const Duration(seconds: 1),
     ),
   );
-  final label = await compute(readLabelFromPhoto, bytes);
+  final PlateLabel? label;
+  try {
+    label = await readLabelInBackground(bytes);
+  } catch (e) {
+    if (context.mounted) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(tr.photoProcessFailed('$e'))),
+      );
+    }
+    return null;
+  }
+  if (!context.mounted) return null;
   if (label == null) {
     messenger.showSnackBar(SnackBar(content: Text(tr.photoNoLabelFound)));
   }

@@ -37,12 +37,20 @@ Future<Map<String, dynamic>> runPhotoJob(
   worker.onmessage = ((WorkerMessage event) {
     if (result.isCompleted) return;
     try {
-      final response =
-          jsonDecode((event.data as JSString).toDart) as Map<String, dynamic>;
+      final payload = event.data as JSObject;
+      final response = jsonDecode(
+        payload.getProperty<JSString>('json'.toJS).toDart,
+      ) as Map<String, dynamic>;
       if (response['error'] != null) {
         result.completeError(StateError(response['error'] as String));
       } else {
-        result.complete((response['result'] as Map).cast<String, dynamic>());
+        final value = (response['result'] as Map).cast<String, dynamic>();
+        if (payload.hasProperty('bytes'.toJS).toDart) {
+          value['binary'] = payload
+              .getProperty<JSUint8Array>('bytes'.toJS)
+              .toDart;
+        }
+        result.complete(value);
       }
     } catch (e, stack) {
       result.completeError(e, stack);

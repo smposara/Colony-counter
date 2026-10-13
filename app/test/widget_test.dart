@@ -90,6 +90,13 @@ void main() {
     Offset toScreen(num x, num y) =>
         rect.topLeft + Offset(x.toDouble(), y.toDouble()) * (rect.width / 1000);
 
+    // The initial Zoom mode must not alter a count when the user taps a mark.
+    await tester.tapAt(toScreen(firstColony[0] as num, firstColony[1] as num));
+    await tester.pump();
+    expect(find.text('$auto'), findsOneWidget);
+    expect(find.textContaining('removed'), findsNothing);
+    await tester.tap(find.text('Edit'));
+    await tester.pump();
     // Tapping a detected colony removes it...
     await tester.tapAt(toScreen(firstColony[0] as num, firstColony[1] as num));
     await tester.pump();
@@ -188,6 +195,8 @@ void main() {
     expect(find.byTooltip('Show marks'), findsOneWidget);
     expect(find.textContaining('Marks are hidden'), findsOneWidget);
 
+    await tester.tap(find.text('Edit'));
+    await tester.pump();
     // A tap on the photo changes nothing while the marks cannot be seen.
     final rect = tester.getRect(find.byType(Image));
     final at =

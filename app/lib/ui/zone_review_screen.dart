@@ -499,8 +499,7 @@ class _ZoneReviewScreenState extends State<ZoneReviewScreen> {
     if (r == null || photo == null) return;
     setState(() => _busy = true);
     try {
-      final jpeg = await compute(
-        annotatePhoto,
+      final jpeg = await annotateInBackground(
         AnnotationJob(
           photo: photo,
           plate: r.plate,

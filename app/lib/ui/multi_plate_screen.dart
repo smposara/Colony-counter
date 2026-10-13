@@ -1,10 +1,10 @@
 import 'dart:math' as math;
+import 'dart:typed_data';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../core/pipeline.dart';
+import '../core/background.dart';
 import '../core/plate.dart';
 import '../data/plate_record.dart';
 import '../data/plate_store.dart';
@@ -112,10 +112,7 @@ class _MultiPlateScreenState extends State<MultiPlateScreen> {
   Future<void> _find() async {
     try {
       final job = (widget.photo, widget.format);
-      final res = kIsWeb
-          ? await Future<void>.delayed(const Duration(milliseconds: 60))
-                .then((_) => findPlatesInPhoto(job))
-          : await compute(findPlatesInPhoto, job);
+      final res = await findPlatesInBackground(job);
       if (!mounted) return;
       setState(() {
         _plates = res.plates;
@@ -195,9 +192,18 @@ class _MultiPlateScreenState extends State<MultiPlateScreen> {
     }
     setState(() => _busy = true);
     final job = (widget.photo, _plates[i]);
-    final (crop, plate) = kIsWeb
-        ? cropToPlate(job)
-        : await compute(cropToPlate, job);
+    final (Uint8List, Plate) result;
+    try {
+      result = await cropPlateInBackground(job);
+    } catch (e) {
+      if (mounted) {
+        setState(() => _busy = false);
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(tr.photoProcessFailed('$e'))));
+      }
+      return;
+    }
+    final (crop, plate) = result;
     if (!mounted) return;
     setState(() => _busy = false);
     final slot = _slots[i];

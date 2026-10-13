@@ -55,5 +55,14 @@
   "retry": {
     "en": "Retry",
     "th": "ลองอีกครั้ง"
+  },
+  "photoProcessFailed": {
+    "en": "Could not process the photo: {error}",
+    "th": "ประมวลผลภาพไม่สำเร็จ: {error}",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   }
 }

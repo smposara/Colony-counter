@@ -1,6 +1,8 @@
 import 'dart:math' as math;
 import 'dart:typed_data';
 
+import 'image_limits.dart';
+
 import 'package:image/image.dart' as img;
 import 'package:zxing2/qrcode.dart';
 
@@ -61,9 +63,7 @@ class PlateLabel {
 /// Tries a few sizes and binarisers, because phone photos of labels vary in
 /// scale, focus and lighting. Returns null when no Colony Counter label is found.
 PlateLabel? readLabelFromPhoto(Uint8List bytes) {
-  final decoded = img.decodeImage(bytes);
-  if (decoded == null) return null;
-  final photo = img.bakeOrientation(decoded);
+  final photo = decodePlatePhoto(bytes);
   for (final side in const [1000, 1600, 600]) {
     final scale = math.min(1.0, side / math.max(photo.width, photo.height));
     final im = scale < 1

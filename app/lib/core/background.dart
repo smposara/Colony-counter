@@ -1,6 +1,9 @@
 import 'package:flutter/foundation.dart';
 
 import 'drop_layout.dart';
+import 'annotate.dart';
+import 'labels.dart';
+import 'plate.dart';
 import 'petrifilm.dart';
 import 'pipeline.dart';
 import 'zones.dart';
@@ -43,4 +46,40 @@ Future<ZoneResult> measureZonesInBackground(
 ) async {
   if (kIsWeb) return readZones(await runPhotoJob(job.$1, zoneJob(job.$2)));
   return compute(measureZonesInPhoto, job);
+}
+
+Future<PlateLabel?> readLabelInBackground(Uint8List bytes) async {
+  if (!kIsWeb) return compute(readLabelFromPhoto, bytes);
+  final result = await runPhotoJob(bytes, {'kind': 'label'});
+  return PlateLabel.parse(result['label'] as String? ?? '');
+}
+
+Future<Uint8List> annotateInBackground(AnnotationJob job) async {
+  if (!kIsWeb) return compute(annotatePhoto, job);
+  final result = await runPhotoJob(job.photo, annotationJob(job));
+  return result['binary'] as Uint8List;
+}
+
+Future<PlatesInPhoto> findPlatesInBackground(
+  (Uint8List, PlateFormat) job,
+) async {
+  if (!kIsWeb) return compute(findPlatesInPhoto, job);
+  final r = await runPhotoJob(job.$1, {
+    'kind': 'find_plates',
+    'format': job.$2.name,
+  });
+  return PlatesInPhoto(
+    [for (final p in r['plates'] as List) Plate.fromJson(object(p))],
+    r['width'] as int,
+    r['height'] as int,
+  );
+}
+
+Future<(Uint8List, Plate)> cropPlateInBackground((Uint8List, Plate) job) async {
+  if (!kIsWeb) return compute(cropToPlate, job);
+  final r = await runPhotoJob(job.$1, {
+    'kind': 'crop',
+    'plate': job.$2.toJson(),
+  });
+  return (r['binary'] as Uint8List, Plate.fromJson(object(r['plate'])));
 }

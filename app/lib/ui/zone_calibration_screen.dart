@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import '../core/zone_calibration.dart';
 import '../core/zones.dart';
 import '../data/calibration_export.dart';
+import '../data/zip_delivery/zip_delivery.dart';
 import '../data/plate_store.dart';
 import '../data/zone_calibration_record.dart';
 import '../data/zone_record.dart';
@@ -232,17 +233,22 @@ class ZoneCalibrationScreen extends StatelessWidget {
       ),
     );
     if (ok != true) return;
-    final zip = await buildCalibrationTestData(store);
     final stamp = DateTime.now()
         .toIso8601String()
         .substring(0, 19)
         .replaceAll(':', '-');
-    await shareBytes(
-      zip,
-      'zone-calibration_$stamp.zip',
-      'application/zip',
-      subject: tr.calShareSubject,
-    );
+    try {
+      await deliverZip(
+        buildCalibrationTestDataStream(store),
+        'zone-calibration_$stamp.zip',
+        tr.calShareSubject,
+      );
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(tr.saveFailed('$e'))));
+      }
+    }
   }
 }
 

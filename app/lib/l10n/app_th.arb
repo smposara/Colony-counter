@@ -292,6 +292,7 @@
   "saving": "กำลังบันทึก…",
   "storageOpenFailed": "เปิดข้อมูลที่บันทึกไว้ไม่ได้ ไฟล์ของคุณยังไม่ถูกลบ",
   "retry": "ลองอีกครั้ง",
+  "photoProcessFailed": "ประมวลผลภาพไม่สำเร็จ: {error}",
   "methodFilm": "Petrifilm (ฟิล์มแห้ง)",
   "formatFilmAc": "Petrifilm AC (จุลินทรีย์ทั้งหมด)",
   "formatFilmEc": "Petrifilm EC (อี. โคไล/โคลิฟอร์ม)",
