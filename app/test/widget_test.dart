@@ -193,10 +193,12 @@ void main() {
     await tester.pump();
     expect(marksDrawn(), isFalse);
     expect(find.byTooltip('Show marks'), findsOneWidget);
-    expect(find.textContaining('Marks are hidden'), findsOneWidget);
+    // Zoom remains usable with an unmarked photo; editing explains the guard.
+    expect(find.textContaining('Marks are hidden'), findsNothing);
 
     await tester.tap(find.text('Edit'));
     await tester.pump();
+    expect(find.textContaining('Marks are hidden'), findsOneWidget);
     // A tap on the photo changes nothing while the marks cannot be seen.
     final rect = tester.getRect(find.byType(Image));
     final at =
