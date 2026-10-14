@@ -12,6 +12,15 @@ Future<void> deliverZip(
   final temp = await getTemporaryDirectory();
   final parent = await Directory('${temp.path}/colony-backup')
       .create(recursive: true);
+  // The receiving app may read the file after share() returns (Android hands
+  // over a content URI), so earlier exports are removed now, not this one.
+  await for (final old in parent.list()) {
+    try {
+      await old.delete(recursive: true);
+    } catch (_) {
+      /* still in use; removed next time */
+    }
+  }
   final dir = await parent.createTemp();
   final file = File('${dir.path}/$name');
   final sink = file.openWrite();
@@ -25,11 +34,9 @@ Future<void> deliverZip(
         subject: subject,
       ),
     );
-  } finally {
-    try {
-      await sink.close();
-    } finally {
-      await dir.delete(recursive: true);
-    }
+  } catch (_) {
+    await sink.close().catchError((_) {});
+    await dir.delete(recursive: true).catchError((_) => dir);
+    rethrow;
   }
 }

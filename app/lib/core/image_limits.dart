@@ -6,7 +6,8 @@ import 'package:image/image.dart' as img;
 const kWorkShortSide = 1800;
 const kMaxWorkSide = 3000;
 const kMaxWorkPixels = 4500000;
-const kMaxDecodedPixels = 24000000;
+// 48/50 MP phone sensors deliver full-size photos with ResolutionPreset.max.
+const kMaxDecodedPixels = 52000000;
 const kMaxEncodedBytes = 40 * 1024 * 1024;
 
 /// Inspect dimensions before allocating full decoded pixel buffers.
@@ -21,7 +22,7 @@ img.Image decodePlatePhoto(Uint8List bytes) {
   }
   if (info.width * info.height > kMaxDecodedPixels) {
     throw const FormatException(
-      'Photo exceeds 24 megapixels. Choose a smaller photo.',
+      'Photo exceeds 50 megapixels. Choose a smaller photo.',
     );
   }
   final decoded = decoder!.decodeFrame(0);

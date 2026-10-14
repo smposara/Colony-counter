@@ -318,7 +318,7 @@ opens full screen like an app.
   older app; backups keep the existing portable schema.
 - Encoded-photo caching uses a 24 MiB budget. Work images are bounded by 3,000 px
   on either side and 4.5 million pixels. Encoded inputs over 40 MiB or decoded
-  images over 24 megapixels are rejected before full pixel decoding. Imported
+  images over 52 million pixels (more than a 50 MP camera) are rejected before full pixel decoding. Imported
   images are resized to at most 3,000 px by the image picker. Very large guided
   camera captures may need a lower camera resolution.
 - Sample lookups use a cached index. Review opens in Zoom mode; select Edit to change colony marks. Desktop review

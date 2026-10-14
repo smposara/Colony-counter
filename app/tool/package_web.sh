@@ -15,6 +15,7 @@ flutter build web --release --no-web-resources-cdn --no-wasm-dry-run
 out=build/web
 # Compile the pure-Dart detector separately: it runs in a Web Worker.
 dart compile js -O2 tool/photo_worker.dart -o "$out/photo_worker.dart.js"
+rm -f "$out/photo_worker.dart.js.map" "$out/photo_worker.dart.js.deps"
 # The JS build uses CanvasKit: canvaskit/chromium/* on Chrome-based browsers,
 # canvaskit/canvaskit.* elsewhere (Safari, Firefox). The rest is for --wasm
 # builds or debugging and is never downloaded.

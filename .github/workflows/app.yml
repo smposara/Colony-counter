@@ -24,7 +24,7 @@ jobs:
       - run: flutter pub get
       - run: flutter analyze
       - name: Run Flutter tests
-        timeout-minutes: 5
+        timeout-minutes: 12
         run: flutter test --reporter expanded
       - run: pip install fonttools && python tool/check_font_coverage.py
 

@@ -142,6 +142,7 @@ class PlateStore extends ChangeNotifier implements ExportSource {
           _sampleIndex = null;
           _recordsIndexed = indexed.$1;
           _zonesIndexed = indexed.$2;
+          notifyListeners();
           rethrow;
         } finally {
           _pendingWrites = null;
