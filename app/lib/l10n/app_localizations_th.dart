@@ -1045,6 +1045,26 @@ class AppLocalizationsTh extends AppLocalizations {
       'ไฟล์ zip นี้ไม่ใช่ไฟล์สำรองข้อมูลของ Colony Counter';
 
   @override
+  String saveFailed(String error) {
+    return 'บันทึกไม่สำเร็จ การแก้ไขยังอยู่ กรุณาลองอีกครั้ง $error';
+  }
+
+  @override
+  String get saving => 'กำลังบันทึก…';
+
+  @override
+  String get storageOpenFailed =>
+      'เปิดข้อมูลที่บันทึกไว้ไม่ได้ ไฟล์ของคุณยังไม่ถูกลบ';
+
+  @override
+  String get retry => 'ลองอีกครั้ง';
+
+  @override
+  String photoProcessFailed(String error) {
+    return 'ประมวลผลภาพไม่สำเร็จ: $error';
+  }
+
+  @override
   String get methodFilm => 'Petrifilm (ฟิล์มแห้ง)';
 
   @override
@@ -2342,20 +2362,4 @@ class AppLocalizationsTh extends AppLocalizations {
   String zoneCouldNotMeasure(String error) {
     return 'วัดภาพนี้ไม่ได้: $error';
   }
-
-  @override
-  String saveFailed(String error) =>
-      'บันทึกไม่สำเร็จ การแก้ไขยังอยู่ กรุณาลองอีกครั้ง $error';
-
-  @override
-  String get saving => 'กำลังบันทึก…';
-
-  @override
-  String get storageOpenFailed =>
-      'เปิดข้อมูลที่บันทึกไว้ไม่ได้ ไฟล์ของคุณยังไม่ถูกลบ';
-
-  @override
-  String get retry => 'ลองอีกครั้ง';
-  @override
-  String photoProcessFailed(String error) => 'ประมวลผลภาพไม่สำเร็จ: $error';
 }

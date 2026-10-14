@@ -1826,6 +1826,36 @@ abstract class AppLocalizations {
   /// **'This zip is not a Colony Counter backup.'**
   String get restoreNotBackup;
 
+  /// No description provided for @saveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save. Your edits are kept; try again. {error}'**
+  String saveFailed(String error);
+
+  /// No description provided for @saving.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving…'**
+  String get saving;
+
+  /// No description provided for @storageOpenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open saved data. Your files have not been removed.'**
+  String get storageOpenFailed;
+
+  /// No description provided for @retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
+
+  /// No description provided for @photoProcessFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not process the photo: {error}'**
+  String photoProcessFailed(String error);
+
   /// No description provided for @methodFilm.
   ///
   /// In en, this message translates to:
@@ -4081,14 +4111,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not measure this photo: {error}'**
   String zoneCouldNotMeasure(String error);
-  String saveFailed(String error);
-
-  String get saving;
-
-  String get storageOpenFailed;
-
-  String get retry;
-  String photoProcessFailed(String error);
 }
 
 class _AppLocalizationsDelegate

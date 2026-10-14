@@ -62,12 +62,13 @@ Reads Neogen® Petrifilm® plates. Petrifilm and Neogen are trademarks of Neogen
 Intended use: for research and teaching. Colony Counter is not a medical or diagnostic device. Always check the automatic count.
 ```
 
-## Release notes (What's new) (398/500 characters)
+## Release notes (What's new) (324/500 characters)
 
 ```
-Version 0.9.1
-• Calibration: readings stay with the right zones when a calibration plate is edited later, and stay put when an open plate is saved
-• "Measure again" keeps your calliper readings and typed labels
-• Zone positions sit on the disk centre; hand-added disks no longer affect the disk scale
-• Calibration status picks the profile from the same stand height; zones CSV gains plate warnings
+Version 0.9.2
+• Safer saving: each plate is stored on its own, and a failed save is undone instead of half-written
+• Review opens in Zoom; tap Edit to add or remove colonies
+• Large backups and exports use much less memory
+• Web: counting runs in the background so the page stays responsive
+• Layouts for tablets and desktop
 ```

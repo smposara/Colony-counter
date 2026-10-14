@@ -1094,6 +1094,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get restoreNotBackup => 'This zip is not a Colony Counter backup.';
 
   @override
+  String saveFailed(String error) {
+    return 'Could not save. Your edits are kept; try again. $error';
+  }
+
+  @override
+  String get saving => 'Saving…';
+
+  @override
+  String get storageOpenFailed =>
+      'Could not open saved data. Your files have not been removed.';
+
+  @override
+  String get retry => 'Retry';
+
+  @override
+  String photoProcessFailed(String error) {
+    return 'Could not process the photo: $error';
+  }
+
+  @override
   String get methodFilm => 'Petrifilm (dry film)';
 
   @override
@@ -2470,21 +2490,4 @@ class AppLocalizationsEn extends AppLocalizations {
   String zoneCouldNotMeasure(String error) {
     return 'Could not measure this photo: $error';
   }
-
-  @override
-  String saveFailed(String error) =>
-      'Could not save. Your edits are kept; try again. $error';
-
-  @override
-  String get saving => 'Saving…';
-
-  @override
-  String get storageOpenFailed =>
-      'Could not open saved data. Your files have not been removed.';
-
-  @override
-  String get retry => 'Retry';
-  @override
-  String photoProcessFailed(String error) =>
-      'Could not process the photo: $error';
 }
