@@ -16,8 +16,8 @@ import pathlib
 import sys
 
 # Not needed to run the app: the 3D-printed phone stand's files and page,
-# and Flutter's own (self-removing) service worker.
-SKIP_PREFIXES = ("stand/", "stand.html", "offline_sw.js", "flutter_service_worker.js", "install-check.html")
+# the picture manual, and Flutter's own (self-removing) service worker.
+SKIP_PREFIXES = ("stand/", "stand.html", "manual/", "offline_sw.js", "flutter_service_worker.js", "install-check.html")
 # The two CanvasKit builds; a browser loads only one of them.
 CHROMIUM = ("canvaskit/chromium/",)
 STANDARD = ("canvaskit/canvaskit.js", "canvaskit/canvaskit.wasm")

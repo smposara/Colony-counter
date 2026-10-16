@@ -5,6 +5,7 @@
   "aboutVersion": "เวอร์ชัน {version} (บิลด์ {build})",
   "aboutDeveloper": "ผู้พัฒนา",
   "aboutEmail": "อีเมล",
+  "aboutManual": "คู่มือการใช้งาน",
   "aboutWebsite": "เว็บไซต์",
   "aboutSource": "ซอร์สโค้ด",
   "aboutLicense": "สัญญาอนุญาต",

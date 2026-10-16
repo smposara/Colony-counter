@@ -21,6 +21,12 @@ rm -f "$out/photo_worker.dart.js.map" "$out/photo_worker.dart.js.deps"
 # builds or debugging and is never downloaded.
 rm -rf "$out"/canvaskit/skwasm* "$out"/canvaskit/wimp* "$out"/canvaskit/webparagraph
 find "$out" -name '*.symbols' -delete
+# The picture manual (About → User manual): fetched only when opened, never
+# saved for offline use.
+mkdir -p "$out/manual"
+cp ../docs/manual/index.html "$out/manual/"
+cp -r ../docs/manual/img "$out/manual/"
+rm -f "$out/manual/img/marks.json"
 # Flutter's own service worker only removes itself; offline_sw.js replaces it.
 rm -f "$out"/flutter_service_worker.js
 python3 tool/make_offline_sw.py "$out"

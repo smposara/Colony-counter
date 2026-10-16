@@ -7,6 +7,9 @@ const kEmail = 'sarapukdee@gmail.com';
 const kWebsite = 'https://cc.amphur.in.th';
 const kPrivacyUrl = 'https://cc.amphur.in.th/privacy.html';
 const kStandUrl = 'https://cc.amphur.in.th/stand.html';
+// The picture manual (docs/manual/, copied into the web build). index.html is
+// named so the web app's service worker doesn't serve the app in its place.
+const kManualUrl = 'https://cc.amphur.in.th/manual/index.html';
 const kSourceUrl = 'https://github.com/smposara/Colony-counter';
 const kLicenseName = 'GNU AGPL-3.0';
 const kLicenseUrl = 'https://www.gnu.org/licenses/agpl-3.0.html';

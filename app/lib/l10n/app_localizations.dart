@@ -128,6 +128,12 @@ abstract class AppLocalizations {
   /// **'Email'**
   String get aboutEmail;
 
+  /// No description provided for @aboutManual.
+  ///
+  /// In en, this message translates to:
+  /// **'User manual'**
+  String get aboutManual;
+
   /// No description provided for @aboutWebsite.
   ///
   /// In en, this message translates to:

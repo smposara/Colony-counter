@@ -397,6 +397,7 @@ class _DataMenu extends StatelessWidget {
         ),
         'training' => _trainingExport(context),
         'calibration' => openZoneCalibration(context, store),
+        'manual' => openManual(context),
         'about' => Navigator.of(
           context,
         ).push(MaterialPageRoute<void>(builder: (_) => const AboutScreen())),
@@ -429,6 +430,7 @@ class _DataMenu extends StatelessWidget {
         ),
         const PopupMenuDivider(),
         PopupMenuItem(value: 'settings', child: Text(tr.homeSettings)),
+        PopupMenuItem(value: 'manual', child: Text(tr.aboutManual)),
         PopupMenuItem(value: 'about', child: Text(tr.aboutTitle)),
       ],
     );

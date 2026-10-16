@@ -5,24 +5,30 @@ import '../app_info.dart';
 import '../l10n/l10n.dart';
 import 'insets.dart';
 
+/// Opens the picture manual in the browser.
+Future<void> openManual(BuildContext context) =>
+    openLink(context, Uri.parse(kManualUrl), tr.aboutManual);
+
+/// Opens [uri] outside the app; a message names [label] if it can't.
+Future<void> openLink(BuildContext context, Uri uri, String label) async {
+  final messenger = ScaffoldMessenger.of(context);
+  var ok = false;
+  try {
+    ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
+  } catch (_) {
+    ok = false;
+  }
+  if (!ok) {
+    messenger.showSnackBar(SnackBar(content: Text(tr.aboutCannotOpen(label))));
+  }
+}
+
 /// Version, developer, contact, licence and the open-source notices.
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
 
-  Future<void> _open(BuildContext context, Uri uri, String label) async {
-    final messenger = ScaffoldMessenger.of(context);
-    var ok = false;
-    try {
-      ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } catch (_) {
-      ok = false;
-    }
-    if (!ok) {
-      messenger.showSnackBar(
-        SnackBar(content: Text(tr.aboutCannotOpen(label))),
-      );
-    }
-  }
+  Future<void> _open(BuildContext context, Uri uri, String label) =>
+      openLink(context, uri, label);
 
   @override
   Widget build(BuildContext context) {
@@ -86,6 +92,12 @@ class AboutScreen extends StatelessWidget {
               path: kEmail,
               query: 'subject=Colony Counter $kAppVersion',
             ),
+          ),
+          link(
+            Icons.menu_book_outlined,
+            tr.aboutManual,
+            kManualUrl,
+            Uri.parse(kManualUrl),
           ),
           link(Icons.language, tr.aboutWebsite, kWebsite, Uri.parse(kWebsite)),
           link(

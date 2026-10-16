@@ -27,6 +27,10 @@
   "en": "Email",
   "th": "อีเมล"
  },
+ "aboutManual": {
+  "en": "User manual",
+  "th": "คู่มือการใช้งาน"
+ },
  "aboutWebsite": {
   "en": "Website",
   "th": "เว็บไซต์"

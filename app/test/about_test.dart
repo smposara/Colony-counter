@@ -31,6 +31,11 @@ void main() {
     );
     expect(find.text('Pongsak Sarapukdee'), findsOneWidget);
     expect(find.text('sarapukdee@gmail.com'), findsOneWidget);
+    expect(find.text('User manual'), findsOneWidget);
+    expect(
+      find.text('https://cc.amphur.in.th/manual/index.html'),
+      findsOneWidget,
+    );
     expect(find.text('https://cc.amphur.in.th'), findsOneWidget);
     expect(find.text('https://cc.amphur.in.th/stand.html'), findsOneWidget);
     expect(
@@ -40,6 +45,18 @@ void main() {
     expect(find.text('Licence: GNU AGPL-3.0'), findsOneWidget);
     await tester.scrollUntilVisible(find.text('Inhibition zones (beta)'), 200);
     expect(find.textContaining('no susceptible, intermediate'), findsOneWidget);
+  });
+
+  test('the web build ships the manual the About page links to', () {
+    final script = File('tool/package_web.sh').readAsStringSync();
+    expect(script, contains('docs/manual/index.html "\$out/manual/"'));
+    expect(kManualUrl, endsWith('/manual/index.html'));
+    expect(File('../docs/manual/index.html').existsSync(), isTrue);
+    // Not saved for offline use: it would add megabytes to every install.
+    expect(
+      File('tool/make_offline_sw.py').readAsStringSync(),
+      contains('"manual/"'),
+    );
   });
 
   testWidgets('open-source licences include the bundled fonts', (tester) async {

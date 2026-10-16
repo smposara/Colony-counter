@@ -28,6 +28,9 @@ class AppLocalizationsTh extends AppLocalizations {
   String get aboutEmail => 'อีเมล';
 
   @override
+  String get aboutManual => 'คู่มือการใช้งาน';
+
+  @override
   String get aboutWebsite => 'เว็บไซต์';
 
   @override
