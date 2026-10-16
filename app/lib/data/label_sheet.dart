@@ -36,50 +36,85 @@ List<LabelSpec> labelsForSample(SampleInfo info, {int copies = 1}) {
   ];
 }
 
+const _cols = 3, _rows = 8, _perPage = _cols * _rows;
+const _labelW = 70 * PdfPageFormat.mm, _labelH = 37 * PdfPageFormat.mm;
+
+/// Where label [i] (0-based, row by row) of a sheet sits on the A4 page, in
+/// PDF points from the top-left corner. The 210 × 296 mm grid fills the
+/// page's width and is centred on its 297 mm height.
+({double left, double top, double width, double height}) labelSlot(int i) {
+  const top = (297 - _rows * 37) / 2 * PdfPageFormat.mm;
+  return (
+    left: i % _cols * _labelW,
+    top: top + i ~/ _cols * _labelH,
+    width: _labelW,
+    height: _labelH,
+  );
+}
+
+const _superscripts = {
+  '-': '⁻',
+  '0': '⁰',
+  '1': '¹',
+  '2': '²',
+  '3': '³',
+  '4': '⁴',
+  '5': '⁵',
+  '6': '⁶',
+  '7': '⁷',
+  '8': '⁸',
+  '9': '⁹',
+};
+
 /// A4 sheet of 70 × 37 mm labels (3 × 8, the common 24-up layout), each with
 /// a QR code and the sample, dilution and replicate in text. [fontData] is a
-/// TrueType font for the text (the app passes its bundled Roboto).
+/// TrueType font for the text (the app passes its bundled Roboto);
+/// [symbolFontData] has the superscripts Roboto lacks for "10⁻⁴" (the app
+/// passes ColonySymbols).
 Future<Uint8List> buildLabelSheet(
   List<LabelSpec> labels, {
   ByteData? fontData,
   ByteData? boldFontData,
   ByteData? thaiFontData,
   ByteData? thaiBoldFontData,
+  ByteData? symbolFontData,
 }) async {
-  const cols = 3, rows = 8;
-  const labelW = 70 * PdfPageFormat.mm, labelH = 37 * PdfPageFormat.mm;
   final font = fontData == null ? pw.Font.helvetica() : pw.Font.ttf(fontData);
   final bold = boldFontData == null
       ? pw.Font.helveticaBold()
       : pw.Font.ttf(boldFontData);
+  final symbols = symbolFontData == null ? null : pw.Font.ttf(symbolFontData);
   // Thai sample IDs and experiment names fall back to a Thai font.
   final fallback = [if (thaiFontData != null) pw.Font.ttf(thaiFontData)];
   final boldFallback = [
     if (thaiBoldFontData != null) pw.Font.ttf(thaiBoldFontData),
+    ?symbols,
   ];
   final doc = pw.Document(
     title: 'Colony Counter plate labels',
     creator: 'Colony Counter',
   );
-  const perPage = cols * rows;
-  for (var start = 0; start < labels.length; start += perPage) {
+
+  for (var start = 0; start < labels.length; start += _perPage) {
     final page = labels.sublist(
       start,
-      (start + perPage).clamp(0, labels.length),
+      (start + _perPage).clamp(0, labels.length),
     );
     doc.addPage(
       pw.Page(
         pageFormat: PdfPageFormat.a4,
         margin: pw.EdgeInsets.zero,
-        build: (_) => pw.Padding(
-          // Centre the 210 × 296 mm grid on the 210 × 297 mm page.
-          padding: const pw.EdgeInsets.only(top: 0.5 * PdfPageFormat.mm),
-          child: pw.Wrap(
-            children: [
-              for (final spec in page)
-                pw.Container(
-                  width: labelW,
-                  height: labelH,
+        // Placed by position, not wrapped: 3 × 70 mm is the page's whole
+        // width, and rounding would push the third label to the next row.
+        build: (_) => pw.Stack(
+          children: [
+            for (final (i, spec) in page.indexed)
+              pw.Positioned(
+                left: labelSlot(i).left,
+                top: labelSlot(i).top,
+                child: pw.Container(
+                  width: _labelW,
+                  height: _labelH,
                   padding: const pw.EdgeInsets.all(3 * PdfPageFormat.mm),
                   child: pw.Row(
                     children: [
@@ -105,17 +140,17 @@ Future<Uint8List> buildLabelSheet(
                               maxLines: 2,
                             ),
                             pw.SizedBox(height: 2),
-                            pw.Text(
-                              [
-                                if (spec.label.dilutionExp != null)
-                                  '10^-${spec.label.dilutionExp}',
-                                if (spec.label.replicate != null)
-                                  'R${spec.label.replicate}',
-                              ].join('  '),
-                              style: pw.TextStyle(
-                                font: bold,
-                                fontSize: 13,
-                                fontFallback: boldFallback,
+                            pw.RichText(
+                              text: pw.TextSpan(
+                                style: pw.TextStyle(
+                                  font: bold,
+                                  fontSize: 13,
+                                  fontFallback: boldFallback,
+                                ),
+                                children: _codeLine(
+                                  spec.label,
+                                  superscripts: symbols != null,
+                                ),
                               ),
                             ),
                             if (spec.subtitle.isNotEmpty) ...[
@@ -136,11 +171,33 @@ Future<Uint8List> buildLabelSheet(
                     ],
                   ),
                 ),
-            ],
-          ),
+              ),
+          ],
         ),
       ),
     );
   }
   return doc.save();
+}
+
+/// "10⁻⁴  R2" as spans: superscript glyphs when the PDF has a font for them,
+/// otherwise a smaller "-4" raised above the line.
+List<pw.InlineSpan> _codeLine(PlateLabel label, {required bool superscripts}) {
+  final exp = label.dilutionExp;
+  return [
+    if (exp != null) ...[
+      const pw.TextSpan(text: '10'),
+      superscripts
+          ? pw.TextSpan(
+              text: '-$exp'.split('').map((c) => _superscripts[c]).join(),
+            )
+          : pw.TextSpan(
+              text: '-$exp',
+              style: const pw.TextStyle(fontSize: 8),
+              baseline: 5,
+            ),
+    ],
+    if (label.replicate != null)
+      pw.TextSpan(text: '${exp != null ? '  ' : ''}R${label.replicate}'),
+  ];
 }

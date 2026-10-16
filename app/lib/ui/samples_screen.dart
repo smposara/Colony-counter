@@ -95,7 +95,7 @@ Future<void> openFromLabel(
     final shoot = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(label.caption.replaceAll('10^-', '10⁻')),
+        title: Text(labelCaption(label)),
         content: Text(tr.samplesPhotographNow),
         actions: [
           TextButton(
@@ -116,11 +116,11 @@ Future<void> openFromLabel(
         store,
         preset: PlatePreset(info: info, slot: slot),
       );
-      return;
+      // Then on to the sample, as when photographing from inside it.
     }
   } else if (done) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(tr.samplesAlreadyCounted(label.caption))),
+      SnackBar(content: Text(tr.samplesAlreadyCounted(labelCaption(label)))),
     );
   }
   if (!context.mounted) return;
@@ -329,12 +329,16 @@ class SampleDetailScreen extends StatelessWidget {
     final thaiBold = await rootBundle.load(
       'assets/fonts/IBMPlexSansThai-Bold.ttf',
     );
+    final symbols = await rootBundle.load(
+      'assets/fonts/ColonySymbols-Regular.ttf',
+    );
     final pdf = await buildLabelSheet(
       labelsForSample(info),
       fontData: regular,
       boldFontData: bold,
       thaiFontData: thai,
       thaiBoldFontData: thaiBold,
+      symbolFontData: symbols,
     );
     final safe = info.sampleId.replaceAll(RegExp(r'[^A-Za-z0-9_-]+'), '_');
     await shareBytes(

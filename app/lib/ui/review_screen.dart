@@ -1743,7 +1743,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
             Text(
               tr.reviewClassPercent(
                 (counts[1] / total * 100).toStringAsFixed(1),
-                _colourMode.className(1).toLowerCase(),
+                _colourMode.className(1),
               ),
               style: t.bodySmall,
             ),

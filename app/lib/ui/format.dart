@@ -1,3 +1,4 @@
+import '../core/labels.dart';
 import '../data/plate_record.dart';
 import '../l10n/l10n.dart';
 import '../l10n/labels.dart';
@@ -61,6 +62,13 @@ String plateLabel(PlateRecord r) {
   if (r.isDropPlate) return '$sample · ${tr.dropPlateDrops(r.spots.length)}';
   return '$sample · ${dilutionLabel(r.dilutionExp)} · R${r.replicate}';
 }
+
+/// A scanned plate label as "Lake-A · 10⁻⁴ · R2".
+String labelCaption(PlateLabel l) => [
+  l.sampleId,
+  if (l.dilutionExp != null) dilutionLabel(l.dilutionExp!),
+  if (l.replicate != null) 'R${l.replicate}',
+].join(' · ');
 
 /// "1.23e6"-style CFU/mL value as "1.2 × 10⁶".
 String sciValue(double v) =>
