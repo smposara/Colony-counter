@@ -43,11 +43,14 @@ def annotate(png, marks, scale, out):
                                    width=int(6 * scale))
             draw.rounded_rectangle(box, radius=rad, outline=ACCENT,
                                    width=int(3 * scale))
-        # Badge at the top-left corner, kept on the screen.
-        cx = min(max(box[0], r + 4), W - r - 4)
-        cy = min(max(box[1], r + 4), H - r - 4)
+        # Badge just outside the top-left corner, kept on the screen.
+        cx = min(max(box[0] - r * 0.45, r + 4), W - r - 4)
+        cy = min(max(box[1] - r * 0.45, r + 4), H - r - 4)
         _badge(draw, cx, cy, r, n, font)
-    im.save(out, 'WEBP', quality=82, method=6)
+    # 1.5× the phone's logical size is sharp on screens and keeps the page
+    # light (about 20 kB a screen).
+    im = im.resize((int(W * 0.75), int(H * 0.75)), Image.LANCZOS)
+    im.save(out, 'WEBP', quality=78, method=6)
 
 
 def main(src, dst):
