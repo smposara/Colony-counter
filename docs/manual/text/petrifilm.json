@@ -1,0 +1,253 @@
+{
+  "id": "petrifilm",
+  "order": 11,
+  "icon": "film",
+  "title": {
+    "en": "Petrifilm plates",
+    "th": "แผ่น Petrifilm"
+  },
+  "summary": {
+    "en": "Film type, photo, check kind, gas and zone, read each result.",
+    "th": "เลือกชนิดฟิล์ม ถ่ายภาพ ตรวจชนิด แก๊ส และโซน อ่านผลแต่ละชนิด"
+  },
+  "sections": [
+    {
+      "title": {
+        "en": "Plan a film sample",
+        "th": "วางแผนตัวอย่างฟิล์ม"
+      },
+      "steps": [
+        {
+          "shot": "petrifilm-1-new",
+          "marks": [
+            {
+              "en": "Tap New sample",
+              "th": "แตะ ตัวอย่างใหม่"
+            }
+          ],
+          "tip": {
+            "en": "On the Samples tab.",
+            "th": "ในแท็บ ตัวอย่าง"
+          }
+        },
+        {
+          "shot": "petrifilm-2-film",
+          "marks": [
+            {
+              "en": "Tap Film",
+              "th": "แตะ ฟิล์ม"
+            }
+          ]
+        },
+        {
+          "shot": "petrifilm-3-types",
+          "marks": [
+            {
+              "en": "Pick the Film type",
+              "th": "เลือก ชนิดฟิล์ม"
+            }
+          ],
+          "tip": {
+            "en": "AC aerobic count, EC E. coli/coliform, CC coliform, EB Enterobacteriaceae, YM yeast & mould.",
+            "th": "AC จุลินทรีย์ทั้งหมด, EC อี. โคไล/โคลิฟอร์ม, CC โคลิฟอร์ม, EB เอนเทอโรแบคทีเรียซีอี, YM ยีสต์และรา"
+          }
+        },
+        {
+          "shot": "petrifilm-4-plan",
+          "marks": [
+            {
+              "en": "Counting range comes from the type",
+              "th": "ช่วงที่นับได้มาจากชนิดฟิล์ม"
+            },
+            {
+              "en": "Dilutions: From and To",
+              "th": "ระดับการเจือจาง: จาก และ ถึง"
+            },
+            {
+              "en": "Volume: usually 1 mL",
+              "th": "ปริมาตร: ปกติ 1 mL"
+            }
+          ],
+          "tip": {
+            "en": "Then tap Save sample.",
+            "th": "แล้วแตะ บันทึกตัวอย่าง"
+          }
+        }
+      ]
+    },
+    {
+      "title": {
+        "en": "Photograph and check",
+        "th": "ถ่ายภาพและตรวจ"
+      },
+      "steps": [
+        {
+          "shot": "petrifilm-5-photograph",
+          "marks": [
+            {
+              "en": "Tap Photograph 10⁻¹ · R1",
+              "th": "แตะ ถ่ายภาพ 10⁻¹ · R1"
+            }
+          ],
+          "tip": {
+            "en": "Film flat on a plain background, no glare.",
+            "th": "วางฟิล์มให้เรียบบนพื้นสีเรียบ ไม่มีแสงสะท้อน"
+          }
+        },
+        {
+          "shot": "petrifilm-6-review",
+          "marks": [
+            {
+              "en": "Count of each result",
+              "th": "จำนวนของแต่ละผล"
+            },
+            {
+              "en": "Red and blue, with and without gas",
+              "th": "สีแดงและสีน้ำเงิน มีและไม่มีแก๊ส"
+            }
+          ],
+          "tip": {
+            "en": "EC: blue with gas = E. coli; red or blue with gas = coliforms.",
+            "th": "EC: สีน้ำเงินมีแก๊ส = อี. โคไล; สีแดงหรือสีน้ำเงินมีแก๊ส = โคลิฟอร์ม"
+          }
+        },
+        {
+          "shot": "petrifilm-7-kind",
+          "marks": [
+            {
+              "en": "Tap Kind",
+              "th": "แตะ ชนิด"
+            },
+            {
+              "en": "Tap a colony: red ↔ blue",
+              "th": "แตะโคโลนี: สลับสีแดง ↔ สีน้ำเงิน"
+            }
+          ],
+          "tip": {
+            "en": "On YM films, Kind switches yeast ↔ mould.",
+            "th": "บนฟิล์ม YM ชนิด จะสลับยีสต์ ↔ รา"
+          }
+        },
+        {
+          "shot": "petrifilm-8-gas",
+          "marks": [
+            {
+              "en": "Tap Gas",
+              "th": "แตะ แก๊ส"
+            },
+            {
+              "en": "Tap a colony: gas bubble on/off",
+              "th": "แตะโคโลนี: ใส่หรือเอาฟองแก๊สออก"
+            }
+          ]
+        },
+        {
+          "shot": "petrifilm-9-save",
+          "marks": [
+            {
+              "en": "This film alone, range 15–150",
+              "th": "เฉพาะแผ่นนี้ ช่วง 15–150"
+            },
+            {
+              "en": "Tap Save",
+              "th": "แตะ บันทึก"
+            }
+          ]
+        },
+        {
+          "shot": "petrifilm-10-result",
+          "marks": [
+            {
+              "en": "E. coli CFU/mL",
+              "th": "อี. โคไล CFU/mL"
+            },
+            {
+              "en": "Coliforms CFU/mL",
+              "th": "โคลิฟอร์ม CFU/mL"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": {
+        "en": "EB films: the yellow zone",
+        "th": "ฟิล์ม EB: โซนสีเหลือง"
+      },
+      "steps": [
+        {
+          "shot": "petrifilm-11-zone",
+          "marks": [
+            {
+              "en": "Tap Zone",
+              "th": "แตะ โซน"
+            },
+            {
+              "en": "Tap a colony: yellow zone on/off",
+              "th": "แตะโคโลนี: ใส่หรือเอาโซนสีเหลืองออก"
+            }
+          ],
+          "tip": {
+            "en": "EB counts red colonies with gas or a yellow zone.",
+            "th": "EB นับโคโลนีสีแดงที่มีแก๊สหรือโซนสีเหลือง"
+          }
+        }
+      ]
+    },
+    {
+      "title": {
+        "en": "Crowded films",
+        "th": "ฟิล์มที่โคโลนีหนาแน่น"
+      },
+      "steps": [
+        {
+          "shot": "petrifilm-12-crowded",
+          "marks": [
+            {
+              "en": "Estimate ≈ (marks counted)",
+              "th": "ค่าประมาณ ≈ (จุดที่นับได้)"
+            },
+            {
+              "en": "Tap Squares",
+              "th": "แตะ ช่อง"
+            }
+          ],
+          "tip": {
+            "en": "Above the range: estimated from grid squares.",
+            "th": "เกินช่วงที่นับได้: ประมาณจากช่องตาราง"
+          }
+        },
+        {
+          "shot": "petrifilm-13-squares",
+          "marks": [
+            {
+              "en": "Tap a bad square to skip it",
+              "th": "แตะช่องที่เสียเพื่อไม่นำมาประมาณ"
+            },
+            {
+              "en": "The estimate updates",
+              "th": "ค่าประมาณเปลี่ยนตาม"
+            }
+          ],
+          "tip": {
+            "en": "Tap it again to add it back.",
+            "th": "แตะอีกครั้งเพื่อนำกลับมา"
+          }
+        },
+        {
+          "shot": "petrifilm-14-result",
+          "marks": [
+            {
+              "en": "Estimated CFU/mL",
+              "th": "CFU/mL ที่ประมาณได้"
+            }
+          ],
+          "tip": {
+            "en": "Petrifilm and Neogen are trademarks of Neogen Corporation; this app is not made or endorsed by Neogen.",
+            "th": "Petrifilm และ Neogen เป็นเครื่องหมายการค้าของ Neogen Corporation แอปนี้ไม่ได้จัดทำหรือรับรองโดย Neogen"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,371 @@
+{
+  "id": "drops",
+  "order": 10,
+  "icon": "drops",
+  "title": {
+    "en": "Drop plates",
+    "th": "ดรอปเพลต"
+  },
+  "summary": {
+    "en": "Plan Miles–Misra drops, photograph, check each drop, read CFU/mL.",
+    "th": "วางแผนหยดแบบ Miles–Misra ถ่ายภาพ ตรวจทีละหยด อ่าน CFU/mL"
+  },
+  "sections": [
+    {
+      "title": {
+        "en": "Plan the sample",
+        "th": "วางแผนตัวอย่าง"
+      },
+      "steps": [
+        {
+          "shot": "drops-1-samples",
+          "marks": [
+            {
+              "en": "Tap Samples",
+              "th": "แตะ ตัวอย่าง"
+            }
+          ]
+        },
+        {
+          "shot": "drops-2-new",
+          "marks": [
+            {
+              "en": "Tap New sample",
+              "th": "แตะ ตัวอย่างใหม่"
+            }
+          ]
+        },
+        {
+          "shot": "drops-3-drop",
+          "marks": [
+            {
+              "en": "Tap Drop",
+              "th": "แตะ ดรอป"
+            }
+          ]
+        },
+        {
+          "shot": "drops-4-dilutions",
+          "marks": [
+            {
+              "en": "From: the least diluted",
+              "th": "จาก: ระดับที่เจือจางน้อยที่สุด"
+            },
+            {
+              "en": "To: the most diluted",
+              "th": "ถึง: ระดับที่เจือจางมากที่สุด"
+            },
+            {
+              "en": "Replicates: one plate each",
+              "th": "จำนวนซ้ำ: ซ้ำละหนึ่งเพลต"
+            }
+          ]
+        },
+        {
+          "shot": "drops-5-plan",
+          "marks": [
+            {
+              "en": "One dilution per plate, drops = replicates",
+              "th": "หนึ่งระดับการเจือจางต่อเพลต หยดแต่ละหยดคือซ้ำ"
+            },
+            {
+              "en": "All dilutions on one plate",
+              "th": "ทุกระดับการเจือจางบนเพลตเดียว"
+            }
+          ],
+          "tip": {
+            "en": "This guide uses all dilutions on one plate.",
+            "th": "คู่มือนี้ใช้แบบทุกระดับการเจือจางบนเพลตเดียว"
+          }
+        },
+        {
+          "shot": "drops-6-layout",
+          "marks": [
+            {
+              "en": "Free: drops anywhere",
+              "th": "อิสระ: หยดที่ใดก็ได้"
+            },
+            {
+              "en": "Ring: first dilution at 12 o'clock",
+              "th": "วงรอบจาน: ระดับแรกที่ 12 นาฬิกา"
+            },
+            {
+              "en": "Rows: a row per dilution",
+              "th": "เป็นแถว: แถวละหนึ่งระดับ"
+            }
+          ]
+        },
+        {
+          "shot": "drops-7-rows",
+          "marks": [
+            {
+              "en": "Tap Rows",
+              "th": "แตะ เป็นแถว"
+            },
+            {
+              "en": "Distance between drops",
+              "th": "ระยะห่างระหว่างหยด"
+            },
+            {
+              "en": "Where the drops go",
+              "th": "ตำแหน่งของหยดบนจาน"
+            }
+          ]
+        },
+        {
+          "shot": "drops-8-ring",
+          "marks": [
+            {
+              "en": "Drops of each dilution: tap +",
+              "th": "จำนวนหยดต่อระดับการเจือจาง: แตะ +"
+            },
+            {
+              "en": "Check the preview",
+              "th": "ตรวจภาพตัวอย่าง"
+            }
+          ],
+          "tip": {
+            "en": "Back on Ring: two drops of each dilution.",
+            "th": "กลับมาที่วงรอบจาน: ระดับละสองหยด"
+          }
+        },
+        {
+          "shot": "drops-9-window",
+          "marks": [
+            {
+              "en": "Counting window: colonies per drop",
+              "th": "ช่วงที่นับได้: โคโลนีต่อหยด"
+            },
+            {
+              "en": "Pooled: every drop in the window",
+              "th": "รวมทุกหยด: ทุกหยดที่อยู่ในช่วง"
+            },
+            {
+              "en": "First countable: least diluted in window",
+              "th": "ระดับแรกที่นับได้: ระดับแรกที่อยู่ในช่วง"
+            }
+          ],
+          "tip": {
+            "en": "3–30 colonies per 10 µL drop is usual.",
+            "th": "ปกติ 3–30 โคโลนีต่อหยด 10 µL"
+          }
+        },
+        {
+          "shot": "drops-10-save",
+          "marks": [
+            {
+              "en": "Tap Save sample",
+              "th": "แตะ บันทึกตัวอย่าง"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": {
+        "en": "Photograph and check the drops",
+        "th": "ถ่ายภาพและตรวจหยด"
+      },
+      "steps": [
+        {
+          "shot": "drops-11-photograph",
+          "marks": [
+            {
+              "en": "Tap Photograph R1",
+              "th": "แตะ ถ่ายภาพ R1"
+            }
+          ],
+          "tip": {
+            "en": "The app tells you which plate is next.",
+            "th": "แอปบอกว่าต้องถ่ายเพลตใดต่อ"
+          }
+        },
+        {
+          "shot": "drops-12-review",
+          "marks": [
+            {
+              "en": "Each drop: number · colonies",
+              "th": "แต่ละหยด: ลำดับ · จำนวนโคโลนี"
+            },
+            {
+              "en": "Tap Drops",
+              "th": "แตะ หยด"
+            }
+          ]
+        },
+        {
+          "shot": "drops-13-tap-drop",
+          "marks": [
+            {
+              "en": "Tap a drop",
+              "th": "แตะที่หยด"
+            }
+          ]
+        },
+        {
+          "shot": "drops-14-drop",
+          "marks": [
+            {
+              "en": "Change the Dilution",
+              "th": "เปลี่ยน ระดับการเจือจาง"
+            },
+            {
+              "en": "Change the Replicate",
+              "th": "เปลี่ยน ซ้ำที่"
+            },
+            {
+              "en": "Too numerous to count: confluent drop",
+              "th": "มากเกินนับ (TNTC): หยดที่เจริญรวมกัน"
+            }
+          ]
+        },
+        {
+          "shot": "drops-15-leave-out",
+          "marks": [
+            {
+              "en": "Turn on Leave this drop out",
+              "th": "เปิด ไม่นำหยดนี้มาคำนวณ"
+            },
+            {
+              "en": "Pick Why",
+              "th": "เลือก เหตุผล"
+            },
+            {
+              "en": "Tap OK",
+              "th": "แตะ ตกลง"
+            }
+          ]
+        },
+        {
+          "shot": "drops-16-left-out",
+          "marks": [
+            {
+              "en": "Crossed out on the photo",
+              "th": "ถูกขีดฆ่าบนภาพ"
+            },
+            {
+              "en": "Its chip says left out",
+              "th": "ป้ายของหยดแสดงว่า ไม่นำมาคำนวณ"
+            }
+          ]
+        },
+        {
+          "shot": "drops-17-add",
+          "marks": [
+            {
+              "en": "Tap empty agar to add a drop",
+              "th": "แตะอาหารเลี้ยงเชื้อที่ว่างเพื่อเพิ่มหยด"
+            },
+            {
+              "en": "New drop: check its label",
+              "th": "หยดใหม่: ตรวจป้ายกำกับ"
+            }
+          ],
+          "tip": {
+            "en": "The warning sign: more drops than the plan.",
+            "th": "เครื่องหมายเตือน: มีหยดมากกว่าแผน"
+          }
+        },
+        {
+          "shot": "drops-18-drag",
+          "marks": [
+            {
+              "en": "Drag a drop to move it",
+              "th": "ลากหยดเพื่อย้าย"
+            }
+          ],
+          "tip": {
+            "en": "Drag empty agar to move all the drops.",
+            "th": "ลากอาหารเลี้ยงเชื้อที่ว่างเพื่อย้ายทุกหยด"
+          }
+        },
+        {
+          "shot": "drops-19-delete",
+          "marks": [
+            {
+              "en": "Tap the drop, then Delete drop",
+              "th": "แตะที่หยด แล้วแตะ ลบหยด"
+            }
+          ]
+        },
+        {
+          "shot": "drops-20-menu",
+          "marks": [
+            {
+              "en": "Tap Turn labels by one drop",
+              "th": "แตะ เลื่อนป้ายกำกับไปหนึ่งหยด"
+            }
+          ],
+          "tip": {
+            "en": "In the ⋮ menu: for a ring whose first drop is not at 12 o'clock.",
+            "th": "ในเมนู ⋮ สำหรับวงรอบจานที่หยดแรกไม่อยู่ที่ 12 นาฬิกา"
+          }
+        },
+        {
+          "shot": "drops-21-turned",
+          "marks": [
+            {
+              "en": "Every label moved one drop",
+              "th": "ทุกป้ายเลื่อนไปหนึ่งหยด"
+            },
+            {
+              "en": "Undo puts them back",
+              "th": "เลิกทำ เพื่อย้อนกลับ"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": {
+        "en": "Read the result",
+        "th": "อ่านผล"
+      },
+      "steps": [
+        {
+          "shot": "drops-22-table",
+          "marks": [
+            {
+              "en": "Counts, mean ± SD, VMR per dilution",
+              "th": "จำนวน ค่าเฉลี่ย ± SD และ VMR ต่อระดับ"
+            },
+            {
+              "en": "CFU/mL from the drops",
+              "th": "CFU/mL จากหยด"
+            },
+            {
+              "en": "95 % Poisson interval",
+              "th": "ช่วงความเชื่อมั่น 95 % (ปัวซง)"
+            }
+          ],
+          "tip": {
+            "en": "Poisson check: VMR near 1 means the drops agree.",
+            "th": "ตรวจแบบปัวซง: VMR ใกล้ 1 แปลว่าหยดสอดคล้องกัน"
+          }
+        },
+        {
+          "shot": "drops-23-save",
+          "marks": [
+            {
+              "en": "Tap Save",
+              "th": "แตะ บันทึก"
+            }
+          ]
+        },
+        {
+          "shot": "drops-24-result",
+          "marks": [
+            {
+              "en": "CFU/mL of the sample",
+              "th": "CFU/mL ของตัวอย่าง"
+            },
+            {
+              "en": "Drops per dilution",
+              "th": "หยดในแต่ละระดับการเจือจาง"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
