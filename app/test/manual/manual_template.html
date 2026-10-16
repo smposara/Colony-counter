@@ -1,0 +1,210 @@
+<title>Colony Counter manual</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: a contents grid of chapters, then each chapter as rows of phone
+   screens with numbered captions that match the numbers on the screens. */
+:root {
+  --bg: #f4f7fc;
+  --surface: #ffffff;
+  --ink: #142033;
+  --muted: #56647a;
+  --line: #d9e1ee;
+  --brand: #1565c0;
+  --brand-ink: #ffffff;
+  --brand-soft: #e2ebf8;
+  --mark: #e91e63;
+  --tip-bg: #fff3df;
+  --tip-line: #ff9800;
+  --frame: #1d2635;
+  --font: "IBM Plex Sans", "IBM Plex Sans Thai", system-ui, sans-serif;
+  --font-th: "IBM Plex Sans Thai", "IBM Plex Sans", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e141e; --surface: #162030; --ink: #e5ebf4; --muted: #9babc1;
+    --line: #26334a; --brand: #1565c0; --brand-ink: #ffffff; --brand-soft: #1b2b44;
+    --mark: #ff4f86; --tip-bg: #2a2214; --tip-line: #ffa726; --frame: #05080d;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e141e; --surface: #162030; --ink: #e5ebf4; --muted: #9babc1;
+  --line: #26334a; --brand: #1565c0; --brand-ink: #ffffff; --brand-soft: #1b2b44;
+  --mark: #ff4f86; --tip-bg: #2a2214; --tip-line: #ffa726; --frame: #05080d;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 16px/1.5 var(--font);
+}
+:lang(th), [data-lang="th"] body { font-family: var(--font-th); }
+.l-th { display: none; }
+[data-lang="th"] .l-th { display: inline; }
+[data-lang="th"] .l-en { display: none; }
+
+.wrap {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+
+/* Header band */
+.band { background: var(--brand); color: var(--brand-ink); }
+.band .wrap { padding-block: 28px 32px; display: flex; flex-wrap: wrap;
+  gap: 16px 24px; align-items: flex-end; justify-content: space-between; }
+.band h1 { margin: 0; font-size: clamp(28px, 5vw, 40px); line-height: 1.15;
+  font-weight: 600; text-wrap: balance; }
+.band p { margin: 6px 0 0; opacity: .9; max-width: 46ch; }
+.band .ver { font: 500 12px/1 var(--mono); letter-spacing: .06em;
+  text-transform: uppercase; opacity: .75; margin-top: 12px; }
+.lang { display: inline-flex; border: 1.5px solid rgba(255,255,255,.7);
+  border-radius: 999px; overflow: hidden; }
+.lang button { font: 600 15px/1 var(--font); color: inherit; background: none;
+  border: 0; padding: 10px 18px; cursor: pointer; }
+.lang button[aria-pressed="true"] { background: var(--brand-ink); color: var(--brand); }
+.lang button:focus-visible { outline: 3px solid var(--tip-line); outline-offset: -3px; }
+
+/* Contents */
+#contents { padding-block: 28px 8px; }
+#contents h2 { font-size: 13px; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--muted); margin: 0 0 12px; font-weight: 600; }
+.toc { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 10px; }
+.toc-item { display: flex; gap: 12px; align-items: center; padding: 12px 14px;
+  border-radius: 12px; background: var(--surface); border: 1px solid var(--line);
+  color: inherit; text-decoration: none; min-width: 0; }
+.toc-item:hover { border-color: var(--brand); }
+.toc-item:focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; }
+.toc-item .ico { width: 34px; height: 34px; flex: none; padding: 6px;
+  border-radius: 9px; background: var(--brand-soft); color: var(--brand); }
+[data-theme="dark"] .toc-item .ico, [data-theme="dark"] .ch-head .ico { color: #8fb8f2; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .toc-item .ico,
+  :root:not([data-theme="light"]) .ch-head .ico { color: #8fb8f2; }
+}
+.toc-text { display: grid; min-width: 0; }
+.toc-text b { font-weight: 600; }
+.toc-text small { color: var(--muted); font-size: 13.5px; line-height: 1.35; }
+.ico { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round;
+  stroke-linejoin: round; }
+
+/* Chapters */
+.chapter { padding-block: 40px 8px; border-bottom: 1px solid var(--line);
+  scroll-margin-top: 8px; }
+.ch-head { display: flex; gap: 14px; align-items: center; margin-bottom: 8px; }
+.ch-head .ico { width: 48px; height: 48px; flex: none; padding: 9px;
+  border-radius: 12px; background: var(--brand-soft); color: var(--brand); }
+.ch-head h2 { margin: 0; font-size: clamp(24px, 3.6vw, 30px); line-height: 1.2;
+  font-weight: 600; text-wrap: balance; }
+.summary { margin: 2px 0 0; color: var(--muted); }
+.sec h3 { font-size: 18px; font-weight: 600; margin: 28px 0 14px; }
+.steps { display: grid; grid-template-columns: repeat(auto-fill, minmax(232px, 1fr));
+  gap: 28px 22px; align-items: start; }
+
+.step { margin: 0; display: grid; gap: 12px; min-width: 0; }
+.phone { border: 7px solid var(--frame); border-radius: 26px; overflow: hidden;
+  background: var(--frame); box-shadow: 0 1px 2px rgba(10,20,40,.08),
+  0 8px 24px -12px rgba(10,20,40,.35); max-width: 300px; cursor: zoom-in; }
+.phone img { display: block; width: 100%; height: auto; }
+figcaption { display: grid; grid-template-columns: auto 1fr; gap: 6px 10px;
+  align-items: start; max-width: 300px; }
+.step-no { grid-row: span 3; font: 500 13px/1 var(--mono); color: var(--muted);
+  border: 1.5px solid var(--line); border-radius: 8px; padding: 6px 7px;
+  font-variant-numeric: tabular-nums; min-width: 32px; text-align: center; }
+.cap, .tip, .marks { grid-column: 2; margin: 0; }
+.marks { list-style: none; padding: 0; display: grid; gap: 6px; }
+.marks li { display: flex; gap: 8px; align-items: flex-start; line-height: 1.35; }
+.badge { flex: none; width: 22px; height: 22px; border-radius: 50%;
+  background: var(--mark); color: #fff; font: 600 13px/22px var(--font);
+  text-align: center; box-shadow: 0 0 0 2px var(--surface); margin-top: 1px; }
+.cap { font-weight: 500; }
+.tip { font-size: 14px; color: var(--ink); background: var(--tip-bg);
+  border-left: 3px solid var(--tip-line); padding: 6px 10px; border-radius: 0 8px 8px 0; }
+.to-top { display: inline-block; margin: 28px 0 16px; color: var(--muted);
+  font-size: 14px; text-decoration: none; }
+.to-top:hover { color: var(--brand); }
+
+footer { padding-block: 28px 40px; color: var(--muted); font-size: 13.5px; }
+
+/* Enlarged screen */
+.zoom { position: fixed; inset: 0; z-index: 20; background: rgba(5,10,18,.86);
+  display: grid; place-items: center;
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px))
+           max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  cursor: zoom-out; }
+.zoom img { max-height: 100%; max-width: 100%; border-radius: 18px;
+  border: 6px solid #000; }
+
+@media (max-width: 560px) {
+  .steps { grid-template-columns: 1fr; justify-items: center; }
+  .step { width: 100%; max-width: 320px; }
+}
+</style>
+
+<div class="band"><div class="wrap">
+  <div>
+    <h1>{{TITLE}}</h1>
+    <p>{{LEAD}}</p>
+    <div class="ver">{{VERSION}}</div>
+  </div>
+  <div class="lang" role="group" aria-label="Language / ภาษา">
+    <button type="button" id="lang-en" data-lang="en" aria-pressed="true">EN</button>
+    <button type="button" id="lang-th" data-lang="th" aria-pressed="false">ไทย</button>
+  </div>
+</div></div>
+
+<main class="wrap">
+  <nav id="contents" aria-label="Contents">
+    <h2>{{CONTENTS}}</h2>
+    <div class="toc">{{TOC}}</div>
+  </nav>
+  {{BODY}}
+  <footer>Colony Counter · {{VERSION}}</footer>
+</main>
+
+<div class="zoom" id="zoom" hidden><img alt=""></div>
+
+<script>
+(function () {
+  var root = document.documentElement;
+  function setLang(l) {
+    root.setAttribute('data-lang', l);
+    root.lang = l;
+    document.querySelectorAll('.lang button').forEach(function (b) {
+      b.setAttribute('aria-pressed', String(b.dataset.lang === l));
+    });
+    document.querySelectorAll('img[data-src-' + l + ']').forEach(function (img) {
+      img.src = img.getAttribute('data-src-' + l);
+    });
+    try { localStorage.setItem('manual-lang', l); } catch (e) {}
+  }
+  var saved = null;
+  try { saved = localStorage.getItem('manual-lang'); } catch (e) {}
+  setLang(saved || ((navigator.language || '').toLowerCase().indexOf('th') === 0 ? 'th' : 'en'));
+  document.querySelectorAll('.lang button').forEach(function (b) {
+    b.addEventListener('click', function () { setLang(b.dataset.lang); });
+  });
+  var zoom = document.getElementById('zoom');
+  document.querySelectorAll('.phone img').forEach(function (img) {
+    img.addEventListener('click', function () {
+      zoom.querySelector('img').src = img.src;
+      zoom.hidden = false;
+    });
+  });
+  zoom.addEventListener('click', function () { zoom.hidden = true; });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') zoom.hidden = true;
+  });
+})();
+</script>
