@@ -30,6 +30,11 @@ class PlatePreset {
 /// with its guide, and that camera's name for the lens ('' otherwise).
 typedef PlatePhoto = ({Uint8List bytes, bool guided, String camera});
 
+/// Replaces the camera and photo picker, for the manual's screenshots
+/// (`test/manual/`).
+@visibleForTesting
+Future<PlatePhoto?> Function()? debugTakePlatePhoto;
+
 /// Takes (or imports) a plate photo; null when the user backs out.
 ///
 /// [fromGallery] picks an existing photo. Otherwise phones use the in-app
@@ -41,6 +46,8 @@ Future<PlatePhoto?> takePlatePhoto(
   PlateFormat format = PlateFormat.dish90,
   String? tip,
 }) async {
+  final hook = debugTakePlatePhoto;
+  if (hook != null) return hook();
   if (fromGallery || kIsWeb) {
     final picked = await ImagePicker().pickImage(
       source: fromGallery ? ImageSource.gallery : ImageSource.camera,
