@@ -1,0 +1,73 @@
+{
+  "id": "colours",
+  "order": 7,
+  "icon": "palette",
+  "title": {"en": "Colony colours", "th": "สีโคโลนี"},
+  "summary": {
+    "en": "Count blue and white, or two colours, apart.",
+    "th": "นับสีน้ำเงินกับขาว หรือสองสี แยกกัน"
+  },
+  "sections": [
+    {
+      "title": {"en": "Turn colours on", "th": "เปิดการแยกสี"},
+      "steps": [
+        {
+          "shot": "colours-1-menu",
+          "marks": [{"en": "Tap the menu", "th": "แตะเมนู"}]
+        },
+        {
+          "shot": "colours-2-modes",
+          "marks": [
+            {"en": "Colours: Blue / white (X-gal)", "th": "สี: สีน้ำเงิน / ขาว (X-gal)"},
+            {"en": "Colours: Two colours (chromogenic)", "th": "สี: สองสี (chromogenic)"}
+          ]
+        },
+        {
+          "shot": "colours-3-counts",
+          "marks": [
+            {"en": "Count per colour and %", "th": "จำนวนต่อสีและ %"},
+            {"en": "Tap Colour to fix", "th": "แตะ สี เพื่อแก้"}
+          ]
+        }
+      ]
+    },
+    {
+      "title": {"en": "Fix a colony's colour", "th": "แก้สีของโคโลนี"},
+      "steps": [
+        {
+          "shot": "colours-4-colour-mode",
+          "marks": [{"en": "Tap a colony to switch", "th": "แตะโคโลนีเพื่อสลับสี"}],
+          "tip": {
+            "en": "Zoom in first; undo is top right.",
+            "th": "ซูมก่อน ปุ่มเลิกทำอยู่มุมขวาบน"
+          }
+        },
+        {
+          "shot": "colours-5-switched",
+          "marks": [{"en": "Counts update", "th": "จำนวนเปลี่ยนตาม"}]
+        },
+        {
+          "shot": "colours-6-two-colours",
+          "marks": [{"en": "Colour A and Colour B", "th": "สี A และ สี B"}],
+          "tip": {
+            "en": "Colour B is the less common colour.",
+            "th": "สี B คือสีที่พบน้อยกว่า"
+          }
+        }
+      ]
+    },
+    {
+      "title": {"en": "For a whole sample", "th": "สำหรับทั้งตัวอย่าง"},
+      "steps": [
+        {
+          "shot": "colours-7-sample",
+          "marks": [{"en": "Choose under Colony colours", "th": "เลือกใน สีโคโลนี"}],
+          "tip": {
+            "en": "Every plate of the sample uses it.",
+            "th": "ทุกเพลตของตัวอย่างใช้ค่านี้"
+          }
+        }
+      ]
+    }
+  ]
+}

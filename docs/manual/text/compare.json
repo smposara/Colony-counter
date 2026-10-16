@@ -1,0 +1,73 @@
+{
+  "id": "compare",
+  "order": 6,
+  "icon": "chart",
+  "title": {"en": "Compare conditions", "th": "เปรียบเทียบสภาวะ"},
+  "summary": {
+    "en": "Log reduction, % kill and time-kill curves.",
+    "th": "log reduction อัตราการฆ่า และกราฟ time-kill"
+  },
+  "sections": [
+    {
+      "title": {"en": "Group the samples", "th": "จัดกลุ่มตัวอย่าง"},
+      "steps": [
+        {
+          "shot": "compare-1-setup",
+          "marks": [
+            {"en": "Same Experiment name for all", "th": "ใส่ การทดลอง ชื่อเดียวกัน"},
+            {"en": "Condition, e.g. Control", "th": "สภาวะ เช่น ชุดควบคุม"},
+            {"en": "Time point in hours", "th": "จุดเวลา เป็นชั่วโมง"}
+          ],
+          "tip": {
+            "en": "Replicates of one condition and time are pooled.",
+            "th": "ซ้ำของสภาวะและเวลาเดียวกันจะรวมกัน"
+          }
+        },
+        {
+          "shot": "compare-2-tab",
+          "marks": [{"en": "Tap Compare", "th": "แตะ เปรียบเทียบ"}]
+        }
+      ]
+    },
+    {
+      "title": {"en": "Read the curves", "th": "อ่านกราฟ"},
+      "steps": [
+        {
+          "shot": "compare-3-chart",
+          "marks": [
+            {"en": "Choose the Experiment", "th": "เลือก การทดลอง"},
+            {"en": "log₁₀ ± SD over time", "th": "log₁₀ ± SD ตามเวลา"}
+          ]
+        },
+        {
+          "shot": "compare-4-control",
+          "marks": [{"en": "Pick the Control condition", "th": "เลือก ชุดควบคุม"}]
+        },
+        {
+          "shot": "compare-5-point",
+          "marks": [{"en": "Tap a point: its value", "th": "แตะจุด ดูค่า"}]
+        }
+      ]
+    },
+    {
+      "title": {"en": "Read the tables", "th": "อ่านตาราง"},
+      "steps": [
+        {
+          "shot": "compare-6-results",
+          "marks": [{"en": "log₁₀ ± SD per time", "th": "log₁₀ ± SD ต่อจุดเวลา"}],
+          "tip": {
+            "en": "Swipe a table sideways for more columns.",
+            "th": "ปัดตารางไปด้านข้างเพื่อดูคอลัมน์เพิ่ม"
+          }
+        },
+        {
+          "shot": "compare-7-reduction",
+          "marks": [
+            {"en": "log reduction ± SD", "th": "log reduction ± SD"},
+            {"en": "% kill", "th": "อัตราการฆ่า (%)"}
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,83 @@
+{
+  "id": "types",
+  "order": 8,
+  "icon": "plate",
+  "title": {"en": "Plate types", "th": "ชนิดจาน"},
+  "summary": {
+    "en": "Dishes, square plates and membrane filters.",
+    "th": "จานกลม จานสี่เหลี่ยม และแผ่นกรองเมมเบรน"
+  },
+  "sections": [
+    {
+      "title": {"en": "Set your usual plate", "th": "ตั้งจานที่ใช้ประจำ"},
+      "steps": [
+        {
+          "shot": "types-1-menu",
+          "marks": [{"en": "Menu, then Settings", "th": "เมนู แล้ว การตั้งค่า"}]
+        },
+        {
+          "shot": "types-2-settings",
+          "marks": [{"en": "Tap Default plate type", "th": "แตะ ชนิดจานเริ่มต้น"}],
+          "tip": {
+            "en": "Used for quick counts and new samples.",
+            "th": "ใช้กับการนับด่วนและตัวอย่างใหม่"
+          }
+        },
+        {
+          "shot": "types-3-choose",
+          "marks": [{"en": "Choose, e.g. 100 mm square plate", "th": "เลือก เช่น จานสี่เหลี่ยม 100 มม."}]
+        }
+      ]
+    },
+    {
+      "title": {"en": "Square plates", "th": "จานสี่เหลี่ยม"},
+      "steps": [
+        {
+          "shot": "types-4-guide",
+          "marks": [{"en": "The guide turns square", "th": "กรอบนำทางเป็นสี่เหลี่ยม"}]
+        },
+        {
+          "shot": "types-5-square",
+          "marks": [{"en": "Tap Plate to adjust", "th": "แตะ เพลต เพื่อปรับ"}],
+          "tip": {
+            "en": "Only colonies inside the square count.",
+            "th": "นับเฉพาะโคโลนีในกรอบ"
+          }
+        },
+        {
+          "shot": "types-6-adjust",
+          "marks": [
+            {"en": "Drag to resize", "th": "ลากเพื่อปรับขนาด"},
+            {"en": "Drag to turn", "th": "ลากเพื่อหมุน"},
+            {"en": "Tap Recount with this square", "th": "แตะ นับใหม่ด้วยกรอบนี้"}
+          ]
+        }
+      ]
+    },
+    {
+      "title": {"en": "Membrane filters", "th": "แผ่นกรองเมมเบรน"},
+      "steps": [
+        {
+          "shot": "types-7-review-menu",
+          "marks": [{"en": "Menu, then Plate type", "th": "เมนู แล้ว ชนิดจาน"}],
+          "tip": {
+            "en": "Wrong type? Change it for this plate.",
+            "th": "ชนิดไม่ตรง เปลี่ยนเฉพาะเพลตนี้ได้"
+          }
+        },
+        {
+          "shot": "types-8-types",
+          "marks": [{"en": "Tap 47 mm membrane filter", "th": "แตะ แผ่นกรองเมมเบรน 47 มม."}]
+        },
+        {
+          "shot": "types-9-membrane",
+          "marks": [{"en": "Grid not counted; tap Save plate", "th": "ไม่นับเส้นตาราง แตะ บันทึกเพลต"}]
+        },
+        {
+          "shot": "types-10-per-100ml",
+          "marks": [{"en": "Result in CFU/100 mL", "th": "ผลเป็น CFU/100 mL"}]
+        }
+      ]
+    }
+  ]
+}

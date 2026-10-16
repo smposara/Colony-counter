@@ -1,0 +1,75 @@
+{
+  "id": "timelapse",
+  "order": 9,
+  "icon": "clock",
+  "title": {"en": "Time-lapse", "th": "ไทม์แลปส์"},
+  "summary": {
+    "en": "Photograph one plate again: see colonies appear and grow.",
+    "th": "ถ่ายเพลตเดิมซ้ำ ดูโคโลนีปรากฏและโต"
+  },
+  "sections": [
+    {
+      "title": {"en": "Add later photos", "th": "เพิ่มภาพถ่ายภายหลัง"},
+      "steps": [
+        {
+          "shot": "timelapse-1-hours",
+          "marks": [{"en": "Hours since plating", "th": "จำนวนชั่วโมงหลังเพาะ"}],
+          "tip": {
+            "en": "Under Incubation time when saving.",
+            "th": "อยู่ที่ เวลาบ่ม ตอนบันทึก"
+          }
+        },
+        {
+          "shot": "timelapse-2-open",
+          "marks": [{"en": "Open the saved plate, tap the menu", "th": "เปิดเพลตที่บันทึก แตะเมนู"}]
+        },
+        {
+          "shot": "timelapse-3-menu",
+          "marks": [
+            {"en": "Share annotated photo", "th": "แชร์ภาพที่มีเครื่องหมาย"},
+            {"en": "Tap Add a later photo", "th": "แตะ เพิ่มภาพถ่ายภายหลัง"}
+          ]
+        },
+        {
+          "shot": "timelapse-4-later",
+          "marks": [
+            {"en": "Check the hours", "th": "ตรวจจำนวนชั่วโมง"},
+            {"en": "Tap Save", "th": "แตะ บันทึก"}
+          ],
+          "tip": {
+            "en": "Put the plate the same way up.",
+            "th": "วางเพลตหันทางเดิมทุกครั้ง"
+          }
+        }
+      ]
+    },
+    {
+      "title": {"en": "Time-lapse view", "th": "มุมมองไทม์แลปส์"},
+      "steps": [
+        {
+          "shot": "timelapse-5-open-view",
+          "marks": [{"en": "Tap Time-lapse", "th": "แตะ ไทม์แลปส์"}]
+        },
+        {
+          "shot": "timelapse-6-summary",
+          "marks": [
+            {"en": "Colonies, appearance, growth mm/h", "th": "จำนวน การปรากฏ อัตราโต mm/h"},
+            {"en": "Share colony table (CSV)", "th": "แชร์ตารางโคโลนี (CSV)"},
+            {"en": "Add a later photo", "th": "เพิ่มภาพถ่ายภายหลัง"}
+          ]
+        },
+        {
+          "shot": "timelapse-7-chart",
+          "marks": [
+            {"en": "Count over time", "th": "จำนวนโคโลนีตามเวลา"},
+            {"en": "Tap a photo to open it", "th": "แตะภาพเพื่อเปิด"}
+          ]
+        },
+        {
+          "shot": "timelapse-8-appeared",
+          "marks": [{"en": "Ring colour: when it appeared", "th": "สีวง: เวลาที่ปรากฏ"}]
+        }
+      ]
+    }
+  ]
+}
