@@ -1,0 +1,97 @@
+{
+  "id": "accuracy",
+  "order": 14,
+  "icon": "check",
+  "title": {"en": "Counting accuracy", "th": "ความแม่นยำการนับ"},
+  "summary": {
+    "en": "Check a plate now and then; see how well the app counts.",
+    "th": "ตรวจเพลตเป็นครั้งคราว แล้วดูว่าแอปนับแม่นแค่ไหน"
+  },
+  "sections": [
+    {
+      "title": {"en": "Check a plate when asked", "th": "ตรวจเพลตเมื่อแอปขอ"},
+      "steps": [
+        {
+          "shot": "accuracy-1-prompt",
+          "marks": [
+            {"en": "Every 10th plate asks for a check", "th": "ทุกเพลตที่ 10 แอปจะขอให้ตรวจ"},
+            {"en": "Tap Edit, fix every mark", "th": "แตะ แก้ไข แล้วแก้ทุกจุด"},
+            {"en": "Tap Save plate", "th": "แตะ บันทึกเพลต"}
+          ],
+          "tip": {
+            "en": "Zoom in: remove wrong marks, add missed colonies, set clusters.",
+            "th": "ซูมเข้า ลบจุดที่ผิด เพิ่มโคโลนีที่ตกหล่น และตั้งค่ากลุ่มก้อน"
+          }
+        },
+        {
+          "shot": "accuracy-2-checked",
+          "marks": [
+            {"en": "Turn on Checked every colony", "th": "เปิด ตรวจทุกโคโลนีแล้ว"},
+            {"en": "Tap Save", "th": "แตะ บันทึก"}
+          ],
+          "tip": {
+            "en": "Works on any plate you checked fully, asked or not.",
+            "th": "ใช้ได้กับทุกเพลตที่ตรวจครบ แม้แอปไม่ได้ขอ"
+          }
+        }
+      ]
+    },
+    {
+      "title": {"en": "See how accurate the count is", "th": "ดูความแม่นยำของการนับ"},
+      "steps": [
+        {
+          "shot": "accuracy-3-menu",
+          "marks": [
+            {"en": "Tap ⋮, then Counting accuracy", "th": "แตะ ⋮ แล้ว ความแม่นยำการนับ"}
+          ]
+        },
+        {
+          "shot": "accuracy-4-summary",
+          "marks": [
+            {"en": "Share of plates within ±10 %", "th": "สัดส่วนเพลตที่คลาดเคลื่อนไม่เกิน ±10 %"},
+            {"en": "Mean error: typical size of error", "th": "ความคลาดเคลื่อนเฉลี่ย: ผิดไปโดยเฉลี่ยเท่าไร"},
+            {"en": "Bias below 0: app counts too few", "th": "ความเอนเอียงติดลบ: แอปนับน้อยไป"}
+          ],
+          "tip": {
+            "en": "Percentages use plates with 10 or more colonies.",
+            "th": "ร้อยละคิดจากเพลตที่มี 10 โคโลนีขึ้นไป"
+          }
+        },
+        {
+          "shot": "accuracy-5-chart",
+          "marks": [
+            {"en": "One dot per checked plate", "th": "หนึ่งจุดต่อหนึ่งเพลตที่ตรวจแล้ว"},
+            {"en": "Tap a dot for its numbers", "th": "แตะจุดเพื่อดูตัวเลข"}
+          ],
+          "tip": {
+            "en": "On the line: exact. Shaded: within ±10 %. Orange: flagged.",
+            "th": "บนเส้น: ตรงพอดี แถบเทา: ไม่เกิน ±10 % สีส้ม: ถูกแจ้งให้ตรวจ"
+          }
+        },
+        {
+          "shot": "accuracy-6-errors",
+          "marks": [
+            {"en": "Errors by colony count range", "th": "ความคลาดเคลื่อนตามช่วงจำนวนโคโลนี"},
+            {"en": "Flagged plates should have larger errors", "th": "เพลตที่ถูกแจ้งควรคลาดเคลื่อนมากกว่า"},
+            {"en": "Tap a plate to open it", "th": "แตะเพลตเพื่อเปิดดู"}
+          ]
+        }
+      ]
+    },
+    {
+      "title": {"en": "How often to be asked", "th": "ให้แอปขอตรวจบ่อยแค่ไหน"},
+      "steps": [
+        {
+          "shot": "accuracy-7-every",
+          "marks": [
+            {"en": "Choose Every 10th, 20th, 50th or Never", "th": "เลือก ทุก 10, 20, 50 เพลต หรือ ไม่ต้อง"}
+          ],
+          "tip": {
+            "en": "At the bottom of Counting accuracy. Default: every 10th.",
+            "th": "อยู่ท้ายหน้า ความแม่นยำการนับ ค่าเริ่มต้น: ทุก 10 เพลต"
+          }
+        }
+      ]
+    }
+  ]
+}

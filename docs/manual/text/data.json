@@ -1,0 +1,86 @@
+{
+  "id": "data",
+  "order": 15,
+  "icon": "box",
+  "title": {"en": "Export and back up", "th": "ส่งออกและสำรองข้อมูล"},
+  "summary": {
+    "en": "The ⋮ menu on Plates: CSV, backup, restore, training data.",
+    "th": "เมนู ⋮ ในแท็บ เพลต: CSV สำรอง กู้คืน ข้อมูลฝึกโมเดล"
+  },
+  "sections": [
+    {
+      "title": {"en": "Export results", "th": "ส่งออกผล"},
+      "steps": [
+        {
+          "shot": "data-1-csv",
+          "marks": [
+            {"en": "Export CSV: share four CSV files", "th": "ส่งออก CSV: แชร์ไฟล์ CSV สี่ไฟล์"}
+          ],
+          "tip": {
+            "en": "plates, samples, colonies and drops: open in Excel.",
+            "th": "plates, samples, colonies และ drops เปิดใน Excel ได้"
+          }
+        }
+      ]
+    },
+    {
+      "title": {"en": "Back up and restore", "th": "สำรองและกู้คืน"},
+      "steps": [
+        {
+          "shot": "data-2-backup",
+          "marks": [
+            {"en": "Back up all data: one zip", "th": "สำรองข้อมูลทั้งหมด: ได้ไฟล์ zip เดียว"}
+          ],
+          "tip": {
+            "en": "On the web, data lives in this browser: back up often.",
+            "th": "บนเว็บ ข้อมูลอยู่ในเบราว์เซอร์นี้เท่านั้น ควรสำรองบ่อย ๆ"
+          }
+        },
+        {
+          "shot": "data-3-restore",
+          "marks": [
+            {"en": "Restore from backup: pick the zip", "th": "กู้คืนจากข้อมูลสำรอง: เลือกไฟล์ zip"}
+          ],
+          "tip": {
+            "en": "Also moves data to another phone or browser.",
+            "th": "ใช้ย้ายข้อมูลไปโทรศัพท์หรือเบราว์เซอร์อื่นได้ด้วย"
+          }
+        },
+        {
+          "shot": "data-4-restored",
+          "marks": [
+            {"en": "How many plates were added", "th": "จำนวนเพลตที่เพิ่มเข้ามา"},
+            {"en": "Restored plates join your list", "th": "เพลตที่กู้คืนรวมอยู่ในรายการ"}
+          ],
+          "tip": {
+            "en": "Restore merges: plates already here are kept.",
+            "th": "กู้คืนแบบรวม: เพลตที่มีอยู่แล้วไม่ถูกเขียนทับ"
+          }
+        }
+      ]
+    },
+    {
+      "title": {"en": "Export training data", "th": "ส่งออกข้อมูลสำหรับฝึกโมเดล"},
+      "steps": [
+        {
+          "shot": "data-5-training",
+          "marks": [
+            {"en": "Tap Export training data", "th": "แตะ ส่งออกข้อมูลสำหรับฝึกโมเดล"}
+          ]
+        },
+        {
+          "shot": "data-6-choose",
+          "marks": [
+            {"en": "Checked plates only: most reliable", "th": "เฉพาะเพลตที่ตรวจทุกโคโลนีแล้ว: น่าเชื่อที่สุด"},
+            {"en": "Checked and corrected plates: more photos", "th": "เพลตที่ตรวจแล้วและที่แก้ไขแล้ว: ภาพมากขึ้น"},
+            {"en": "All plates: includes unchecked counts", "th": "ทุกเพลต: รวมที่ยังไม่ได้ตรวจ"}
+          ],
+          "tip": {
+            "en": "You get one zip: photos with COCO and YOLO marks.",
+            "th": "ได้ไฟล์ zip เดียว: ภาพพร้อมตำแหน่งแบบ COCO และ YOLO"
+          }
+        }
+      ]
+    }
+  ]
+}
