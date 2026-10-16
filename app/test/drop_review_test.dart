@@ -172,6 +172,62 @@ void main() {
     );
   });
 
+  testWidgets('dragging a drop moves only that drop', (tester) async {
+    final info = SampleInfo(
+      sampleId: 'D1',
+      method: PlatingMethod.drop,
+      dilutions: const [3, 4, 5, 6, 7, 8, 9, 10],
+      replicates: 1,
+      dropLayout: DropLayout.dilutions,
+      dropArrangement: DropArrangement.sectors,
+    );
+    final store = await _open(tester, info, 'drops_sectors8');
+    final drops = find.text('Drops');
+    await tester.ensureVisible(drops);
+    await tester.pumpAndSettle();
+    await tester.tap(drops);
+    await tester.pumpAndSettle();
+
+    // The photo's local coordinates are image pixels.
+    final photo = find.byWidgetPredicate(
+      (w) => w is GestureDetector && w.onLongPressStart != null,
+    );
+    final box = tester.renderObject<RenderBox>(photo);
+    // The 10⁻⁵ drop, about 25 px across on the screen. The finger starts on
+    // it and moves 50 px, past the pan slop.
+    const drop = Offset(320.8, 579.2);
+    final g = await tester.startGesture(box.localToGlobal(drop));
+    for (var i = 0; i < 10; i++) {
+      await g.moveBy(const Offset(5, 0));
+      await tester.pump();
+    }
+    await g.up();
+    await tester.pumpAndSettle();
+    final moved = box.globalToLocal(
+      box.localToGlobal(drop) + const Offset(50, 0),
+    );
+
+    await _save(tester, store);
+    final spots = store.records.single.spots;
+    final dragged = spots.singleWhere((s) => s.dilutionExp == 5);
+    expect((Offset(dragged.cx, dragged.cy) - moved).distance, lessThan(15));
+    // The other drops stayed where the layout put them.
+    final py = [
+      for (final d
+          in (_label('drops_sectors8')['python'] as Map)['drops'] as List)
+        d as Map<String, dynamic>,
+    ];
+    for (final s in spots.where((s) => s != dragged)) {
+      final p = py.singleWhere((p) => p['dilution_exp'] == s.dilutionExp);
+      expect(
+        (Offset(s.cx, s.cy) - Offset(p['x'] as double, p['y'] as double))
+            .distance,
+        lessThan(15),
+        reason: 'drop 10^${s.dilutionExp} moved',
+      );
+    }
+  });
+
   testWidgets('setup: choosing rows shows the layout and saves it', (
     tester,
   ) async {

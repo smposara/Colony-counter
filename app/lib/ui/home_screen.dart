@@ -544,8 +544,7 @@ class _SettingsLauncher {
                 ),
                 items: [
                   for (final f in PlateFormat.values)
-                    if (!f.membrane)
-                      DropdownMenuItem(value: f, child: Text(f.text)),
+                    DropdownMenuItem(value: f, child: Text(f.text)),
                 ],
                 onChanged: (f) => store.setDefaults(format: f),
               ),

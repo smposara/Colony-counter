@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import '../core/annotate.dart';
@@ -1286,6 +1287,9 @@ class _ReviewScreenState extends State<ReviewScreen> {
                         height: _imageH.toDouble(),
                         child: GestureDetector(
                           behavior: HitTestBehavior.opaque,
+                          // A drag picks the drop under the touch-down
+                          // point, not where the finger passed the slop.
+                          dragStartBehavior: DragStartBehavior.down,
                           onTapUp: (d) => _onTap(d.localPosition),
                           onLongPressStart: (d) =>
                               _onLongPress(d.localPosition),
@@ -1462,12 +1466,21 @@ class _ReviewScreenState extends State<ReviewScreen> {
                     const SizedBox(height: 8),
                     SegmentedButton<_Mode>(
                       showSelectedIcon: !compact,
+                      // Up to seven modes on a film: narrow padding, and
+                      // labels shrink rather than break mid-word.
+                      style: compact
+                          ? const ButtonStyle(
+                              padding: WidgetStatePropertyAll(
+                                EdgeInsets.symmetric(horizontal: 4),
+                              ),
+                            )
+                          : null,
                       segments: [
                         for (final (mode, icon, label) in modes)
                           ButtonSegment(
                             value: mode,
                             icon: compact ? null : Icon(icon),
-                            label: Text(label),
+                            label: segmentLabel(label),
                           ),
                       ],
                       selected: {_mode},
@@ -1579,22 +1592,13 @@ class _ReviewScreenState extends State<ReviewScreen> {
       !(f == 'tntc' && _film && _plate != null && _filmTally.estimates != null);
 
   Widget _banner(TextTheme t, IconData icon, Color bg, Color fg, String text) =>
-      Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: bg,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, size: 20, color: fg),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(text, style: t.bodySmall?.copyWith(color: fg)),
-            ),
-          ],
-        ),
+      _Banner(
+        key: ValueKey(text),
+        icon: icon,
+        bg: bg,
+        fg: fg,
+        text: text,
+        style: t.bodySmall?.copyWith(color: fg),
       );
 
   /// "Check this count" when the automatic count is likely to be wrong, and
@@ -1839,6 +1843,79 @@ class _ClassDot extends StatelessWidget {
       shape: BoxShape.circle,
       border: Border.all(color: colour, width: 2.5),
     ),
+  );
+}
+
+/// A note above the mode buttons. Long text shows two lines until tapped, so
+/// the count and the mode hint stay in view on a phone.
+class _Banner extends StatefulWidget {
+  const _Banner({
+    super.key,
+    required this.icon,
+    required this.bg,
+    required this.fg,
+    required this.text,
+    required this.style,
+  });
+
+  final IconData icon;
+  final Color bg;
+  final Color fg;
+  final String text;
+  final TextStyle? style;
+
+  @override
+  State<_Banner> createState() => _BannerState();
+}
+
+class _BannerState extends State<_Banner> {
+  static const _lines = 2;
+  var _open = false;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, box) {
+      // Room for the text beside the icon (see the padding and gap below).
+      final long =
+          (TextPainter(
+                text: TextSpan(text: widget.text, style: widget.style),
+                textDirection: Directionality.of(context),
+                textScaler: MediaQuery.textScalerOf(context),
+                maxLines: _lines,
+              )..layout(maxWidth: math.max(0, box.maxWidth - 24 - 28 - 20)))
+              .didExceedMaxLines;
+      return GestureDetector(
+        onTap: long ? () => setState(() => _open = !_open) : null,
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: widget.bg,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            children: [
+              Icon(widget.icon, size: 20, color: widget.fg),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  widget.text,
+                  style: widget.style,
+                  maxLines: _open ? null : _lines,
+                  overflow: _open ? null : TextOverflow.ellipsis,
+                ),
+              ),
+              if (long)
+                Icon(
+                  _open ? Icons.expand_less : Icons.expand_more,
+                  size: 20,
+                  color: widget.fg,
+                ),
+            ],
+          ),
+        ),
+      );
+    },
   );
 }
 

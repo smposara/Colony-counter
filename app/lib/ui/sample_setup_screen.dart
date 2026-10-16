@@ -55,7 +55,11 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
   );
   late final _volume = TextEditingController(
     text:
-        '${_base?.volumeMl ?? (widget.store.defaultFormat.isFilm ? 1.0 : widget.store.defaultVolumeMl)}',
+        '${_base?.volumeMl ?? (widget.store.defaultFormat.isFilm
+                ? 1.0
+                : widget.store.defaultFormat.membrane
+                ? 100
+                : widget.store.defaultVolumeMl)}',
   );
   late final _dropVolume = TextEditingController(
     text: fixed(_base?.dropVolumeUl ?? 10, 0),
@@ -89,6 +93,8 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
       _base?.method ??
       (widget.store.defaultFormat.isFilm
           ? PlatingMethod.film
+          : widget.store.defaultFormat.membrane
+          ? PlatingMethod.membrane
           : PlatingMethod.spread);
   late PlateFormat _format = _base?.format ?? widget.store.defaultFormat;
   late bool _solid = _base?.solid ?? false;
@@ -130,10 +136,14 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
     ),
   );
   late ColourMode _colour = _base?.colourMode ?? ColourMode.none;
-  // Films are usually plated from 10⁻¹, dishes from 10⁻⁴.
+  // Films are usually plated from 10⁻¹, dishes from 10⁻⁴; water is filtered
+  // neat.
   late final bool _filmStart = _method == PlatingMethod.film;
-  late int _from = _base?.dilutions.first ?? (_filmStart ? 1 : 4);
-  late int _to = _base?.dilutions.last ?? (_filmStart ? 3 : 6);
+  late final bool _membraneStart = _method == PlatingMethod.membrane;
+  late int _from =
+      _base?.dilutions.first ?? (_filmStart ? 1 : (_membraneStart ? 0 : 4));
+  late int _to =
+      _base?.dilutions.last ?? (_filmStart ? 3 : (_membraneStart ? 0 : 6));
 
   /// The dilution range was set by the user (or comes from an existing
   /// sample), so switching the plating method keeps it.
@@ -560,19 +570,19 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
             segments: [
               ButtonSegment(
                 value: PlatingMethod.spread,
-                label: Text(tr.setupSpread),
+                label: segmentLabel(tr.setupSpread),
               ),
               ButtonSegment(
                 value: PlatingMethod.drop,
-                label: Text(tr.setupDrop),
+                label: segmentLabel(tr.setupDrop),
               ),
               ButtonSegment(
                 value: PlatingMethod.membrane,
-                label: Text(tr.setupMembrane),
+                label: segmentLabel(tr.setupMembrane),
               ),
               ButtonSegment(
                 value: PlatingMethod.film,
-                label: Text(tr.setupFilm),
+                label: segmentLabel(tr.setupFilm),
               ),
             ],
             selected: {_method},

@@ -58,14 +58,9 @@ Future<void> tapPhoto(Manual m, Offset px) async {
 }
 
 /// Drags what is at image pixel [from] of the review photo to [to].
-///
-/// The photo's pan starts where the finger has passed the pan slop, and
-/// that is where the app looks for a drop, so the finger starts one slop
-/// above [from].
 Future<void> dragOnPhoto(Manual m, Offset from, Offset to) async {
-  const slop = Offset(0, kPanSlop + 1);
-  final g = await m.tester.startGesture(onPhoto(m, from) - slop);
-  await g.moveBy(slop);
+  final g = await m.tester.startGesture(onPhoto(m, from));
+  await g.moveBy(const Offset(0, kPanSlop + 1));
   await m.tester.pump();
   await g.moveTo(onPhoto(m, to));
   await m.tester.pump();

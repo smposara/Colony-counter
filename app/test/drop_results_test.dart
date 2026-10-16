@@ -277,4 +277,32 @@ void main() {
       findsOneWidget,
     );
   });
+
+  testWidgets('plate chip counts only the colonies in drops kept', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1080, 2340);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+    final store = PlateStore(MemoryStorage());
+    await tester.runAsync(store.load);
+    await tester.runAsync(() => store.upsertSample(_info()));
+    // 10 + 8 colonies in two drops, the second left out, and 5 between
+    // drops.
+    final p = _plate('a', const [(5, 10), (5, 8)], excluded: {1});
+    final plate = p.copyWith(
+      colonies: [
+        ...p.colonies,
+        for (var k = 0; k < 5; k++) Colony(150 + k * 3.0, 800, 2),
+      ],
+    );
+    await tester.runAsync(() => store.upsert(plate));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: SampleDetailScreen(store: store, sampleId: 'D'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('R1: 10'), findsOneWidget);
+  });
 }

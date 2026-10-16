@@ -555,13 +555,18 @@ class _SlotChip extends StatelessWidget {
       );
     }
     final warn = p.spreader || p.tntc;
+    // A drop plate counts only the colonies in the drops kept, as the drop
+    // table does.
+    final count = p.isDropPlate
+        ? p.observations().fold(0, (s, o) => s + o.count.count)
+        : p.count;
     return ActionChip(
       avatar: Icon(
         warn ? Icons.warning_amber_rounded : Icons.check_circle,
         size: 18,
         color: warn ? cs.error : cs.primary,
       ),
-      label: Text('$label: ${p.count}'),
+      label: Text('$label: $count'),
       backgroundColor: cs.secondaryContainer,
       onPressed: () => onOpen(p),
     );

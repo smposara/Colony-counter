@@ -5,6 +5,7 @@ import 'package:colony_counter/data/plate_store.dart';
 import 'package:colony_counter/data/sample_info.dart';
 import 'package:colony_counter/data/storage/storage.dart';
 import 'package:colony_counter/main.dart';
+import 'package:colony_counter/ui/home_screen.dart';
 import 'package:colony_counter/ui/sample_setup_screen.dart';
 import 'package:colony_counter/ui/samples_screen.dart';
 import 'package:flutter/material.dart';
@@ -128,5 +129,44 @@ void main() {
     expect(find.text('3.00'), findsOneWidget); // 4 h
     expect(find.text('0.00'), findsOneWidget); // 0 h
     expect(find.text('99.90 %'), findsOneWidget);
+  });
+
+  testWidgets('a membrane filter can be the default plate type', (
+    tester,
+  ) async {
+    _phone(tester);
+    final store = await _store(tester);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder: (context) => TextButton(
+            onPressed: () => showSettingsSheet(context, store),
+            child: const Text('open'),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(DropdownButtonFormField<PlateFormat>));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('47 mm membrane filter').last);
+    await tester.pumpAndSettle();
+    expect(store.defaultFormat, PlateFormat.membrane47);
+
+    // A new sample then starts as a membrane filtration.
+    await tester.pumpWidget(const SizedBox());
+    await tester.pumpWidget(MaterialApp(home: SampleSetupScreen(store: store)));
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Sample ID'),
+      'Tap-1',
+    );
+    await tester.tap(find.text('Save sample'));
+    await tester.pumpAndSettle();
+    final info = store.sampleInfo('Tap-1');
+    expect(info.method, PlatingMethod.membrane);
+    expect(info.format, PlateFormat.membrane47);
+    expect(info.dilutions, [0]);
+    expect(info.volumeMl, 100);
   });
 }

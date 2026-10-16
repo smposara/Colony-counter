@@ -8,3 +8,10 @@ import 'package:flutter/widgets.dart';
 /// accounted for (below a bottom tab bar, or while the keyboard is open).
 EdgeInsets scrollPadding(BuildContext context, EdgeInsets padding) => padding
     .copyWith(bottom: padding.bottom + MediaQuery.paddingOf(context).bottom);
+
+/// A segmented-button label on one line, shrunk to fit a narrow segment
+/// instead of breaking mid-word ("Membra/ne") on a phone.
+Widget segmentLabel(String text) => FittedBox(
+  fit: BoxFit.scaleDown,
+  child: Text(text, maxLines: 1, softWrap: false),
+);

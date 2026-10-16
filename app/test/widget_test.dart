@@ -84,11 +84,15 @@ void main() {
     );
     expect((auto - (label['true_count'] as int)).abs(), lessThanOrEqualTo(3));
 
-    // Map image pixels to screen: the photo is drawn into a box of its own pixel size.
+    // Map image pixels to screen: the photo is drawn into a box of its own
+    // pixel size. The photo grows or shrinks as the panel below changes
+    // (another mode's hint), so this is read at every tap.
     final imageBox = find.byType(Image);
-    final rect = tester.getRect(imageBox);
-    Offset toScreen(num x, num y) =>
-        rect.topLeft + Offset(x.toDouble(), y.toDouble()) * (rect.width / 1000);
+    Offset toScreen(num x, num y) {
+      final rect = tester.getRect(imageBox);
+      return rect.topLeft +
+          Offset(x.toDouble(), y.toDouble()) * (rect.width / 1000);
+    }
 
     // The initial Zoom mode must not alter a count when the user taps a mark.
     await tester.tapAt(toScreen(firstColony[0] as num, firstColony[1] as num));
