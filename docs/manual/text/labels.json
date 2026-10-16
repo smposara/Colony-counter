@@ -1,0 +1,79 @@
+{
+  "id": "labels",
+  "order": 4,
+  "icon": "qr",
+  "title": {"en": "QR plate labels", "th": "ฉลากเพลต QR"},
+  "summary": {
+    "en": "Print a label per plate; scan it to open that plate.",
+    "th": "พิมพ์ฉลากทุกเพลต สแกนเพื่อเปิดเพลตนั้น"
+  },
+  "sections": [
+    {
+      "title": {"en": "Print labels", "th": "พิมพ์ฉลาก"},
+      "steps": [
+        {
+          "shot": "labels-1-menu",
+          "marks": [{"en": "In the sample menu, Print plate labels (PDF)", "th": "ในเมนูตัวอย่าง พิมพ์ฉลากเพลต (PDF)"}]
+        },
+        {
+          "shot": "labels-2-sheet",
+          "marks": [{"en": "One QR label per plate", "th": "ฉลาก QR หนึ่งดวงต่อเพลต"}],
+          "tip": {"en": "Print the PDF, stick labels on the plates.", "th": "พิมพ์ PDF แล้วติดฉลากบนเพลต"}
+        }
+      ]
+    },
+    {
+      "title": {"en": "Scan a label", "th": "สแกนฉลาก"},
+      "steps": [
+        {
+          "shot": "labels-3-scan",
+          "marks": [{"en": "On Samples, tap Scan plate label", "th": "ที่ ตัวอย่าง แตะ สแกนฉลากเพลต"}]
+        },
+        {
+          "shot": "labels-4-found",
+          "marks": [
+            {"en": "The plate on the label", "th": "เพลตตามฉลาก"},
+            {"en": "Just open sample", "th": "เปิดตัวอย่างเท่านั้น"},
+            {"en": "Tap Photograph to count it", "th": "แตะ ถ่ายภาพ เพื่อนับ"}
+          ]
+        },
+        {
+          "shot": "labels-5-save",
+          "marks": [
+            {"en": "Dilution from the label", "th": "ระดับการเจือจางจากฉลาก"},
+            {"en": "Replicate from the label", "th": "ซ้ำจากฉลาก"}
+          ]
+        },
+        {
+          "shot": "labels-6-done",
+          "marks": [{"en": "The plate is counted in the sample", "th": "นับเพลตเข้าในตัวอย่างแล้ว"}]
+        },
+        {
+          "shot": "labels-7-unknown",
+          "marks": [{"en": "New sample ID: tap Set up", "th": "รหัสใหม่: แตะ ตั้งค่า"}]
+        },
+        {
+          "shot": "labels-8-setup",
+          "marks": [{"en": "The ID is filled in", "th": "กรอกรหัสตัวอย่างให้แล้ว"}]
+        }
+      ]
+    },
+    {
+      "title": {"en": "Scan while saving", "th": "สแกนขณะบันทึก"},
+      "steps": [
+        {
+          "shot": "labels-9-sheet",
+          "marks": [{"en": "In Plate details, tap the scan button", "th": "ใน รายละเอียดเพลต แตะปุ่มสแกน"}]
+        },
+        {
+          "shot": "labels-10-filled",
+          "marks": [
+            {"en": "Sample ID", "th": "รหัสตัวอย่าง"},
+            {"en": "Plated dilution", "th": "ระดับการเจือจางที่เพาะ"},
+            {"en": "Replicate", "th": "ซ้ำที่"}
+          ]
+        }
+      ]
+    }
+  ]
+}

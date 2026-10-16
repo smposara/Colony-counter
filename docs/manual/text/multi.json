@@ -1,0 +1,100 @@
+{
+  "id": "multi",
+  "order": 5,
+  "icon": "grid",
+  "title": {"en": "Several plates in one photo", "th": "หลายเพลตในภาพเดียว"},
+  "summary": {
+    "en": "One photo, every plate found, each counted and saved.",
+    "th": "ถ่ายภาพเดียว หาเพลตทั้งหมด นับและบันทึกทีละเพลต"
+  },
+  "sections": [
+    {
+      "title": {"en": "Take the photo", "th": "ถ่ายภาพ"},
+      "steps": [
+        {
+          "shot": "multi-1-grid",
+          "marks": [{"en": "On Plates, tap Several plates in one photo", "th": "ที่ เพลต แตะ หลายเพลตในภาพเดียว"}]
+        },
+        {
+          "shot": "multi-2-source",
+          "marks": [
+            {"en": "Take photo", "th": "ถ่ายภาพ"},
+            {"en": "Or Choose photo", "th": "หรือ เลือกภาพ"}
+          ],
+          "tip": {"en": "Lids off, dark surface, straight from above.", "th": "เปิดฝา วางบนพื้นสีเข้ม ถ่ายจากด้านบนตรง ๆ"}
+        },
+        {
+          "shot": "multi-3-found",
+          "marks": [
+            {"en": "How many plates were found", "th": "จำนวนเพลตที่พบ"},
+            {"en": "Each plate is circled and numbered", "th": "แต่ละเพลตมีวงกลมและหมายเลข"}
+          ]
+        }
+      ]
+    },
+    {
+      "title": {"en": "For a sample", "th": "สำหรับตัวอย่าง"},
+      "steps": [
+        {
+          "shot": "multi-4-menu",
+          "marks": [{"en": "Sample menu: Photograph several plates at once", "th": "เมนูตัวอย่าง: ถ่ายภาพหลายเพลตพร้อมกัน"}]
+        },
+        {
+          "shot": "multi-5-slots",
+          "marks": [
+            {"en": "Plates get the plan's dilutions in reading order", "th": "เพลตได้ระดับการเจือจางตามแผน เรียงตามลำดับ"},
+            {"en": "Pencil: Add or remove plates", "th": "ดินสอ: เพิ่มหรือลบเพลต"}
+          ],
+          "tip": {"en": "Lay plates left to right, top to bottom.", "th": "วางเพลตเรียงจากซ้ายไปขวา บนลงล่าง"}
+        }
+      ]
+    },
+    {
+      "title": {"en": "Fix the circles", "th": "แก้วงกลม"},
+      "steps": [
+        {
+          "shot": "multi-6-edit",
+          "marks": [
+            {"en": "Tap a circle to remove it", "th": "แตะวงกลมเพื่อลบ"},
+            {"en": "Hint for edit mode", "th": "คำแนะนำในโหมดแก้ไข"}
+          ]
+        },
+        {
+          "shot": "multi-7-add",
+          "marks": [{"en": "Tap a missed plate's centre to add it", "th": "แตะกลางเพลตที่ตกหล่นเพื่อเพิ่ม"}]
+        },
+        {
+          "shot": "multi-8-done",
+          "marks": [{"en": "Tap Done", "th": "แตะ เสร็จ"}]
+        }
+      ]
+    },
+    {
+      "title": {"en": "Count each plate", "th": "นับทีละเพลต"},
+      "steps": [
+        {
+          "shot": "multi-9-review",
+          "marks": [{"en": "Check, then Save plate and Save", "th": "ตรวจ แล้ว บันทึกเพลต และ บันทึก"}]
+        },
+        {
+          "shot": "multi-10-saved",
+          "marks": [
+            {"en": "Saved plates turn green", "th": "เพลตที่บันทึกแล้วเป็นสีเขียว"},
+            {"en": "Tap the next plate", "th": "แตะเพลตถัดไป"}
+          ]
+        },
+        {
+          "shot": "multi-11-all",
+          "marks": [{"en": "All plates are saved", "th": "บันทึกครบทุกเพลตแล้ว"}]
+        },
+        {
+          "shot": "multi-12-sample",
+          "marks": [
+            {"en": "Every plate in its place", "th": "ทุกเพลตอยู่ในตำแหน่งตามแผน"},
+            {"en": "The sample result", "th": "ผลของตัวอย่าง"}
+          ]
+        }
+      ]
+    }
+  ]
+}

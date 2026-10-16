@@ -1,0 +1,147 @@
+{
+  "id": "samples",
+  "order": 3,
+  "icon": "flask",
+  "title": {"en": "Samples and replicates", "th": "ตัวอย่างและการทำซ้ำ"},
+  "summary": {
+    "en": "Plan a dilution series, photograph each plate, get mean ± SD.",
+    "th": "วางแผนการเจือจาง ถ่ายภาพทีละเพลต ได้ค่าเฉลี่ย ± SD"
+  },
+  "sections": [
+    {
+      "title": {"en": "Set up a sample", "th": "ตั้งค่าตัวอย่าง"},
+      "steps": [
+        {
+          "shot": "samples-1-tab",
+          "marks": [{"en": "Tap Samples", "th": "แตะ ตัวอย่าง"}]
+        },
+        {
+          "shot": "samples-2-new",
+          "marks": [{"en": "Tap New sample", "th": "แตะ ตัวอย่างใหม่"}]
+        },
+        {
+          "shot": "samples-3-id",
+          "marks": [
+            {"en": "Type the Sample ID", "th": "พิมพ์ รหัสตัวอย่าง"},
+            {"en": "Experiment: groups samples to compare", "th": "การทดลอง: จัดกลุ่มไว้เปรียบเทียบ"},
+            {"en": "Condition and time point (optional)", "th": "สภาวะ และจุดเวลา (ไม่บังคับ)"}
+          ]
+        },
+        {
+          "shot": "samples-4-kind",
+          "marks": [
+            {"en": "Spread for spread or pour plates", "th": "สเปรด สำหรับเพลตเกลี่ยหรือเท"},
+            {"en": "Liquid (CFU/mL) for liquid samples", "th": "ของเหลว (CFU/mL) สำหรับตัวอย่างเหลว"}
+          ]
+        },
+        {
+          "shot": "samples-5-plan",
+          "marks": [
+            {"en": "Pick the dilutions From and To", "th": "เลือกระดับการเจือจาง จาก และ ถึง"},
+            {"en": "Set the Replicates", "th": "ตั้ง จำนวนซ้ำ"},
+            {"en": "Volume per plate", "th": "ปริมาตรต่อเพลต"}
+          ],
+          "tip": {"en": "The plate count updates as you go.", "th": "จำนวนเพลตด้านล่างจะเปลี่ยนตามทันที"}
+        },
+        {
+          "shot": "samples-6-details",
+          "marks": [
+            {"en": "Open Experiment details", "th": "เปิด รายละเอียดการทดลอง"},
+            {"en": "Strain, medium, incubation, operator", "th": "สายพันธุ์ อาหารเลี้ยงเชื้อ การบ่ม ผู้ปฏิบัติงาน"},
+            {"en": "Tap Save sample", "th": "แตะ บันทึกตัวอย่าง"}
+          ]
+        }
+      ]
+    },
+    {
+      "title": {"en": "Photograph the plates", "th": "ถ่ายภาพเพลต"},
+      "steps": [
+        {
+          "shot": "samples-7-plates",
+          "marks": [
+            {"en": "One chip per planned plate", "th": "หนึ่งชิปต่อหนึ่งเพลตตามแผน"},
+            {"en": "Tap Photograph 10⁻⁴ · R1", "th": "แตะ ถ่ายภาพ 10⁻⁴ · R1"},
+            {"en": "Or import a photo", "th": "หรือนำเข้าภาพ"}
+          ]
+        },
+        {
+          "shot": "samples-8-review",
+          "marks": [{"en": "Check the count, tap Save plate", "th": "ตรวจผลนับ แตะ บันทึกเพลต"}]
+        },
+        {
+          "shot": "samples-9-sheet",
+          "marks": [
+            {"en": "This plate's own result", "th": "ผลของเพลตนี้"},
+            {"en": "Tap Save", "th": "แตะ บันทึก"}
+          ],
+          "tip": {"en": "Sample, dilution and replicate are filled in.", "th": "รหัสตัวอย่าง ระดับการเจือจาง และซ้ำ กรอกให้แล้ว"}
+        },
+        {
+          "shot": "samples-10-next",
+          "marks": [
+            {"en": "Done plates show their count", "th": "เพลตที่เสร็จแสดงจำนวนโคโลนี"},
+            {"en": "Tap Photograph for the next plate", "th": "แตะ ถ่ายภาพ เพลตถัดไป"}
+          ]
+        }
+      ]
+    },
+    {
+      "title": {"en": "Read the result", "th": "อ่านผล"},
+      "steps": [
+        {
+          "shot": "samples-11-result",
+          "marks": [
+            {"en": "Mean CFU/mL", "th": "ค่าเฉลี่ย CFU/mL"},
+            {"en": "SD, CV and replicates", "th": "SD, CV และจำนวนซ้ำ"},
+            {"en": "log₁₀ CFU/mL ± SD", "th": "log₁₀ CFU/mL ± SD"}
+          ]
+        },
+        {
+          "shot": "samples-12-rule",
+          "marks": [
+            {"en": "Pick the counting rule", "th": "เลือกเกณฑ์การนับ"},
+            {"en": "The result follows the rule", "th": "ผลคำนวณใหม่ตามเกณฑ์"}
+          ],
+          "tip": {"en": "Plates outside the countable range are left out.", "th": "เพลตที่อยู่นอกช่วงที่นับได้จะไม่ถูกนำมาคำนวณ"}
+        }
+      ]
+    },
+    {
+      "title": {"en": "More samples", "th": "ตัวอย่างเพิ่มเติม"},
+      "steps": [
+        {
+          "shot": "samples-13-menu",
+          "marks": [
+            {"en": "Edit plan: change the plan", "th": "แก้ไขแผนการเพาะ"},
+            {"en": "New sample like this", "th": "สร้างตัวอย่างใหม่แบบนี้"},
+            {"en": "Delete sample", "th": "ลบตัวอย่าง"}
+          ]
+        },
+        {
+          "shot": "samples-14-like",
+          "marks": [
+            {"en": "A new ID, same settings", "th": "รหัสใหม่ การตั้งค่าเดิม"},
+            {"en": "Change only what differs", "th": "แก้เฉพาะส่วนที่ต่างกัน"}
+          ]
+        },
+        {
+          "shot": "samples-15-solid",
+          "marks": [
+            {"en": "Solid (CFU/g) for food, soil", "th": "ของแข็ง (CFU/g) สำหรับอาหาร ดิน"},
+            {"en": "Sample weight", "th": "น้ำหนักตัวอย่าง"},
+            {"en": "Diluent volume", "th": "ปริมาตรสารละลายเจือจาง"}
+          ],
+          "tip": {"en": "25 g in 225 mL is the 10⁻¹ dilution.", "th": "25 g ใน 225 mL คือระดับการเจือจาง 10⁻¹"}
+        },
+        {
+          "shot": "samples-16-list",
+          "marks": [{"en": "Samples grouped by experiment", "th": "ตัวอย่างจัดกลุ่มตามการทดลอง"}]
+        },
+        {
+          "shot": "samples-17-search",
+          "marks": [{"en": "Search by sample, strain, operator, tag", "th": "ค้นหาตัวอย่าง สายพันธุ์ ผู้ปฏิบัติงาน แท็ก"}]
+        }
+      ]
+    }
+  ]
+}
