@@ -347,7 +347,9 @@ class _SaveSheetState extends State<SaveSheet> {
             FilledButton(
               onPressed: record == null
                   ? null
-                  : () => Navigator.pop(context, record),
+                  // Built again now: fields without onChanged (notes,
+                  // hours) may have changed since the last rebuild.
+                  : () => Navigator.pop(context, _build()),
               child: Text(tr.saveSheetSave),
             ),
           ],
