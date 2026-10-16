@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:colony_counter/core/annotate.dart';
 import 'package:colony_counter/core/plate.dart';
 import 'package:colony_counter/core/zone_calibration.dart';
 import 'package:colony_counter/core/zones.dart';
@@ -9,7 +10,9 @@ import 'package:colony_counter/data/plate_store.dart';
 import 'package:colony_counter/data/storage/storage.dart';
 import 'package:colony_counter/data/zone_calibration_record.dart';
 import 'package:colony_counter/data/zone_record.dart';
+import 'package:colony_counter/main.dart';
 import 'package:colony_counter/ui/zone_calibration_screen.dart';
+import 'package:colony_counter/ui/zone_results_screen.dart';
 import 'package:colony_counter/ui/zone_review_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -340,6 +343,86 @@ void main() {
       // "calibration plate".
       expect(store.zoneRecords.single.usedForCalibration, isFalse);
       expect(store.zoneRecords.single.calibrationId, '');
+    });
+  });
+
+  group('Signs, fonts and Thai on photos', () {
+    test('a bias that rounds to zero has no sign on the shared photo', () {
+      final p = _read(_plate(), offset: -0.01);
+      final profile = _profile([p]);
+      expect(profile.summary.bias, lessThan(0));
+      final line = calibrationBannerLine(
+        _plate(id: 'p2'),
+        CalibrationStatus.calibrated,
+        profile,
+      );
+      expect(line, contains('bias 0.0 mm'));
+      expect(line, isNot(contains('-0.0')));
+      expect(asciiOnly(line), line);
+    });
+
+    test('text in the zone painters falls back to Thai like the theme', () {
+      final theme = appTheme(Brightness.light).textTheme.bodySmall!;
+      final want = theme.fontFamilyFallback;
+      expect(want, contains('IBMPlexSansThai'));
+      const base = TextStyle(fontSize: 12);
+      final styles = [
+        ZoneBarsPainter(
+          rows: const [],
+          diskMm: 6,
+          bar: Colors.blue,
+          ink: Colors.black,
+          muted: Colors.grey,
+          style: base,
+        ).textStyle(Colors.black),
+        AgreementPlotPainter(
+          points: const [],
+          bias: 0,
+          loaLow: -1,
+          loaHigh: 1,
+          dot: Colors.blue,
+          ink: Colors.black,
+          muted: Colors.grey,
+          style: base,
+        ).textStyle,
+        ZoneOverlayPainter.labelStyle(Colors.amberAccent, 1),
+        CalibrationNumbersPainter.numberStyle(Colors.white, 1),
+      ];
+      for (final st in styles) {
+        expect(st.fontFamily, 'Roboto');
+        expect(st.fontFamilyFallback, want);
+      }
+    });
+
+    test('a Thai label on the annotated photo becomes the disk number', () {
+      final base = _plate();
+      final r = base.copyWith(
+        experiment: 'สารสกัด',
+        organism: 'S. aureus',
+        marks: [
+          base.marks[0].copyWith(label: 'เอทานอล'),
+          base.marks[1].copyWith(label: 'EtOH'),
+          ...base.marks.skip(2),
+        ],
+      );
+      final zones = zoneAnnotations(r);
+      expect(zones[0].text, endsWith(' 1'));
+      expect(zones[1].text, endsWith(' EtOH'));
+      for (final z in zones) {
+        expect(asciiDrawable(z.text), isTrue, reason: z.text);
+      }
+      final header = zoneAnnotationHeader(r);
+      expect(header[0], 'Zone plate - S. aureus - Rep 1');
+      final jpeg = annotatePhoto(
+        AnnotationJob(
+          photo: _photo,
+          plate: r.plate,
+          colonies: const [],
+          zones: zones,
+          header: header,
+        ),
+      );
+      expect(jpeg, isNotEmpty);
     });
   });
 }

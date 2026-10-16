@@ -402,6 +402,62 @@ void main() {
     expect(take.onPressed, isNull);
   });
 
+  testWidgets('a new experiment in the setup sheet starts at replicate 1', (
+    tester,
+  ) async {
+    _phone(tester);
+    final store = await _store(tester);
+    await tester.runAsync(() async {
+      await store.setZoneSetup(_setup);
+      await store.upsertZone(
+        ZoneRecord(
+          id: 'z1',
+          createdAt: DateTime(2026, 10, 9),
+          imagePath: 'z1.jpg',
+          imageWidth: 100,
+          imageHeight: 100,
+          plate: const Plate(50, 50, 45),
+          mmPerPx: 1,
+          marks: const [],
+          experiment: _setup.experiment,
+          organism: _setup.organism,
+        ),
+      );
+    });
+    ZoneSetupChoice? got;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Builder(
+            builder: (context) => TextButton(
+              onPressed: () async =>
+                  got = await showZoneSetupSheet(context, store),
+              child: const Text('setup'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('setup'));
+    await tester.pumpAndSettle();
+    // The same experiment: the next replicate.
+    expect(find.text('2'), findsOneWidget);
+    await tester.enterText(find.byType(TextField).at(2), 'Extracts II');
+    await tester.pump();
+    expect(find.text('2'), findsNothing);
+    expect(find.text('1'), findsOneWidget);
+    // Back to the first one: its next replicate again.
+    await tester.enterText(find.byType(TextField).at(2), 'Extracts');
+    await tester.pump();
+    expect(find.text('2'), findsOneWidget);
+    await tester.enterText(find.byType(TextField).at(2), 'Extracts II');
+    await tester.pump();
+    await tester.tap(find.text('From gallery'));
+    await tester.pumpAndSettle();
+    expect(got!.setup.experiment, 'Extracts II');
+    expect(got!.setup.replicate, 1);
+  });
+
   test('the next replicate follows the saved ones', () async {
     final store = PlateStore(MemoryStorage());
     await store.load();

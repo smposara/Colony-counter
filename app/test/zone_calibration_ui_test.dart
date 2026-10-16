@@ -192,6 +192,22 @@ void main() {
     expect(find.textContaining('The size scale looks off'), findsOneWidget);
   });
 
+  testWidgets('a scale error that rounds to zero has no minus sign', (
+    tester,
+  ) async {
+    _phone(tester);
+    final (store, r) = await _withPlate(tester);
+    await _openWizard(tester, store);
+    await _useRecent(tester);
+    await _fill(tester, r);
+    // The user's span a hair longer than the app's: −0.02 %.
+    final span = recordSpanMm(r, spanPair(r)!) * 1.0002;
+    await _type(tester, const ValueKey('calSpan'), span.toStringAsFixed(4));
+    await _seeResult(tester);
+    expect(find.textContaining('differs from yours by 0.0 %'), findsOneWidget);
+    expect(find.textContaining('−0.0'), findsNothing);
+  });
+
   testWidgets('checks: span, ranges, too few zones, a far reading', (
     tester,
   ) async {
@@ -480,6 +496,9 @@ void main() {
       () => find.text('ตรวจมาตราส่วน').evaluate().isNotEmpty,
     );
     await tester.pumpAndSettle();
+    // The reading fields' unit is in Thai too.
+    expect(find.text('มม.'), findsWidgets);
+    expect(find.text('mm'), findsNothing);
     await _fill(tester, r);
     await _seeResult(tester);
     expect(find.byKey(const ValueKey('calVerdict')), findsOneWidget);

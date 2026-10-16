@@ -44,7 +44,7 @@ String _platform() => kIsWeb
 
 String _mm(double v) => v.toStringAsFixed(1);
 
-/// Signed to 0.1 mm; a value that rounds to zero has no sign ("0.0").
+/// Signed to 0.1 (mm or %); a value that rounds to zero has no sign ("0.0").
 String _signed(double v) {
   final t = v.abs().toStringAsFixed(1);
   if (t == '0.0') return t;
@@ -131,8 +131,11 @@ String calibrationBannerLine(
         CalibrationVerdict.poor => 'not good enough',
         CalibrationVerdict.tooFew => 'too few zones',
       };
-      return 'Calibrated against a calliper: $v, bias '
-          '${s.bias.isFinite ? s.bias.toStringAsFixed(1) : '-'} mm '
+      // ASCII, and no sign on a bias that rounds to zero.
+      final bias = s.bias.isFinite
+          ? _signed(s.bias).replaceAll('+', '').replaceAll('−', '-')
+          : '-';
+      return 'Calibrated against a calliper: $v, bias $bias mm '
           '(${shortDate(profile.updatedAt)})';
     }(),
     CalibrationStatus.uncalibrated => 'Not calibrated against a calliper',
@@ -884,7 +887,7 @@ class _ReadingsStepState extends State<_ReadingsStep> {
 
   InputDecoration _dec(String label) => InputDecoration(
     labelText: label,
-    suffixText: 'mm',
+    suffixText: tr.calMmUnit,
     isDense: true,
     border: const OutlineInputBorder(),
   );
@@ -1068,6 +1071,17 @@ class CalibrationNumbersPainter extends CustomPainter {
   final (int, int)? pair;
   final List<bool> included;
 
+  /// The style of a zone's number on a [colour] tag; [px] is one screen
+  /// pixel in image pixels.
+  static TextStyle numberStyle(Color colour, double px) => TextStyle(
+    color: Colors.black,
+    backgroundColor: colour,
+    fontSize: 44 * px,
+    fontFamily: 'Roboto',
+    fontFamilyFallback: kFontFallback,
+    fontWeight: FontWeight.bold,
+  );
+
   @override
   void paint(Canvas canvas, Size size) {
     // Sized for the 260 px preview: the numbers come out about 16 px tall.
@@ -1115,16 +1129,7 @@ class CalibrationNumbersPainter extends CustomPainter {
           ..color = colour,
       );
       final tp = TextPainter(
-        text: TextSpan(
-          text: '${i + 1}',
-          style: TextStyle(
-            color: Colors.black,
-            backgroundColor: colour,
-            fontSize: 44 * px,
-            fontFamily: 'Roboto',
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        text: TextSpan(text: '${i + 1}', style: numberStyle(colour, px)),
         textDirection: TextDirection.ltr,
       )..layout();
       tp.paint(
@@ -1230,10 +1235,7 @@ class _ResultStep extends StatelessWidget {
           ],
           if (s.scaleError != null)
             Text(
-              tr.calScaleCheck(
-                '${s.scaleError! >= 0 ? '+' : '−'}'
-                '${(s.scaleError!.abs() * 100).toStringAsFixed(1)}',
-              ),
+              tr.calScaleCheck(_signed(s.scaleError! * 100)),
               style: t.bodySmall,
             ),
           if (s.repeatabilitySd != null)
@@ -1365,15 +1367,15 @@ class AgreementPlotPainter extends CustomPainter {
   final Color muted;
   final TextStyle style;
 
+  /// The style of the plot's text: Roboto with the theme's fallbacks.
+  TextStyle get textStyle => style.copyWith(
+    color: muted,
+    fontFamily: 'Roboto',
+    fontFamilyFallback: kFontFallback,
+  );
+
   TextPainter _text(String s) => TextPainter(
-    text: TextSpan(
-      text: s,
-      style: style.copyWith(
-        color: muted,
-        fontFamily: 'Roboto',
-        fontFamilyFallback: const ['ColonySymbols'],
-      ),
-    ),
+    text: TextSpan(text: s, style: textStyle),
     textDirection: TextDirection.ltr,
   )..layout();
 

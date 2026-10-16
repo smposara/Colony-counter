@@ -525,5 +525,9 @@
  "calGateHelp": {
   "en": "Calliper plates also help take the zone feature out of beta.",
   "th": "เพลตที่วัดด้วยเวอร์เนียร์ยังช่วยให้ฟีเจอร์วัดโซนพ้นจากสถานะเบต้าได้"
+ },
+ "calMmUnit": {
+  "en": "mm",
+  "th": "มม."
  }
 }

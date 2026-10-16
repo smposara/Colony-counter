@@ -5,6 +5,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'data/plate_store.dart';
 import 'l10n/l10n.dart';
+import 'ui/chart_colours.dart';
 import 'ui/home_screen.dart';
 
 Future<void> main() async {
@@ -178,9 +179,10 @@ ThemeData appTheme(Brightness brightness) {
       foregroundColor: onOrange,
     ),
   );
-  const fallback = ['IBMPlexSansThai', 'ColonySymbols'];
   return base.copyWith(
-    textTheme: base.textTheme.apply(fontFamilyFallback: fallback),
-    primaryTextTheme: base.primaryTextTheme.apply(fontFamilyFallback: fallback),
+    textTheme: base.textTheme.apply(fontFamilyFallback: kFontFallback),
+    primaryTextTheme: base.primaryTextTheme.apply(
+      fontFamilyFallback: kFontFallback,
+    ),
   );
 }

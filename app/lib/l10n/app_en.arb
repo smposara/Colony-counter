@@ -309,6 +309,7 @@
   },
   "calGateMet": "Enough calliper data to review the beta label: share it with the developer.",
   "calGateHelp": "Calliper plates also help take the zone feature out of beta.",
+  "calMmUnit": "mm",
   "sampleKind": "Sample",
   "sampleLiquid": "Liquid (CFU/mL)",
   "sampleSolid": "Solid (CFU/g)",

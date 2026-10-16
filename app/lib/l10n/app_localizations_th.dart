@@ -452,6 +452,9 @@ class AppLocalizationsTh extends AppLocalizations {
       'เพลตที่วัดด้วยเวอร์เนียร์ยังช่วยให้ฟีเจอร์วัดโซนพ้นจากสถานะเบต้าได้';
 
   @override
+  String get calMmUnit => 'มม.';
+
+  @override
   String get sampleKind => 'ชนิดตัวอย่าง';
 
   @override

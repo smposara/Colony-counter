@@ -112,6 +112,36 @@ class _ZoneSetupSheetState extends State<ZoneSetupSheet> {
       ? _start.panel
       : '';
 
+  late final _startFor = (_start.experiment.trim(), _start.organism.trim());
+
+  /// The experiment and organism [_replicate] was last worked out for.
+  late var _replicateFor = _startFor;
+
+  @override
+  void initState() {
+    super.initState();
+    if (!_details) {
+      _experiment.addListener(_followExperiment);
+      _organism.addListener(_followExperiment);
+    }
+  }
+
+  /// A new plate's replicate follows the experiment and organism: the next
+  /// free one for them, so a new experiment starts at 1.
+  void _followExperiment() {
+    final now = (_experiment.text.trim(), _organism.text.trim());
+    if (now == _replicateFor) return;
+    _replicateFor = now;
+    setState(
+      () => _replicate = nextZoneReplicate(
+        store,
+        now.$1,
+        now.$2,
+        fallback: now == _startFor ? _start.replicate : 1,
+      ),
+    );
+  }
+
   static String _fmt(double v) =>
       v == v.roundToDouble() ? v.toInt().toString() : v.toString();
 

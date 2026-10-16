@@ -220,6 +220,10 @@ Uint8List annotatePhoto(AnnotationJob job) {
   return Uint8List.fromList(img.encodeJpg(photo, quality: 90));
 }
 
+/// Whether the bitmap fonts can draw [s] (after [asciiOnly]'s substitutions)
+/// rather than a row of "?": false for Thai, say.
+bool asciiDrawable(String s) => !asciiOnly(s.replaceAll('?', '')).contains('?');
+
 /// The bitmap fonts only cover ASCII: write superscripts and symbols plainly.
 String asciiOnly(String s) {
   const map = {

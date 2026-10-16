@@ -459,6 +459,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Calliper plates also help take the zone feature out of beta.';
 
   @override
+  String get calMmUnit => 'mm';
+
+  @override
   String get sampleKind => 'Sample';
 
   @override

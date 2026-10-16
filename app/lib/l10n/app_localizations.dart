@@ -836,6 +836,12 @@ abstract class AppLocalizations {
   /// **'Calliper plates also help take the zone feature out of beta.'**
   String get calGateHelp;
 
+  /// No description provided for @calMmUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'mm'**
+  String get calMmUnit;
+
   /// No description provided for @sampleKind.
   ///
   /// In en, this message translates to:

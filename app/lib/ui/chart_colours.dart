@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 
+/// The fonts behind the bundled Roboto, as in the app theme: IBM Plex Sans
+/// Thai for Thai and a symbol font for superscripts. Text drawn in a
+/// CustomPainter does not inherit the theme, so it names them itself.
+const kFontFallback = ['IBMPlexSansThai', 'ColonySymbols'];
+
 /// Categorical series colours (fixed order, never cycled), light and dark steps.
 const seriesLight = [
   Color(0xFF2A78D6),

@@ -175,7 +175,7 @@ class _ZoneBars extends StatelessWidget {
         height: rows.length * rowHeight + 20,
         child: CustomPaint(
           size: Size.infinite,
-          painter: _BarsPainter(
+          painter: ZoneBarsPainter(
             rows: rows,
             diskMm: diskMm,
             bar: seriesColour(context, 0),
@@ -189,8 +189,8 @@ class _ZoneBars extends StatelessWidget {
   }
 }
 
-class _BarsPainter extends CustomPainter {
-  _BarsPainter({
+class ZoneBarsPainter extends CustomPainter {
+  ZoneBarsPainter({
     required this.rows,
     required this.diskMm,
     required this.bar,
@@ -206,15 +206,16 @@ class _BarsPainter extends CustomPainter {
   final Color muted;
   final TextStyle style;
 
+  /// The style of the chart's text: Roboto with the theme's fallbacks, so
+  /// Thai labels are drawn.
+  TextStyle textStyle(Color c) => style.copyWith(
+    color: c,
+    fontFamily: 'Roboto',
+    fontFamilyFallback: kFontFallback,
+  );
+
   TextPainter _text(String s, Color c, double maxWidth) => TextPainter(
-    text: TextSpan(
-      text: s,
-      style: style.copyWith(
-        color: c,
-        fontFamily: 'Roboto',
-        fontFamilyFallback: const ['ColonySymbols'],
-      ),
-    ),
+    text: TextSpan(text: s, style: textStyle(c)),
     maxLines: 1,
     ellipsis: '…',
     textDirection: TextDirection.ltr,
@@ -276,7 +277,7 @@ class _BarsPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_BarsPainter old) =>
+  bool shouldRepaint(ZoneBarsPainter old) =>
       old.rows != rows ||
       old.diskMm != diskMm ||
       old.bar != bar ||
