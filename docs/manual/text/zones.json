@@ -1,0 +1,229 @@
+{
+  "id": "zones",
+  "order": 12,
+  "icon": "target",
+  "title": {"en": "Measure inhibition zones", "th": "วัดโซนยับยั้ง"},
+  "summary": {
+    "en": "Set up, photograph, check each disk, save, compare.",
+    "th": "ตั้งค่า ถ่ายภาพ ตรวจทีละแผ่น บันทึก เปรียบเทียบ"
+  },
+  "sections": [
+    {
+      "title": {"en": "Start", "th": "เริ่มต้น"},
+      "steps": [
+        {
+          "shot": "zones-1-tab",
+          "marks": [{"en": "Tap Zones", "th": "แตะ โซนยับยั้ง"}]
+        },
+        {
+          "shot": "zones-2-empty",
+          "marks": [{"en": "Tap Measure zones", "th": "แตะ วัดโซนยับยั้ง"}]
+        },
+        {
+          "shot": "zones-3-beta",
+          "marks": [
+            {"en": "Read once: beta", "th": "อ่านครั้งแรก: รุ่นเบต้า"},
+            {"en": "Tap I understand", "th": "แตะ เข้าใจแล้ว"}
+          ],
+          "tip": {
+            "en": "Beta: diameters only, no susceptible, intermediate or resistant interpretation.",
+            "th": "รุ่นเบต้า: วัดเส้นผ่านศูนย์กลางเท่านั้น ไม่แปลผลเป็นไว ปานกลาง หรือดื้อ"
+          }
+        },
+        {
+          "shot": "zones-4-calibrate",
+          "marks": [
+            {"en": "Later: measure a plate now", "th": "ภายหลัง: วัดเพลตเลย"},
+            {"en": "Calibrate now: see Calibration", "th": "ปรับเทียบตอนนี้: ดูบทปรับเทียบ"}
+          ]
+        }
+      ]
+    },
+    {
+      "title": {"en": "Set up the plate", "th": "ตั้งค่าเพลต"},
+      "steps": [
+        {
+          "shot": "zones-5-method",
+          "marks": [
+            {"en": "Paper disks or Agar wells", "th": "แผ่นกระดาษ หรือ หลุมวุ้น"},
+            {"en": "Disk or well size, mm", "th": "ขนาดแผ่นหรือหลุม (มม.)"},
+            {"en": "Pick the Plate type", "th": "เลือก ชนิดจาน"}
+          ]
+        },
+        {
+          "shot": "zones-6-names",
+          "marks": [
+            {"en": "Type the Test organism", "th": "พิมพ์ เชื้อทดสอบ"},
+            {"en": "Type the Experiment", "th": "พิมพ์ การทดลอง"},
+            {"en": "Replicate number", "th": "เลข ซ้ำที่"}
+          ],
+          "tip": {
+            "en": "The replicate counts up by itself for the same experiment.",
+            "th": "เลขซ้ำที่เพิ่มเองเมื่อใช้การทดลองเดิม"
+          }
+        },
+        {
+          "shot": "zones-7-labels",
+          "marks": [
+            {"en": "Pick a list of labels", "th": "เลือกรายการ ชื่อสารทดสอบ"},
+            {"en": "Or tap New label list", "th": "หรือแตะ สร้างรายการชื่อใหม่"}
+          ]
+        },
+        {
+          "shot": "zones-8-list",
+          "marks": [
+            {"en": "Name the list", "th": "ตั้ง ชื่อรายการ"},
+            {"en": "One label per line", "th": "บรรทัดละหนึ่งชื่อ"},
+            {"en": "Tap Done", "th": "แตะ เสร็จ"}
+          ],
+          "tip": {
+            "en": "Labels go clockwise from 12 o'clock; a centre disk comes last.",
+            "th": "ชื่อเรียงตามเข็มนาฬิกาจาก 12 นาฬิกา แผ่นตรงกลางเป็นลำดับสุดท้าย"
+          }
+        },
+        {
+          "shot": "zones-9-photo",
+          "marks": [
+            {"en": "Your labels, in order", "th": "ชื่อสารทดสอบตามลำดับ"},
+            {"en": "Tap Take photo", "th": "แตะ ถ่ายภาพ"},
+            {"en": "Or From gallery", "th": "หรือ จากคลังภาพ"}
+          ],
+          "tip": {
+            "en": "Lid off, dark background, camera straight overhead.",
+            "th": "เปิดฝา พื้นสีเข้ม กล้องตรงเหนือเพลต"
+          }
+        }
+      ]
+    },
+    {
+      "title": {"en": "Check each disk", "th": "ตรวจทีละแผ่น"},
+      "steps": [
+        {
+          "shot": "zones-10-review",
+          "marks": [
+            {"en": "Each zone with its size", "th": "แต่ละโซนพร้อมขนาด"},
+            {"en": "Tap a disk to check it", "th": "แตะแผ่นเพื่อตรวจ"},
+            {"en": "Hide marks to see the plate", "th": "ซ่อนเครื่องหมาย เพื่อดูเพลต"}
+          ],
+          "tip": {
+            "en": "Amber zones need a check; green ones are fine.",
+            "th": "โซนสีเหลืองต้องตรวจ สีเขียวใช้ได้"
+          }
+        },
+        {
+          "shot": "zones-11-disk",
+          "marks": [
+            {"en": "Its label", "th": "ชื่อสารทดสอบ"},
+            {"en": "1 mm smaller", "th": "เล็กลง 1 มม."},
+            {"en": "1 mm larger", "th": "ใหญ่ขึ้น 1 มม."}
+          ]
+        },
+        {
+          "shot": "zones-12-flags",
+          "marks": [
+            {"en": "No zone: reported as disk size", "th": "ไม่มีโซนยับยั้ง: รายงานเป็นขนาดแผ่น"},
+            {"en": "Read the warning", "th": "อ่านคำเตือน"},
+            {"en": "Tap Done", "th": "แตะ เสร็จ"}
+          ]
+        },
+        {
+          "shot": "zones-13-drag",
+          "marks": [{"en": "Or drag a zone's edge", "th": "หรือลากขอบโซน"}]
+        },
+        {
+          "shot": "zones-14-undo",
+          "marks": [{"en": "Undo a change", "th": "เลิกทำ การแก้ไข"}]
+        }
+      ]
+    },
+    {
+      "title": {"en": "Wrong or missed disks", "th": "แผ่นผิดหรือแผ่นที่หาไม่พบ"},
+      "steps": [
+        {
+          "shot": "zones-15-delete",
+          "marks": [{"en": "Delete a wrong disk", "th": "ลบ แผ่นที่ผิด"}]
+        },
+        {
+          "shot": "zones-16-add",
+          "marks": [{"en": "Long-press a missed disk", "th": "กดค้างที่แผ่นที่หาไม่พบ"}]
+        },
+        {
+          "shot": "zones-17-added",
+          "marks": [
+            {"en": "Its zone is measured", "th": "แอปวัดโซนให้"},
+            {"en": "Type its label", "th": "พิมพ์ชื่อสารทดสอบ"},
+            {"en": "Tap Done", "th": "แตะ เสร็จ"}
+          ]
+        }
+      ]
+    },
+    {
+      "title": {"en": "Fix the plate circle", "th": "แก้วงขอบเพลต"},
+      "steps": [
+        {
+          "shot": "zones-18-plate",
+          "marks": [{"en": "Tap Fix plate circle", "th": "แตะ แก้วงขอบเพลต"}],
+          "tip": {
+            "en": "Only when the blue circle misses the plate edge.",
+            "th": "ใช้เมื่อวงสีฟ้าไม่ตรงขอบเพลต"
+          }
+        },
+        {
+          "shot": "zones-19-circle",
+          "marks": [
+            {"en": "Drag onto the plate edge", "th": "ลากให้ตรงขอบเพลต"},
+            {"en": "Slide to resize", "th": "เลื่อนเพื่อปรับขนาด"},
+            {"en": "Tap Measure again", "th": "แตะ วัดใหม่"}
+          ]
+        }
+      ]
+    },
+    {
+      "title": {"en": "Save and compare", "th": "บันทึกและเปรียบเทียบ"},
+      "steps": [
+        {
+          "shot": "zones-20-save",
+          "marks": [
+            {"en": "Details: change names", "th": "รายละเอียด: แก้ชื่อ"},
+            {"en": "Tap Save plate", "th": "แตะ บันทึกเพลต"}
+          ]
+        },
+        {
+          "shot": "zones-21-list",
+          "marks": [
+            {"en": "Tap a plate to open it", "th": "แตะเพลตเพื่อเปิด"},
+            {"en": "Tap Results", "th": "แตะ ผลการวัด"}
+          ],
+          "tip": {
+            "en": "Photograph each replicate the same way. Swipe left to delete.",
+            "th": "ถ่ายเพลตซ้ำแต่ละแผ่นแบบเดียวกัน ปัดซ้ายเพื่อลบ"
+          }
+        },
+        {
+          "shot": "zones-22-results",
+          "marks": [
+            {"en": "Pick the Experiment", "th": "เลือก การทดลอง"},
+            {"en": "Mean ± SD per test item", "th": "ค่าเฉลี่ย ± SD ของแต่ละสาร"},
+            {"en": "The same as a table", "th": "ค่าเดียวกันในตาราง"}
+          ]
+        }
+      ]
+    },
+    {
+      "title": {"en": "Export and share", "th": "ส่งออกและแชร์"},
+      "steps": [
+        {
+          "shot": "zones-23-csv",
+          "marks": [{"en": "Menu: Export zone CSVs", "th": "เมนู: ส่งออก CSV ของโซนยับยั้ง"}]
+        },
+        {
+          "shot": "zones-24-share",
+          "marks": [
+            {"en": "Share annotated photo", "th": "แชร์ภาพที่มีเครื่องหมาย"},
+            {"en": "After edits: Save changes", "th": "หลังแก้ไข: บันทึกการแก้ไข"}
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,195 @@
+{
+  "id": "calibration",
+  "order": 13,
+  "icon": "ruler",
+  "title": {"en": "Calibrate against a calliper", "th": "ปรับเทียบกับเวอร์เนียร์"},
+  "summary": {
+    "en": "Measure a used plate yourself and see how well the app agrees.",
+    "th": "วัดเพลตที่ใช้แล้วด้วยตัวเอง แล้วดูว่าแอปวัดได้ใกล้เคียงแค่ไหน"
+  },
+  "sections": [
+    {
+      "title": {"en": "Start", "th": "เริ่มต้น"},
+      "steps": [
+        {
+          "shot": "calibration-1-zones",
+          "marks": [
+            {"en": "Open the menu", "th": "เปิดเมนู"},
+            {"en": "Or tap Calibrate", "th": "หรือแตะ ปรับเทียบ"}
+          ],
+          "tip": {
+            "en": "Check only: calibration never changes a measurement.",
+            "th": "ใช้ตรวจเท่านั้น การปรับเทียบไม่เปลี่ยนค่าที่วัด"
+          }
+        },
+        {
+          "shot": "calibration-2-menu",
+          "marks": [{"en": "Tap Calibrate against a calliper", "th": "แตะ ปรับเทียบกับเวอร์เนียร์"}]
+        },
+        {
+          "shot": "calibration-3-none",
+          "marks": [{"en": "Tap New calibration", "th": "แตะ ปรับเทียบใหม่"}]
+        },
+        {
+          "shot": "calibration-4-intro",
+          "marks": [
+            {"en": "A calliper or a ruler", "th": "เวอร์เนียร์หรือไม้บรรทัด"},
+            {"en": "A used plate, 6+ clear zones", "th": "เพลตที่ใช้แล้ว มีโซนชัด 6 โซนขึ้นไป"},
+            {"en": "Calliper or Ruler", "th": "เวอร์เนียร์ หรือ ไม้บรรทัด"}
+          ],
+          "tip": {
+            "en": "A ruler needs at least 8 zones.",
+            "th": "ไม้บรรทัดต้องวัดอย่างน้อย 8 โซน"
+          }
+        },
+        {
+          "shot": "calibration-5-start",
+          "marks": [
+            {"en": "On the stand or Hand-held", "th": "บนขาตั้ง หรือ ถือด้วยมือ"},
+            {"en": "Tap Photograph a used plate", "th": "แตะ ถ่ายภาพเพลตที่ใช้แล้ว"},
+            {"en": "Or Use a plate I just measured", "th": "หรือ ใช้เพลตที่เพิ่งวัด"}
+          ]
+        }
+      ]
+    },
+    {
+      "title": {"en": "Photograph the plate", "th": "ถ่ายภาพเพลต"},
+      "steps": [
+        {
+          "shot": "calibration-6-photo",
+          "marks": [{"en": "Tap Take photo", "th": "แตะ ถ่ายภาพ"}],
+          "tip": {
+            "en": "Same stand, distance and light as your real plates.",
+            "th": "ใช้ขาตั้ง ระยะ และแสงแบบเดียวกับเพลตจริง"
+          }
+        },
+        {
+          "shot": "calibration-7-check",
+          "marks": [
+            {"en": "Check the zones as usual", "th": "ตรวจโซนตามปกติ"},
+            {"en": "Tap Save plate", "th": "แตะ บันทึกเพลต"}
+          ]
+        }
+      ]
+    },
+    {
+      "title": {"en": "Measure with your calliper", "th": "วัดด้วยเวอร์เนียร์"},
+      "steps": [
+        {
+          "shot": "calibration-8-span",
+          "marks": [
+            {"en": "Yellow line: disk to disk", "th": "เส้นสีเหลือง: จากแผ่นถึงแผ่น"},
+            {"en": "App sizes stay hidden", "th": "ซ่อนขนาดที่แอปวัดไว้"},
+            {"en": "Type the Span, outer edges", "th": "พิมพ์ ระยะ จากขอบนอก"}
+          ],
+          "tip": {
+            "en": "Measure the way you always read zones, lid on.",
+            "th": "วัดแบบที่คุณอ่านโซนเป็นประจำ ปิดฝาไว้"
+          }
+        },
+        {
+          "shot": "calibration-9-zones",
+          "marks": [
+            {"en": "The zone being typed lights up", "th": "โซนที่กำลังพิมพ์จะสว่างขึ้น"},
+            {"en": "Type each zone's diameter", "th": "พิมพ์เส้นผ่านศูนย์กลางแต่ละโซน"},
+            {"en": "Not round: add a second reading", "th": "ไม่กลม: เพิ่มการวัดอีกแนว"}
+          ]
+        },
+        {
+          "shot": "calibration-10-tick",
+          "marks": [
+            {"en": "Tick to include it", "th": "เลือกเพื่อนำมาคิด"},
+            {"en": "Doubtful zones start unticked", "th": "โซนที่ไม่แน่ใจยังไม่ถูกเลือก"}
+          ]
+        },
+        {
+          "shot": "calibration-11-see",
+          "marks": [{"en": "Tap See the result", "th": "แตะ ดูผลลัพธ์"}]
+        }
+      ]
+    },
+    {
+      "title": {"en": "The result", "th": "ผลลัพธ์"},
+      "steps": [
+        {
+          "shot": "calibration-12-result",
+          "marks": [
+            {"en": "The verdict", "th": "ผลการประเมิน"},
+            {"en": "Bias and limits of agreement", "th": "ค่าเบี่ยงเบนและช่วงความสอดคล้อง"},
+            {"en": "Each dot is one zone", "th": "แต่ละจุดคือหนึ่งโซน"}
+          ],
+          "tip": {
+            "en": "If it is not good, a hint says what to change.",
+            "th": "ถ้าผลยังไม่ดี แอปจะแนะนำว่าควรปรับอะไร"
+          }
+        },
+        {
+          "shot": "calibration-13-save",
+          "marks": [
+            {"en": "Your reading against the app", "th": "ค่าของคุณเทียบกับแอป"},
+            {"en": "Tap Save calibration", "th": "แตะ บันทึกการปรับเทียบ"},
+            {"en": "Or Add another plate", "th": "หรือ เพิ่มเพลตอีกแผ่น"}
+          ]
+        },
+        {
+          "shot": "calibration-14-list",
+          "marks": [
+            {"en": "Your saved calibration", "th": "การปรับเทียบที่บันทึกไว้"},
+            {"en": "Test data so far", "th": "ข้อมูลทดสอบที่มีตอนนี้"},
+            {"en": "Share as test data", "th": "แชร์เป็นข้อมูลทดสอบ"}
+          ],
+          "tip": {
+            "en": "Shared calliper plates help take zones out of beta.",
+            "th": "เพลตที่วัดด้วยเวอร์เนียร์ช่วยให้ฟีเจอร์วัดโซนพ้นจากเบต้า"
+          }
+        }
+      ]
+    },
+    {
+      "title": {"en": "On your zone plates", "th": "บนเพลตวัดโซน"},
+      "steps": [
+        {
+          "shot": "calibration-15-banner",
+          "marks": [
+            {"en": "Calibrated: verdict and date", "th": "ปรับเทียบแล้ว: ผลและวันที่"},
+            {"en": "The calibration plate", "th": "เพลตที่ใช้ปรับเทียบ"}
+          ]
+        },
+        {
+          "shot": "calibration-16-chip",
+          "marks": [{"en": "New plates show their calibration", "th": "เพลตใหม่แสดงการปรับเทียบ"}]
+        }
+      ]
+    },
+    {
+      "title": {"en": "Calibrate again", "th": "ปรับเทียบใหม่"},
+      "steps": [
+        {
+          "shot": "calibration-17-old",
+          "marks": [
+            {"en": "After 90 days: calibrate again", "th": "เกิน 90 วัน: ควรปรับเทียบใหม่"},
+            {"en": "Tap Calibrate", "th": "แตะ ปรับเทียบ"}
+          ]
+        },
+        {
+          "shot": "calibration-18-again",
+          "marks": [
+            {"en": "Asked before the next plate", "th": "ถามก่อนวัดเพลตถัดไป"},
+            {"en": "Tap Calibrate now", "th": "แตะ ปรับเทียบตอนนี้"}
+          ]
+        },
+        {
+          "shot": "calibration-19-reason",
+          "marks": [
+            {"en": "Calibrate again", "th": "ควรปรับเทียบใหม่"},
+            {"en": "Why: read the reason", "th": "เหตุผลที่ควรปรับเทียบใหม่"}
+          ],
+          "tip": {
+            "en": "A new camera or stand height also asks for it.",
+            "th": "เปลี่ยนกล้องหรือความสูงขาตั้งก็ต้องปรับเทียบใหม่"
+          }
+        }
+      ]
+    }
+  ]
+}
