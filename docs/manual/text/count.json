@@ -1,0 +1,402 @@
+{
+  "id": "count",
+  "order": 2,
+  "icon": "camera",
+  "title": {
+    "en": "Count a plate",
+    "th": "นับเพลต"
+  },
+  "summary": {
+    "en": "Photo, check, fix, save.",
+    "th": "ถ่ายภาพ ตรวจ แก้ไข บันทึก"
+  },
+  "sections": [
+    {
+      "title": {
+        "en": "Take the photo",
+        "th": "ถ่ายภาพ"
+      },
+      "steps": [
+        {
+          "shot": "count-1-home",
+          "marks": [
+            {
+              "en": "Tap Count plate",
+              "th": "แตะ นับเพลต"
+            },
+            {
+              "en": "Or Import photo from the gallery",
+              "th": "หรือ นำเข้าภาพ จากคลังภาพ"
+            }
+          ],
+          "tip": {
+            "en": "Lid off, plate in the lightbox.",
+            "th": "เปิดฝา วางเพลตในกล่องไฟ"
+          }
+        }
+      ]
+    },
+    {
+      "title": {
+        "en": "Look at the count",
+        "th": "ดูผลการนับ"
+      },
+      "steps": [
+        {
+          "shot": "count-2-result",
+          "marks": [
+            {
+              "en": "The automatic count",
+              "th": "จำนวนที่นับอัตโนมัติ"
+            },
+            {
+              "en": "Each green ring is one colony",
+              "th": "วงสีเขียวหนึ่งวงคือหนึ่งโคโลนี"
+            }
+          ],
+          "tip": {
+            "en": "The blue circle is the plate edge.",
+            "th": "วงสีฟ้าคือขอบเพลต"
+          }
+        },
+        {
+          "shot": "count-3-hide",
+          "marks": [
+            {
+              "en": "Tap the eye to hide marks",
+              "th": "แตะรูปตาเพื่อซ่อนเครื่องหมาย"
+            }
+          ],
+          "tip": {
+            "en": "Tap it again to show them.",
+            "th": "แตะอีกครั้งเพื่อแสดง"
+          }
+        },
+        {
+          "shot": "count-4-sensitivity",
+          "marks": [
+            {
+              "en": "Tap Detection sensitivity",
+              "th": "แตะ ความไวในการตรวจจับ"
+            },
+            {
+              "en": "Towards High finds fainter colonies",
+              "th": "ไปทาง สูง จะพบโคโลนีที่จางขึ้น"
+            },
+            {
+              "en": "Tap Recount",
+              "th": "แตะ นับใหม่"
+            }
+          ],
+          "tip": {
+            "en": "Recounting discards edits: do it first.",
+            "th": "การนับใหม่จะทิ้งการแก้ไข จึงควรทำก่อน"
+          }
+        }
+      ]
+    },
+    {
+      "title": {
+        "en": "Fit the plate circle",
+        "th": "ปรับวงกลมของเพลต"
+      },
+      "steps": [
+        {
+          "shot": "count-5-plate",
+          "marks": [
+            {
+              "en": "Tap Plate",
+              "th": "แตะ เพลต"
+            },
+            {
+              "en": "Drag the circle onto the plate rim",
+              "th": "ลากวงกลมให้ตรงขอบเพลต"
+            }
+          ]
+        },
+        {
+          "shot": "count-6-plate-size",
+          "marks": [
+            {
+              "en": "Slide to resize the circle",
+              "th": "เลื่อนเพื่อปรับขนาดวงกลม"
+            },
+            {
+              "en": "Tap Recount with this circle",
+              "th": "แตะ นับใหม่ด้วยวงกลมนี้"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": {
+        "en": "Fix the marks",
+        "th": "แก้ไขเครื่องหมาย"
+      },
+      "steps": [
+        {
+          "shot": "count-7-zoom",
+          "marks": [
+            {
+              "en": "Tap Zoom",
+              "th": "แตะ ซูม"
+            },
+            {
+              "en": "Pinch to zoom, drag to move",
+              "th": "ใช้สองนิ้วซูม ลากเพื่อเลื่อน"
+            }
+          ]
+        },
+        {
+          "shot": "count-8-edit",
+          "marks": [
+            {
+              "en": "Tap Edit",
+              "th": "แตะ แก้ไข"
+            },
+            {
+              "en": "Tap a wrong mark to remove it",
+              "th": "แตะเครื่องหมายที่ผิดเพื่อลบ"
+            }
+          ]
+        },
+        {
+          "shot": "count-9-add",
+          "marks": [
+            {
+              "en": "Tap a missed colony to add it",
+              "th": "แตะโคโลนีที่ขาดเพื่อเพิ่ม"
+            },
+            {
+              "en": "Your edits are listed here",
+              "th": "การแก้ไขแสดงที่นี่"
+            }
+          ]
+        },
+        {
+          "shot": "count-10-clump",
+          "marks": [
+            {
+              "en": "Long-press a clump of colonies",
+              "th": "กดค้างที่กลุ่มโคโลนี"
+            }
+          ]
+        },
+        {
+          "shot": "count-11-clump-n",
+          "marks": [
+            {
+              "en": "Tap + for each colony",
+              "th": "แตะ + ตามจำนวนโคโลนี"
+            },
+            {
+              "en": "Tap Set",
+              "th": "แตะ ตั้งค่า"
+            }
+          ],
+          "tip": {
+            "en": "The mark then shows ×2.",
+            "th": "เครื่องหมายจะแสดง ×2"
+          }
+        },
+        {
+          "shot": "count-12-undo",
+          "marks": [
+            {
+              "en": "The corrected count",
+              "th": "จำนวนที่แก้ไขแล้ว"
+            },
+            {
+              "en": "Undo the last change",
+              "th": "เลิกทำ การแก้ไขล่าสุด"
+            },
+            {
+              "en": "Tap Save plate",
+              "th": "แตะ บันทึกเพลต"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": {
+        "en": "Save the plate",
+        "th": "บันทึกเพลต"
+      },
+      "steps": [
+        {
+          "shot": "count-13-details",
+          "marks": [
+            {
+              "en": "Type the Sample ID",
+              "th": "พิมพ์ รหัสตัวอย่าง"
+            },
+            {
+              "en": "Pick the Plated dilution",
+              "th": "เลือก ระดับการเจือจางที่เพาะ"
+            },
+            {
+              "en": "Check the Volume",
+              "th": "ตรวจ ปริมาตร"
+            }
+          ],
+          "tip": {
+            "en": "Plates with the same ID are pooled.",
+            "th": "เพลตรหัสเดียวกันรวมกันคำนวณ CFU/mL"
+          }
+        },
+        {
+          "shot": "count-14-options",
+          "marks": [
+            {
+              "en": "Spreader on plate, if there is one",
+              "th": "มีโคโลนีแผ่กระจายบนเพลต ถ้ามี"
+            },
+            {
+              "en": "Too numerous to count, if so",
+              "th": "มากเกินนับ (TNTC) ถ้าใช่"
+            },
+            {
+              "en": "Incubation time, for time-lapse",
+              "th": "เวลาบ่ม สำหรับไทม์แลปส์"
+            }
+          ]
+        },
+        {
+          "shot": "count-15-save",
+          "marks": [
+            {
+              "en": "Notes, if any",
+              "th": "หมายเหตุ ถ้ามี"
+            },
+            {
+              "en": "CFU/mL from this plate alone",
+              "th": "CFU/mL จากเพลตนี้"
+            },
+            {
+              "en": "Tap Save",
+              "th": "แตะ บันทึก"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": {
+        "en": "Your saved plates",
+        "th": "เพลตที่บันทึกแล้ว"
+      },
+      "steps": [
+        {
+          "shot": "count-16-list",
+          "marks": [
+            {
+              "en": "Tap the plate to open it again",
+              "th": "แตะเพลตเพื่อเปิดอีกครั้ง"
+            },
+            {
+              "en": "Its count",
+              "th": "จำนวนนับ"
+            }
+          ]
+        },
+        {
+          "shot": "count-17-delete",
+          "marks": [
+            {
+              "en": "Swipe left, then tap Delete",
+              "th": "ปัดไปทางซ้าย แล้วแตะ ลบ"
+            }
+          ],
+          "tip": {
+            "en": "Cancel keeps the plate.",
+            "th": "แตะ ยกเลิก เพื่อเก็บเพลตไว้"
+          }
+        },
+        {
+          "shot": "count-18-menu",
+          "marks": [
+            {
+              "en": "Share annotated photo",
+              "th": "แชร์ภาพที่มีเครื่องหมาย"
+            },
+            {
+              "en": "Change the Plate type",
+              "th": "เปลี่ยน ชนิดจาน"
+            }
+          ],
+          "tip": {
+            "en": "Open this menu with ⋮.",
+            "th": "เปิดเมนูนี้ด้วย ⋮"
+          }
+        },
+        {
+          "shot": "count-19-save-changes",
+          "marks": [
+            {
+              "en": "Fix marks, then Save changes",
+              "th": "แก้ไข แล้วแตะ บันทึกการแก้ไข"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": {
+        "en": "Check a crowded plate",
+        "th": "ตรวจเพลตที่หนาแน่น"
+      },
+      "steps": [
+        {
+          "shot": "count-20-check",
+          "marks": [
+            {
+              "en": "Check this count: zoom in, fix",
+              "th": "โปรดตรวจผลการนับ: ซูมแล้วแก้ไข"
+            },
+            {
+              "en": "Accuracy check: check every colony",
+              "th": "ตรวจความแม่นยำ: ตรวจทุกโคโลนี"
+            }
+          ],
+          "tip": {
+            "en": "Set how often in ⋮ › Counting accuracy.",
+            "th": "ตั้งความถี่ที่ ⋮ › ความแม่นยำการนับ"
+          }
+        },
+        {
+          "shot": "count-21-check-fix",
+          "marks": [
+            {
+              "en": "Long-press merged colonies, set the number",
+              "th": "กดค้างที่โคโลนีติดกัน แล้วกำหนดจำนวน"
+            }
+          ]
+        },
+        {
+          "shot": "count-22-verified",
+          "marks": [
+            {
+              "en": "Turn on Checked every colony",
+              "th": "เปิด ตรวจทุกโคโลนีแล้ว"
+            }
+          ],
+          "tip": {
+            "en": "Only when every mark is right.",
+            "th": "เปิดเมื่อทุกเครื่องหมายถูกต้องเท่านั้น"
+          }
+        },
+        {
+          "shot": "count-23-checked",
+          "marks": [
+            {
+              "en": "Checked plates show this sign",
+              "th": "เพลตที่ตรวจแล้วแสดงเครื่องหมายนี้"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

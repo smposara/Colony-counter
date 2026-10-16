@@ -1,0 +1,270 @@
+{
+  "id": "start",
+  "order": 1,
+  "icon": "home",
+  "title": {
+    "en": "Getting started",
+    "th": "เริ่มต้นใช้งาน"
+  },
+  "summary": {
+    "en": "The tabs, the menu and settings.",
+    "th": "แท็บ เมนู และการตั้งค่า"
+  },
+  "sections": [
+    {
+      "title": {
+        "en": "The four tabs",
+        "th": "แท็บทั้งสี่"
+      },
+      "steps": [
+        {
+          "shot": "start-1-plates",
+          "marks": [
+            {
+              "en": "Plates: every plate you counted",
+              "th": "เพลต: ทุกเพลตที่นับแล้ว"
+            },
+            {
+              "en": "Tap a plate to open it",
+              "th": "แตะเพลตเพื่อเปิด"
+            },
+            {
+              "en": "Count plate: photograph a new plate",
+              "th": "นับเพลต: ถ่ายภาพเพลตใหม่"
+            }
+          ]
+        },
+        {
+          "shot": "start-2-plates-tools",
+          "marks": [
+            {
+              "en": "Several plates in one photo",
+              "th": "หลายเพลตในภาพเดียว"
+            },
+            {
+              "en": "Import photo from the gallery",
+              "th": "นำเข้าภาพ จากคลังภาพ"
+            }
+          ]
+        },
+        {
+          "shot": "start-3-samples",
+          "marks": [
+            {
+              "en": "Samples: CFU/mL of each sample",
+              "th": "ตัวอย่าง: CFU/mL ของแต่ละตัวอย่าง"
+            },
+            {
+              "en": "New sample: plan a dilution series",
+              "th": "ตัวอย่างใหม่: วางแผนการเจือจาง"
+            },
+            {
+              "en": "Scan plate label (QR code)",
+              "th": "สแกนฉลากเพลต (คิวอาร์โค้ด)"
+            }
+          ]
+        },
+        {
+          "shot": "start-4-compare",
+          "marks": [
+            {
+              "en": "Compare: conditions and curves over time",
+              "th": "เปรียบเทียบ: สภาวะและกราฟตามเวลา"
+            },
+            {
+              "en": "How to set up a comparison",
+              "th": "วิธีเริ่มการเปรียบเทียบ"
+            }
+          ]
+        },
+        {
+          "shot": "start-5-zones",
+          "marks": [
+            {
+              "en": "Zones: inhibition zone plates",
+              "th": "โซนยับยั้ง: เพลตวัดโซนยับยั้ง"
+            },
+            {
+              "en": "Measure zones: photograph a plate",
+              "th": "วัดโซนยับยั้ง: ถ่ายภาพเพลต"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": {
+        "en": "The ⋮ menu",
+        "th": "เมนู ⋮"
+      },
+      "steps": [
+        {
+          "shot": "start-6-menu",
+          "marks": [
+            {
+              "en": "Export CSV of the counts",
+              "th": "ส่งออก CSV ของผลการนับ"
+            },
+            {
+              "en": "Back up all data to a file",
+              "th": "สำรองข้อมูลทั้งหมด เป็นไฟล์"
+            },
+            {
+              "en": "Restore from backup",
+              "th": "กู้คืนจากข้อมูลสำรอง"
+            }
+          ],
+          "tip": {
+            "en": "Tap ⋮ at the top right.",
+            "th": "แตะ ⋮ ที่มุมขวาบน"
+          }
+        },
+        {
+          "shot": "start-7-menu-more",
+          "marks": [
+            {
+              "en": "Counting accuracy on your plates",
+              "th": "ความแม่นยำการนับ กับเพลตของคุณ"
+            },
+            {
+              "en": "Export training data: photos with marks",
+              "th": "ส่งออกข้อมูลสำหรับฝึกโมเดล"
+            },
+            {
+              "en": "Settings",
+              "th": "การตั้งค่า"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": {
+        "en": "Settings",
+        "th": "การตั้งค่า"
+      },
+      "steps": [
+        {
+          "shot": "start-8-settings",
+          "marks": [
+            {
+              "en": "Language: Phone setting, English or ไทย",
+              "th": "ภาษา: ตามเครื่อง English หรือ ไทย"
+            },
+            {
+              "en": "Appearance: Automatic, Light or Dark",
+              "th": "รูปแบบการแสดงผล: อัตโนมัติ สว่าง มืด"
+            }
+          ]
+        },
+        {
+          "shot": "start-9-dark",
+          "marks": [
+            {
+              "en": "Dark: the dark theme",
+              "th": "มืด: ธีมสีเข้ม"
+            }
+          ]
+        },
+        {
+          "shot": "start-10-defaults",
+          "marks": [
+            {
+              "en": "Counting rule for CFU/mL",
+              "th": "เกณฑ์การนับ สำหรับ CFU/mL"
+            },
+            {
+              "en": "Default plated volume",
+              "th": "ปริมาตรที่เพาะเริ่มต้น"
+            },
+            {
+              "en": "Default plate type",
+              "th": "ชนิดจานเริ่มต้น"
+            }
+          ],
+          "tip": {
+            "en": "The countable range is shown under the rule.",
+            "th": "ช่วงที่นับได้แสดงใต้เกณฑ์การนับ"
+          }
+        },
+        {
+          "shot": "start-11-plate-type",
+          "marks": [
+            {
+              "en": "Pick the dish or film you use",
+              "th": "เลือกจานหรือฟิล์มที่ใช้ประจำ"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": {
+        "en": "Counting accuracy",
+        "th": "ความแม่นยำการนับ"
+      },
+      "steps": [
+        {
+          "shot": "start-12-accuracy",
+          "marks": [
+            {
+              "en": "How accuracy tracking works",
+              "th": "วิธีติดตามความแม่นยำ"
+            },
+            {
+              "en": "How often to ask for a check",
+              "th": "ขอให้ฉันตรวจเพลต: บ่อยแค่ไหน"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": {
+        "en": "About",
+        "th": "เกี่ยวกับแอป"
+      },
+      "steps": [
+        {
+          "shot": "start-13-menu-about",
+          "marks": [
+            {
+              "en": "Tap About",
+              "th": "แตะ เกี่ยวกับแอป"
+            }
+          ]
+        },
+        {
+          "shot": "start-14-about",
+          "marks": [
+            {
+              "en": "The app version",
+              "th": "เวอร์ชันของแอป"
+            },
+            {
+              "en": "Email the developer",
+              "th": "อีเมลถึงผู้พัฒนา"
+            }
+          ]
+        },
+        {
+          "shot": "start-15-about-more",
+          "marks": [
+            {
+              "en": "Open-source licences",
+              "th": "สัญญาอนุญาตโอเพนซอร์ส"
+            },
+            {
+              "en": "Privacy: data stays on this phone",
+              "th": "ความเป็นส่วนตัว: ข้อมูลอยู่ในเครื่องนี้"
+            },
+            {
+              "en": "Intended use: research and teaching",
+              "th": "วัตถุประสงค์: งานวิจัยและการสอน"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
