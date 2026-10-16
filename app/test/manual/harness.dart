@@ -159,7 +159,8 @@ class Manual {
       expect(f, findsWidgets, reason: '$chapter/$name: $f');
       // Outline the whole button, not just its label.
       final c = m == Mark.look || m == Mark.drag ? f : control(f);
-      final hit = c.evaluate().isEmpty ? f.first : c;
+      // Nearest first; a mark with no button around it outlines itself.
+      final hit = c.evaluate().isEmpty ? f.first : c.first;
       targets.add(_Target(tester.getRect(hit), m));
     }
     final file = '$chapter-$name.$lang.png';
@@ -197,18 +198,16 @@ class Manual {
   }
 
   /// The control around [f] (a button's label or icon): what to outline.
-  Finder control(Finder f) => find
-      .ancestor(
-        of: f,
-        matching: find.byWidgetPredicate(
-          (w) =>
-              w is InkWell ||
-              w is InkResponse ||
-              w is FloatingActionButton ||
-              w is NavigationDestination,
-        ),
-      )
-      .first;
+  Finder control(Finder f) => find.ancestor(
+    of: f,
+    matching: find.byWidgetPredicate(
+      (w) =>
+          w is InkWell ||
+          w is InkResponse ||
+          w is FloatingActionButton ||
+          w is NavigationDestination,
+    ),
+  );
 
   Future<void> tap(Finder f, {bool settleAfter = true}) async {
     await tester.ensureVisible(f.first);
