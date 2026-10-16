@@ -156,7 +156,7 @@ class Manual {
     await tester.pump();
     final targets = <_Target>[];
     for (final (f, m) in marks) {
-      expect(f, findsWidgets, reason: '$chapter/$name: $f');
+      expect(f, findsWidgets, reason: '$chapter/$name');
       // Outline the whole button, not just its label.
       final c = m == Mark.look || m == Mark.drag ? f : control(f);
       // Nearest first; a mark with no button around it outlines itself.

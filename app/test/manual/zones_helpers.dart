@@ -54,7 +54,7 @@ Future<void> clearSpots(Manual m) async {
 Future<void> snap(Manual m, String name, List<(Finder, Mark)> marks) async {
   final out = <(Finder, Mark)>[];
   for (final (f, k) in marks) {
-    expect(f, findsWidgets, reason: '${m.chapter}/$name: $f');
+    expect(f, findsWidgets, reason: '${m.chapter}/$name');
     final inButton =
         k == Mark.look || k == Mark.drag || _hasControl(m, f.first);
     out.add((inButton ? f : await spot(m, m.tester.getRect(f.first)), k));

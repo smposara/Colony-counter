@@ -12,9 +12,11 @@ else
   files=$(ls test/manual/*_manual.dart)
 fi
 # One chapter at a time keeps memory low; each runs in English and Thai.
+failed=""
 for f in $files; do
-  MANUAL_OUT="$out" flutter test "$f" --reporter compact
+  MANUAL_OUT="$out" flutter test "$f" --reporter compact || failed="$failed $f"
 done
 python3 test/manual/annotate.py "$out" ../docs/manual/img
 version=$(grep '^version:' pubspec.yaml | sed 's/version: //; s/+.*//')
 python3 test/manual/build_manual.py ../docs/manual "$version"
+if [ -n "$failed" ]; then echo "FAILED:$failed"; exit 1; fi
