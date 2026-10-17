@@ -222,13 +222,14 @@ class Plate {
 
 /// Edge map of a small copy of the image, used by the plate finders.
 class _Edges {
-  _Edges(GrayImage image, int workSize)
+  _Edges(GrayImage image, int workSize, {double blur = 1.2})
     : scale = workSize / math.max(image.width, image.height) {
     final small = image
         .resize((image.width * scale).round(), (image.height * scale).round())
-        .gaussianBlur(1.2);
+        .gaussianBlur(blur);
     w = small.width;
     h = small.height;
+    v = small.data;
     gx = Float32List(w * h);
     gy = Float32List(w * h);
     for (var y = 1; y < h - 1; y++) {
@@ -242,7 +243,11 @@ class _Edges {
 
   final double scale;
   late final int w, h;
-  late final Float32List gx, gy;
+  late final Float32List v, gx, gy;
+
+  /// Noise level of this channel, set by [findPlates] (its rim scores are
+  /// in this unit).
+  double unit = 1;
 
   double get short => math.min(w, h).toDouble();
 
@@ -438,76 +443,167 @@ Plate findPlate(
   return _toPlate(best, e, format);
 }
 
-/// Finds several round plates of about the same size in one photo, in reading
-/// order (top row first, left to right).
+/// Finds every round plate in a photo with several dishes, in reading order
+/// (top row first, left to right).
 ///
-/// The strongest circle sets the size; further circles within ±20 % of it are
-/// taken in order of edge strength while they don't overlap a plate already
-/// found and their edge is at least [minRelativeScore] of the first one's.
+/// 1. Edge pixels (gradient above the channel's noise, thinned to the ridge)
+///    vote for a centre along their gradient, at every distance a plate's
+///    radius can have (a gradient Hough transform; bright-inside and
+///    dark-inside edges in separate maps). A dish's rim, all pointing at one
+///    centre, makes a sharp peak; colonies scatter their votes.
+/// 2. Each peak gets the circle around it that best separates an inside
+///    from an outside *all the way round* (see [_rimScore]): a circle through
+///    a cluster of colonies, or touching a neighbouring dish, has a step on
+///    only part of its length and scores low however contrasty those parts
+///    are. The best circle sets the plates' size (one format per photo); the
+///    others are fitted again within ±40 % of it.
+/// 3. Circles are taken best first while their score clears the noise and
+///    [minRelativeScore] of the best one, unless their centre is inside a
+///    plate already taken (colonies, the inner wall of a dish) or they
+///    overlap one by more than a few percent.
+///
+/// [colour] adds channels (e.g. chroma) whose edges count as well, for dishes
+/// that differ from the surround more in colour than in brightness.
+/// [minRadius] and [maxRadius] bound a plate's radius as fractions of the
+/// image's shorter side.
 List<Plate> findPlates(
   GrayImage image, {
+  List<GrayImage> colour = const [],
   PlateFormat format = PlateFormat.dish90,
   int maxPlates = 12,
-  double minFill = 0.12,
-  double maxFill = 0.7,
-  double minRelativeScore = 0.45,
-  int workSize = 400,
+  double minRadius = 1 / 8,
+  double maxRadius = 0.6,
+  double minRelativeScore = 0.05,
+  int workSize = 480,
 }) {
-  final e = _Edges(image, workSize);
-  final short = e.short;
-  final step = short * 0.02;
+  final channels = [
+    for (final c in [image, ...colour]) _Edges(c, workSize, blur: 1.0),
+  ];
+  final e = channels.first;
+  final w = e.w, h = e.h, short = e.short;
+  final rMin = short * minRadius, rMax = short * maxRadius;
 
-  // Best circle for every candidate centre within a radius band.
-  List<_Fit> candidates(double r0, double r1) {
-    final out = <_Fit>[];
-    for (var cy = step; cy < e.h - step; cy += step) {
-      for (var cx = step; cx < e.w - step; cx += step) {
-        _Fit? best;
-        for (var r = r0; r <= r1; r += short * 0.01) {
-          final s = e.circle(cx, cy, r);
-          if (best == null || s > best.score) {
-            best = (score: s, cx: cx, cy: cy, r: r, a: 0);
+  // 1. Votes for centres (bright-inside map 0, dark-inside map 1): in each
+  // channel, edge pixels above its noise (a low percentile of its gradient:
+  // most of a photo is flat agar or surround, but crowded plates can fill
+  // half of it), thinned to the ridge along the gradient.
+  final acc = [Float32List(w * h), Float32List(w * h)];
+  final mag = Float32List(w * h);
+  for (final c in channels) {
+    for (var i = 0; i < mag.length; i++) {
+      mag[i] = math.sqrt(c.gx[i] * c.gx[i] + c.gy[i] * c.gy[i]);
+    }
+    final sample = <double>[for (var i = 0; i < mag.length; i += 7) mag[i]]
+      ..sort();
+    c.unit = math.max(0.25, 3 * percentileSorted(sample, 20));
+    for (var y = 2; y < h - 2; y++) {
+      for (var x = 2; x < w - 2; x++) {
+        final i = y * w + x;
+        final m = mag[i];
+        if (m < 2 * c.unit) continue;
+        final dx = c.gx[i] / m, dy = c.gy[i] / m;
+        final o = dy.round() * w + dx.round();
+        if (m < mag[i + o] || m < mag[i - o]) continue;
+        for (var k = 0; k < 2; k++) {
+          final a = acc[k];
+          final sx = k == 0 ? dx : -dx, sy = k == 0 ? dy : -dy;
+          for (var t = rMin; t <= rMax; t += 1.5) {
+            final px = x + sx * t, py = y + sy * t;
+            if (px < 0 || py < 0 || px >= w - 0.5 || py >= h - 0.5) break;
+            a[(py + 0.5).toInt() * w + (px + 0.5).toInt()] += 1;
           }
         }
-        if (best != null) out.add(best);
       }
     }
-    return out..sort((a, b) => b.score.compareTo(a.score));
   }
 
-  final all = candidates(short * minFill / 2, short * maxFill / 2);
-  if (all.isEmpty || all.first.score <= 0) {
-    throw StateError('No plate found in image');
-  }
-  final first = _fitCircle(
-    e,
-    all.first.cx,
-    all.first.cy,
-    step,
-    all.first.r * 0.9,
-    all.first.r * 1.1,
-  );
-  final found = <_Fit>[first];
-  bool overlaps(_Fit c) => found.any(
-    (f) =>
-        math.sqrt(math.pow(f.cx - c.cx, 2) + math.pow(f.cy - c.cy, 2)) <
-        (f.r + c.r) * 0.9,
-  );
-  for (final c in candidates(first.r * 0.8, first.r * 1.2)) {
-    if (found.length >= maxPlates) break;
-    if (c.score < first.score * minRelativeScore) break;
-    if (overlaps(c)) continue;
-    final fit = _fitCircle(e, c.cx, c.cy, step, c.r * 0.95, c.r * 1.05);
-    if (!overlaps(fit) && fit.score >= first.score * minRelativeScore) {
-      found.add(fit);
+  // Peaks: local maxima of the smoothed vote maps, strongest first, none
+  // within [win] of a stronger one of the same map.
+  final win = math.max(3, (rMin * 0.4).round());
+  final peaks = <(int, int)>[];
+  for (final a0 in acc) {
+    final a = GrayImage(w, h, a0).gaussianBlur(1.5).data;
+    var top = 0.0;
+    for (final v in a) {
+      if (v > top) top = v;
+    }
+    if (top <= 0) continue;
+    final local = <(double, int, int)>[];
+    for (var y = 1; y < h - 1; y++) {
+      for (var x = 1; x < w - 1; x++) {
+        final i = y * w + x, v = a[i];
+        if (v < top * 0.05) continue;
+        if (v < a[i - 1] || v < a[i + 1] || v < a[i - w] || v < a[i + w]) {
+          continue;
+        }
+        if (v < a[i - w - 1] || v < a[i - w + 1]) continue;
+        if (v < a[i + w - 1] || v < a[i + w + 1]) continue;
+        local.add((v, x, y));
+      }
+    }
+    local.sort((p, q) => q.$1.compareTo(p.$1));
+    final kept = <(int, int)>[];
+    for (final (_, x, y) in local) {
+      if (kept.length >= _peaksPerMap) break;
+      if (kept.every((p) => (p.$1 - x).abs() > win || (p.$2 - y).abs() > win)) {
+        kept.add((x, y));
+      }
+    }
+    // The other map may have the same centre (a rim that changes sign).
+    for (final (x, y) in kept) {
+      if (peaks.every((p) => (p.$1 - x).abs() > 2 || (p.$2 - y).abs() > 2)) {
+        peaks.add((x, y));
+      }
     }
   }
+
+  // 2. The best circle around each peak (vote peaks of faint rims can be a
+  // few pixels off: the refinement starts tolerant). The best circle sets
+  // the plates' size (one format per photo); circles outside ±40 % of it are
+  // fitted again within that band, so a ring of colonies inside a faint dish
+  // cannot stand in for its rim.
+  final first = [
+    for (final (px, py) in peaks)
+      _refineRim(
+        channels,
+        _scanRadius(channels, px.toDouble(), py.toDouble(), rMin, rMax),
+        rMin,
+        rMax,
+      ),
+  ];
+  if (first.isEmpty) throw StateError('No plate found in image');
+  final top = first.reduce((p, q) => q.score > p.score ? q : p);
+  final lo = math.max(rMin, top.r / 1.4), hi = math.min(rMax, top.r * 1.4);
+  final fits = [
+    for (final f in first)
+      if (f.r >= lo && f.r <= hi)
+        f
+      else
+        _refineRim(channels, _scanRadius(channels, f.cx, f.cy, lo, hi), lo, hi),
+  ]..sort((p, q) => q.score.compareTo(p.score));
+
+  // 3. Best first, with the noise, overlap and nesting rules.
+  final found = <_Fit>[];
+  for (final c in fits) {
+    if (found.length >= maxPlates) break;
+    if (c.score <= _minScore) break;
+    if (found.isNotEmpty && c.score < found.first.score * minRelativeScore) {
+      break;
+    }
+    final clash = found.any((f) {
+      final d = math.sqrt(math.pow(f.cx - c.cx, 2) + math.pow(f.cy - c.cy, 2));
+      return d < f.r || d < c.r || d < (f.r + c.r) * 0.95;
+    });
+    if (!clash) found.add(c);
+  }
+  if (found.isEmpty) throw StateError('No plate found in image');
+  final largest = found.map((f) => f.r).reduce(math.max);
 
   // Reading order: rows of plates whose centres are within a radius in y.
   found.sort((a, b) => a.cy.compareTo(b.cy));
   final rows = <List<_Fit>>[];
   for (final f in found) {
-    if (rows.isNotEmpty && (f.cy - rows.last.first.cy).abs() < first.r) {
+    if (rows.isNotEmpty && (f.cy - rows.last.first.cy).abs() < largest) {
       rows.last.add(f);
     } else {
       rows.add([f]);
@@ -519,3 +615,164 @@ List<Plate> findPlates(
         _toPlate(f, e, format),
   ];
 }
+
+/// Rim score of the circle ([cx], [cy], [r]): how clearly *all* of it
+/// separates an inside from an outside, in units of the channel's noise
+/// ([_Edges.unit]; the best channel counts). The step across the circle
+/// (image [step] px inside minus outside) is sampled at 96 angles; each of
+/// 16 sectors takes the median, with the sign that suits the sector (agar
+/// brighter or darker than the surround: uneven light can flip it along a
+/// rim); the score is the 4th-lowest sector, so a quarter of the rim may lack
+/// an edge (glare, a label, the photo's border). Colonies a circle happens to
+/// cross put bright spots on either side at random, so they do not add up to
+/// a rim, however dense or contrasty they are. A wider [step] tolerates a
+/// centre a few pixels off (the first, coarse search); circles scoring no
+/// more than [floor] may be cut short.
+double _rimScore(
+  List<_Edges> channels,
+  double cx,
+  double cy,
+  double r, {
+  double step = 2,
+  double floor = 0,
+}) {
+  const sectors = 16, per = 6, quarter = sectors ~/ 4;
+  final diff = Float64List(per);
+  final sector = Float64List(sectors);
+  final ri = r - step, ro = r + step;
+  var best = 0.0;
+  for (final e in channels) {
+    final w = e.w, h = e.h, v = e.v;
+    // Enough sectors at or below [floor] (or the best channel so far)
+    // settle that this channel cannot beat it: stop early.
+    final low = math.max(floor, best) * e.unit;
+    var lows = 0, n = 0;
+    for (final j in _sectorOrder) {
+      for (var k = 0; k < per; k++) {
+        final (c, s) = _angles[j * per + k];
+        final xi = (cx + ri * c + 0.5).floor(),
+            yi = (cy + ri * s + 0.5).floor();
+        final xo = (cx + ro * c + 0.5).floor(),
+            yo = (cy + ro * s + 0.5).floor();
+        diff[k] =
+            xo < 0 ||
+                yo < 0 ||
+                xo >= w ||
+                yo >= h ||
+                xi < 0 ||
+                yi < 0 ||
+                xi >= w ||
+                yi >= h
+            ? 0 // off the photo: no edge
+            : v[yi * w + xi] - v[yo * w + xo];
+      }
+      _sortSmall(diff);
+      // Median with the better sign (sorted: 3rd from either end of 6).
+      final m = math.max(diff[per ~/ 2 - 1], -diff[per ~/ 2]);
+      sector[n++] = m;
+      if (m <= low && ++lows >= quarter) break;
+    }
+    if (lows >= quarter) continue;
+    _sortSmall(sector);
+    best = math.max(best, sector[quarter - 1] / e.unit);
+  }
+  return best;
+}
+
+/// Sectors in an order that spreads the first few round the circle.
+const _sectorOrder = [0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15];
+
+/// How strong (relative to an inner ring) a concentric circle just outside
+/// it must be to be taken as the dish's edge instead.
+const double _outerRimShare = 0.5;
+
+final _angles = [
+  for (var k = 0; k < 96; k++)
+    (math.cos(2 * math.pi * k / 96), math.sin(2 * math.pi * k / 96)),
+];
+
+/// Best radius from [rMin] to [rMax] (1 px steps, tolerant score) for a
+/// circle centred at ([cx], [cy]).
+_Fit _scanRadius(
+  List<_Edges> channels,
+  double cx,
+  double cy,
+  double rMin,
+  double rMax,
+) {
+  _Fit best = (score: -1, cx: cx, cy: cy, r: rMin, a: 0);
+  for (var r = rMin; r <= rMax + 1e-9; r += 1) {
+    final sc = _rimScore(channels, cx, cy, r, step: 4, floor: best.score);
+    if (sc > best.score) best = (score: sc, cx: cx, cy: cy, r: r, a: 0);
+  }
+  return best;
+}
+
+/// [start] refined to a quarter pixel (radius within [rMin]..[rMax]): a
+/// tolerant search ±6 px around it, then the sharp score, then a check for
+/// a dish edge just outside the circle found.
+_Fit _refineRim(List<_Edges> channels, _Fit start, double rMin, double rMax) {
+  var best = start;
+  var coarse = true;
+  double score(double cx, double cy, double r, double floor) => coarse
+      ? _rimScore(channels, cx, cy, r, step: 4, floor: floor)
+      : _rimScore(channels, cx, cy, r, floor: floor);
+  void search(double cR, double cStep, double r0, double r1, double rStep) {
+    final x0 = best.cx, y0 = best.cy;
+    for (var cy = y0 - cR; cy <= y0 + cR + 1e-9; cy += cStep) {
+      for (var cx = x0 - cR; cx <= x0 + cR + 1e-9; cx += cStep) {
+        for (var r = math.max(r0, rMin); r <= r1 + 1e-9; r += rStep) {
+          final sc = score(cx, cy, r, best.score);
+          if (sc > best.score) best = (score: sc, cx: cx, cy: cy, r: r, a: 0);
+        }
+      }
+    }
+  }
+
+  // A vote peak can be several pixels off a faint rim's centre: first with
+  // the tolerant score, then the sharp one.
+  search(6, 3, best.r - 3, best.r + 3, 1.5);
+  coarse = false;
+  best = (
+    score: score(best.cx, best.cy, best.r, 0),
+    cx: best.cx,
+    cy: best.cy,
+    r: best.r,
+    a: 0,
+  );
+  search(2, 1, best.r - 2, best.r + 2, 1);
+  search(1, 0.5, best.r - 1, best.r + 1, 0.5);
+  // A dish can show a ring a few percent inside its edge (its wall, a
+  // shadow): when there is a clear concentric circle just outside, that is
+  // the edge.
+  final inner = best;
+  best = (score: -1, cx: inner.cx, cy: inner.cy, r: inner.r, a: 0);
+  search(0, 1, inner.r + 3, math.min(rMax, inner.r * 1.12), 1);
+  if (best.score < inner.score * _outerRimShare) {
+    best = inner;
+  } else {
+    search(1, 0.5, best.r - 1, best.r + 1, 0.5);
+  }
+  search(0.5, 0.25, best.r - 0.5, best.r + 0.5, 0.25);
+  return best;
+}
+
+/// Sorts a short list in place (insertion sort: no allocation, fast for the
+/// handful of values [_rimScore] sorts).
+void _sortSmall(Float64List a) {
+  for (var i = 1; i < a.length; i++) {
+    final v = a[i];
+    var j = i - 1;
+    while (j >= 0 && a[j] > v) {
+      a[j + 1] = a[j];
+      j--;
+    }
+    a[j + 1] = v;
+  }
+}
+
+/// Vote peaks tried per map (bright-inside and dark-inside rims).
+const _peaksPerMap = 12;
+
+/// Rim score (in noise units) a circle needs to count as a plate.
+const double _minScore = 1;

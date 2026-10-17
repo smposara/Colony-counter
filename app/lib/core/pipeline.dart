@@ -191,18 +191,44 @@ class PlatesInPhoto {
   final int height;
 }
 
+/// Two chroma channels (blue and red difference from luminance) of a decoded
+/// colour image, so dishes that differ from the surround in colour more than
+/// in brightness still have an edge.
+List<GrayImage> chromaFromImage(img.Image image) {
+  final cb = GrayImage(image.width, image.height);
+  final cr = GrayImage(image.width, image.height);
+  var i = 0;
+  for (final p in image) {
+    final y = 0.299 * p.r + 0.587 * p.g + 0.114 * p.b;
+    cb.data[i] = p.b - y;
+    cr.data[i++] = p.r - y;
+  }
+  return [cb, cr];
+}
+
+/// Size (longer side, px) the multi-plate finder works at.
+const kFindPlatesWorkSize = 480;
+
 /// Finds every round plate in a photo (see [findPlates]). Takes a record so
 /// it can run in a background isolate with `compute`.
 PlatesInPhoto findPlatesInPhoto((Uint8List, PlateFormat) job) {
   final photo = decodePlatePhoto(job.$1);
-  final scale = math.min(1.0, 1200 / math.max(photo.width, photo.height));
+  final scale = math.min(
+    1.0,
+    kFindPlatesWorkSize / math.max(photo.width, photo.height),
+  );
   final work = img.copyResize(
     photo,
     width: (photo.width * scale).round(),
     height: (photo.height * scale).round(),
     interpolation: img.Interpolation.average,
   );
-  final plates = findPlates(grayFromImage(work), format: job.$2);
+  final plates = findPlates(
+    grayFromImage(work),
+    colour: chromaFromImage(work),
+    format: job.$2,
+    workSize: kFindPlatesWorkSize,
+  );
   return PlatesInPhoto(
     [for (final p in plates) p.scaled(1 / scale)],
     photo.width,
