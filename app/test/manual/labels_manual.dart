@@ -45,7 +45,7 @@ void main() {
     await m.tap(find.byTooltip(tr.homeScanLabel));
     await m.settle(until: () => find.byType(AlertDialog).evaluate().isNotEmpty);
     await snap(m, '4-found', [
-      (find.text('Lake-A · 10⁻5 · R2'), Mark.look),
+      (find.text('Lake-A · 10⁻⁵ · R2'), Mark.look),
       (find.text(tr.samplesJustOpen), Mark.tap),
       (find.text(tr.samplesPhotograph), Mark.tap),
     ]);
@@ -59,15 +59,9 @@ void main() {
     await m.show(find.text(tr.saveSheetSave));
     await m.tap(find.text(tr.saveSheetSave));
     await m.settle();
-    await snap(m, '6-done', [
-      (
-        find.ancestor(
-          of: find.textContaining('1/6'),
-          matching: find.byType(ListTile),
-        ),
-        Mark.look,
-      ),
-    ]);
+    // The app opens the sample, with the new plate in its plan.
+    await snap(m, '6-done', [(find.textContaining('· R2:').first, Mark.look)]);
+    await m.back();
 
     // A label of a sample not set up yet.
     nextPhoto = labelPhoto('Pond-3', dilutionExp: 4, replicate: 1);
