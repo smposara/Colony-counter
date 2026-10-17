@@ -1,6 +1,7 @@
-Version 0.9.2
-• Safer saving: each plate is stored on its own, and a failed save is undone instead of half-written
-• Review opens in Zoom; tap Edit to add or remove colonies
-• Large backups and exports use much less memory
-• Web: counting runs in the background so the page stays responsive
-• Layouts for tablets and desktop
+Version 0.9.3
+• Picture manual for every feature: menu → User manual
+• Several plates in one photo: plates found far more reliably
+• Drop plates: drag one drop without moving the rest
+• Labels print 3 × 8 per A4 sheet, dilutions as 10⁻⁴
+• Notes and incubation time typed before Save are kept
+• Fixes for zones, calibration, Thai text and phone layouts
