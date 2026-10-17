@@ -1,0 +1,27 @@
+{
+  "id": "examples",
+  "order": 1.5,
+  "icon": "flask",
+  "title": {"en": "Try the examples", "th": "ลองใช้ข้อมูลสาธิต"},
+  "summary": {"en": "The app starts with example plates to explore.", "th": "แอปเริ่มต้นพร้อมเพลตสาธิตให้ลองใช้งาน"},
+  "sections": [
+    {
+      "title": {"en": "Explore", "th": "สำรวจ"},
+      "steps": [
+        {"shot": "examples-1-plates", "marks": [{"en": "Example data, ready to try", "th": "ข้อมูลสาธิต พร้อมให้ลองใช้"}, {"en": "Every example is marked", "th": "ข้อมูลสาธิตทุกรายการมีป้ายกำกับ"}]},
+        {"shot": "examples-2-samples", "marks": [{"en": "Open the lake water sample", "th": "เปิดตัวอย่างน้ำในทะเลสาบ"}]},
+        {"shot": "examples-3-result", "marks": [{"en": "The result from 4 plates", "th": "ผลจากเพลต 4 แผ่น"}, {"en": "Try photographing the next plate", "th": "ลองถ่ายภาพเพลตถัดไป"}]},
+        {"shot": "examples-4-compare", "marks": [{"en": "Control vs treated over time", "th": "กลุ่มควบคุมเทียบกลุ่มทดสอบตามเวลา"}]},
+        {"shot": "examples-5-zones", "marks": [{"en": "An example zone plate", "th": "เพลตวัดโซนยับยั้งสาธิต"}]}
+      ]
+    },
+    {
+      "title": {"en": "Remove them", "th": "ลบข้อมูลสาธิต"},
+      "steps": [
+        {"shot": "examples-6-remove", "marks": [{"en": "Tap Remove examples", "th": "แตะ ลบข้อมูลสาธิต"}]},
+        {"shot": "examples-7-confirm", "marks": [{"en": "Tap Remove", "th": "แตะ ลบ"}], "tip": {"en": "Your own data is kept. Add the examples again in Settings.", "th": "ข้อมูลของคุณยังอยู่ เพิ่มข้อมูลสาธิตอีกครั้งได้ในการตั้งค่า"}},
+        {"shot": "examples-8-empty", "caption": {"en": "Ready for your own plates.", "th": "พร้อมสำหรับเพลตของคุณ"}}
+      ]
+    }
+  ]
+}

@@ -1,37 +1,89 @@
 {
- "labels-1-menu": [
-  "tap"
- ],
- "labels-10-filled": [
-  "look",
+ "examples-1-plates": [
   "look",
   "look"
  ],
- "labels-2-sheet": [
-  "look"
- ],
- "labels-3-scan": [
+ "examples-2-samples": [
   "tap"
  ],
- "labels-4-found": [
+ "examples-3-result": [
   "look",
+  "tap"
+ ],
+ "examples-4-compare": [
+  "look"
+ ],
+ "examples-5-zones": [
+  "look"
+ ],
+ "examples-6-remove": [
+  "tap"
+ ],
+ "examples-7-confirm": [
+  "tap"
+ ],
+ "examples-8-empty": [],
+ "start-1-plates": [
+  "tap",
+  "look",
+  "tap"
+ ],
+ "start-10-defaults": [
+  "tap",
   "tap",
   "tap"
  ],
- "labels-5-save": [
+ "start-11-plate-type": [
+  "tap"
+ ],
+ "start-12-accuracy": [
+  "look",
+  "tap"
+ ],
+ "start-13-menu-about": [
+  "tap"
+ ],
+ "start-14-about": [
+  "look",
+  "tap"
+ ],
+ "start-15-about-more": [
+  "tap",
   "look",
   "look"
  ],
- "labels-6-done": [
-  "look"
- ],
- "labels-7-unknown": [
+ "start-2-plates-tools": [
+  "tap",
   "tap"
  ],
- "labels-8-setup": [
+ "start-3-samples": [
+  "tap",
+  "tap",
+  "tap"
+ ],
+ "start-4-compare": [
+  "tap",
   "look"
  ],
- "labels-9-sheet": [
+ "start-5-zones": [
+  "tap",
+  "tap"
+ ],
+ "start-6-menu": [
+  "tap",
+  "tap",
+  "tap"
+ ],
+ "start-7-menu-more": [
+  "tap",
+  "tap",
+  "tap"
+ ],
+ "start-8-settings": [
+  "tap",
+  "tap"
+ ],
+ "start-9-dark": [
   "tap"
  ]
 }
