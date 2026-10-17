@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../data/plate_store.dart';
 import '../data/zone_record.dart';
 import '../l10n/l10n.dart';
+import 'examples_ui.dart';
 import 'format.dart';
 import 'photo_flow.dart';
 import 'photo_thumbnail.dart';
@@ -291,7 +292,10 @@ class ZoneRecordTile extends StatelessWidget {
         leading: ClipOval(
           child: PhotoThumbnail(store: store, path: r.imagePath),
         ),
-        title: Text(title.isEmpty ? tr.zoneSetupTitle : title),
+        title: titleWithBadge(
+          Text(title.isEmpty ? tr.zoneSetupTitle : title),
+          r.isExample,
+        ),
         subtitle: Text(
           '${tr.zoneRep(r.replicate)} · ${shortDate(r.createdAt)}',
         ),

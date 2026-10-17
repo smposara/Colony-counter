@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import '../core/plate.dart';
 import '../core/zones.dart';
+import 'plate_record.dart';
 
 /// Inhibition-zone plates (disk or agar-well diffusion), kept apart from
 /// [PlateRecord] so the colony code paths (estimates, CSVs, accuracy checks,
@@ -204,6 +205,9 @@ class ZoneRecord {
 
   final String id;
   final DateTime createdAt;
+
+  /// One of the built-in example plates.
+  bool get isExample => id.startsWith(kExampleIdPrefix);
 
   /// File name of the photo inside the app's photo folder.
   final String imagePath;

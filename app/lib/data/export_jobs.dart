@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../core/worker/client.dart';
+import 'examples.dart';
 import 'export_metadata.dart';
 import 'plate_store.dart';
 
@@ -8,11 +9,20 @@ Future<Map<String, dynamic>> prepareExport(
   PlateStore store, {
   bool backup = false,
   bool zonesOnly = false,
+  bool includeExamples = false,
 }) async {
   // Capture immutable records/preferences together, then yield between batches
-  // while converting records to portable messages on the UI side.
-  final records = store.records;
-  final zones = store.zoneRecords;
+  // while converting records to portable messages on the UI side. The
+  // built-in examples stay out of CSVs and backups (only the generator that
+  // packs them includes them).
+  final records = [
+    for (final r in store.records)
+      if (includeExamples || !r.isExample) r,
+  ];
+  final zones = [
+    for (final r in store.zoneRecords)
+      if (includeExamples || !r.isExample) r,
+  ];
   final data = <String, dynamic>{
     'kind': 'export',
     'backup': backup,
@@ -31,7 +41,10 @@ Future<Map<String, dynamic>> prepareExport(
       'zone_setup': store.zoneSetup.toJson(),
       'zone_disclaimer_seen': store.zoneDisclaimerSeen,
     },
-    'samples': [for (final s in store.samplePlans) s.toJson()],
+    'samples': [
+      for (final s in store.samplePlans)
+        if (includeExamples || !isExampleSample(store, s)) s.toJson(),
+    ],
     'calibrations': [for (final s in store.calibrations) s.toJson()],
     'panels': [for (final s in store.zonePanels) s.toJson()],
   };

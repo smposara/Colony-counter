@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+import 'data/examples.dart';
 import 'data/plate_store.dart';
 import 'l10n/l10n.dart';
 import 'ui/chart_colours.dart';
@@ -23,7 +26,15 @@ class StorageBootstrap extends StatefulWidget {
 }
 
 class _StorageBootstrapState extends State<StorageBootstrap> {
-  late Future<PlateStore> _opening = PlateStore.open();
+  late Future<PlateStore> _opening = _open();
+
+  /// Opens the store; at first launch the examples load in the background
+  /// so the first screen is not held up (they appear when ready).
+  static Future<PlateStore> _open() async {
+    final store = await PlateStore.open();
+    unawaited(offerExamples(store));
+    return store;
+  }
 
   @override
   Widget build(BuildContext context) => FutureBuilder<PlateStore>(
@@ -56,7 +67,7 @@ class _StorageBootstrapState extends State<StorageBootstrap> {
                             const SizedBox(height: 16),
                             FilledButton(
                               onPressed: () => setState(() {
-                                _opening = PlateStore.open();
+                                _opening = _open();
                               }),
                               child: Text(strings.retry),
                             ),

@@ -478,6 +478,7 @@ class _ZoneCalibrationWizardState extends State<ZoneCalibrationWizard> {
     final recent = [
       for (final r in store.zoneRecords)
         if (r.createdAt.isAfter(since) &&
+            !r.isExample &&
             !r.usedForCalibration &&
             !_done.any((x) => x.id == r.id) &&
             !(d?.plates.any((p) => p.zoneRecordId == r.id) ?? false) &&

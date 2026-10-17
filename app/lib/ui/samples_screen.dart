@@ -8,6 +8,7 @@ import '../core/labels.dart';
 import '../core/plate.dart';
 import '../core/stats.dart';
 import '../data/drop_results.dart';
+import '../data/examples.dart';
 import '../data/plate_record.dart';
 import '../data/label_sheet.dart';
 import '../data/plate_store.dart';
@@ -15,6 +16,7 @@ import '../data/sample_info.dart';
 import '../l10n/l10n.dart';
 import '../l10n/labels.dart';
 import 'drop_table.dart';
+import 'examples_ui.dart';
 import 'format.dart';
 import 'home_screen.dart';
 import 'insets.dart';
@@ -272,7 +274,7 @@ class _SampleTile extends StatelessWidget {
             '${qualifiedMean(info.analyse(plates, store.rule, result: k), info)}',
     ];
     return ListTile(
-      title: Text(info.sampleId),
+      title: titleWithBadge(Text(info.sampleId), isExampleSample(store, info)),
       subtitle: Text(
         '${details.join(' · ')}\n'
         '${film.length > 1 ? film.join(' · ') : resultSummary(res, info)}',

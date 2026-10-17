@@ -883,6 +883,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
     if (widget.record != null || every <= 0) return false;
     var since = 0;
     for (final r in widget.store.records) {
+      if (r.isExample) continue;
       if (r.verified) break;
       since++;
     }

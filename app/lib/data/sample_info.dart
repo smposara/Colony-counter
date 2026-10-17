@@ -10,6 +10,9 @@ import '../core/stats.dart';
 import 'drop_results.dart';
 import 'plate_record.dart';
 
+/// The tag on the built-in example samples (see data/examples.dart).
+const kExampleTag = 'example';
+
 enum PlatingMethod {
   spread('Spread / pour plate'),
   drop('Drop plate (Miles–Misra)'),
@@ -224,6 +227,9 @@ class SampleInfo {
 
   /// Free labels for finding samples later, e.g. "thesis", "batch 3".
   final List<String> tags;
+
+  /// Part of the built-in example data (tagged [kExampleTag]).
+  bool get isExample => tags.contains(kExampleTag);
 
   /// True when [query] (case-insensitive, every word) appears in any of the
   /// sample's text fields.

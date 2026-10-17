@@ -14,6 +14,13 @@ _Screenshots from the web build in Chromium on synthetic plates and demo data._
   follows the phone's language, or choose it in Settings → *Language*. Thai text uses
   the bundled IBM Plex Sans Thai font, also on printed plate labels. CSV files,
   backups and the annotated photo banner stay in English.
+- **Example data** (`data/examples.dart`, `assets/examples/examples.zip`): at
+  first launch an empty app loads a few example plates to explore every tab: a
+  lake-water dilution series with 10⁻⁶ still to photograph, a disinfectant
+  time-kill set for *Compare* (about 2 log at 2 h) and a labelled zone plate.
+  They are marked *Example*, a banner on every tab removes them, and Settings →
+  *Example data* adds them again. Apps that already hold data never get them.
+  Examples stay out of CSVs, backups, training data and counting accuracy.
 - **About** (menu → *About*): version, developer, contact email, website, source
   code, licence (GNU AGPL-3.0, see `LICENSE`) and the open-source licences of the
   libraries and bundled fonts. The details live in `lib/app_info.dart`; keep
@@ -168,7 +175,8 @@ lib/
   l10n/   app_en.arb, app_th.arb (generated from parts/*.json by
           tool/merge_strings.py), labels (localized option names)
   data/   plate_record, sample_info (plans, slots, details), plate_store,
-          export (CSV, backup), label_sheet (PDF labels), accuracy,
+          export (CSV, backup), examples (built-in example data),
+          label_sheet (PDF labels), accuracy,
           training_export, timelapse_data, zone_record (zone plates,
           labels, summaries), zone_calibration_record (calibration
           profiles, matching), calibration_export (test data, gate)
@@ -201,6 +209,9 @@ test/
   zone_calibration_*_test.dart, calibration_export_test.dart
                         calibration: agreement vs Python, profiles, wizard,
                         plates, test data
+  examples_test.dart    example data: asset, first launch, remove/add, banner,
+                        left out of exports and accuracy
+  examples/make_examples_gen.dart  builds assets/examples/examples.zip
   fixtures/          synthetic plates + labels (ml/scripts/make_app_fixtures.py)
 tool/compare.dart    prints Dart vs Python vs true counts
 ```
@@ -237,6 +248,16 @@ key. Keep a backup of the keystore: if it is lost, installed apps cannot be upda
 To regenerate the golden fixtures after changing the Python pipeline, run
 `python ml/scripts/make_app_fixtures.py` from the repo root. The Dart count must stay
 within ±5 % of Python's.
+
+To rebuild the example data (after changing the pipeline or the record format),
+make the photos, then let the app count them and pack the zip:
+```
+python ../ml/scripts/make_examples.py           # → build/examples/*.jpg
+flutter test test/examples/make_examples_gen.dart  # → assets/examples/examples.zip
+```
+Example plate and zone-plate ids start with `example-` and example samples are
+tagged `example`; the zip has no settings, so loading it never changes the
+user's language, theme or defaults.
 
 ## Web version (iPhone without the App Store)
 The same app also builds as a web app that runs in Safari on iPhone, or in any

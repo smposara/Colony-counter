@@ -1,0 +1,11 @@
+{
+  "examplesBanner": {"en": "These are examples to explore.", "th": "นี่คือข้อมูลสาธิตสำหรับลองใช้งาน"},
+  "examplesRemove": {"en": "Remove examples", "th": "ลบข้อมูลสาธิต"},
+  "examplesBadge": {"en": "Example", "th": "สาธิต"},
+  "examplesRemoveTitle": {"en": "Remove the examples?", "th": "ลบข้อมูลสาธิตหรือไม่"},
+  "examplesRemoveBody": {"en": "The example plates, samples and zone plate are deleted. Your own data is kept. You can add the examples again in Settings.", "th": "เพลต ตัวอย่าง และเพลตวัดโซนยับยั้งที่เป็นข้อมูลสาธิตจะถูกลบ ข้อมูลของคุณจะถูกเก็บไว้ เพิ่มข้อมูลสาธิตอีกครั้งได้ในการตั้งค่า"},
+  "examplesRemoveAction": {"en": "Remove", "th": "ลบ"},
+  "settingsExamples": {"en": "Example data", "th": "ข้อมูลสาธิต"},
+  "settingsAddExamples": {"en": "Add example data", "th": "เพิ่มข้อมูลสาธิต"},
+  "settingsRemoveExamples": {"en": "Remove example data", "th": "ลบข้อมูลสาธิต"}
+}

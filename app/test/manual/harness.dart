@@ -112,6 +112,8 @@ class Manual {
       await _loadFonts();
       await store.load();
       await store.setDefaults(language: lang, theme: 'light');
+      // Chapters start empty: never the first-launch example data.
+      await store.setExamplesOffered();
       if (seed != null) await seed(store);
     });
     await tester.pumpWidget(

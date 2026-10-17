@@ -668,6 +668,34 @@ class AppLocalizationsTh extends AppLocalizations {
   }
 
   @override
+  String get examplesBanner => 'นี่คือข้อมูลสาธิตสำหรับลองใช้งาน';
+
+  @override
+  String get examplesRemove => 'ลบข้อมูลสาธิต';
+
+  @override
+  String get examplesBadge => 'สาธิต';
+
+  @override
+  String get examplesRemoveTitle => 'ลบข้อมูลสาธิตหรือไม่';
+
+  @override
+  String get examplesRemoveBody =>
+      'เพลต ตัวอย่าง และเพลตวัดโซนยับยั้งที่เป็นข้อมูลสาธิตจะถูกลบ ข้อมูลของคุณจะถูกเก็บไว้ เพิ่มข้อมูลสาธิตอีกครั้งได้ในการตั้งค่า';
+
+  @override
+  String get examplesRemoveAction => 'ลบ';
+
+  @override
+  String get settingsExamples => 'ข้อมูลสาธิต';
+
+  @override
+  String get settingsAddExamples => 'เพิ่มข้อมูลสาธิต';
+
+  @override
+  String get settingsRemoveExamples => 'ลบข้อมูลสาธิต';
+
+  @override
   String get homeSamples => 'ตัวอย่าง';
 
   @override

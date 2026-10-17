@@ -1196,6 +1196,60 @@ abstract class AppLocalizations {
   /// **'From {dilutions} ({n, plural, =1{1 drop} other{{n} drops}})'**
   String dropUsedFrom(String dilutions, int n);
 
+  /// No description provided for @examplesBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'These are examples to explore.'**
+  String get examplesBanner;
+
+  /// No description provided for @examplesRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove examples'**
+  String get examplesRemove;
+
+  /// No description provided for @examplesBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Example'**
+  String get examplesBadge;
+
+  /// No description provided for @examplesRemoveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove the examples?'**
+  String get examplesRemoveTitle;
+
+  /// No description provided for @examplesRemoveBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The example plates, samples and zone plate are deleted. Your own data is kept. You can add the examples again in Settings.'**
+  String get examplesRemoveBody;
+
+  /// No description provided for @examplesRemoveAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get examplesRemoveAction;
+
+  /// No description provided for @settingsExamples.
+  ///
+  /// In en, this message translates to:
+  /// **'Example data'**
+  String get settingsExamples;
+
+  /// No description provided for @settingsAddExamples.
+  ///
+  /// In en, this message translates to:
+  /// **'Add example data'**
+  String get settingsAddExamples;
+
+  /// No description provided for @settingsRemoveExamples.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove example data'**
+  String get settingsRemoveExamples;
+
   /// No description provided for @homeSamples.
   ///
   /// In en, this message translates to:

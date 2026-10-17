@@ -18,11 +18,18 @@ const _manifest = 'colony-counter-backup.json';
 
 /// Incremental ZIP output. Photos are loaded one at a time, bypassing the UI
 /// photo cache. The interactive backup action consumes this stream directly.
-Stream<Uint8List> buildBackupStream(PlateStore store) =>
-    store.readSnapshot(() => _backupStream(store));
+/// The built-in examples are left out unless [includeExamples].
+Stream<Uint8List> buildBackupStream(
+  PlateStore store, {
+  bool includeExamples = false,
+}) => store.readSnapshot(() => _backupStream(store, includeExamples));
 
-Stream<Uint8List> _backupStream(PlateStore store) async* {
-  final metadata = await prepareExport(store, backup: true);
+Stream<Uint8List> _backupStream(PlateStore store, bool examples) async* {
+  final metadata = await prepareExport(
+    store,
+    backup: true,
+    includeExamples: examples,
+  );
   final files = (metadata['files'] as Map).cast<String, String>();
   final photos = (metadata['photos'] as List).cast<String>();
   final entries = <ZipEntrySource>[
@@ -39,9 +46,15 @@ Stream<Uint8List> _backupStream(PlateStore store) async* {
 
 /// Compatibility API for tests/small callers that explicitly need byte data.
 /// Production sharing uses [buildBackupStream], never this whole-file buffer.
-Future<Uint8List> buildBackup(PlateStore store) async {
+Future<Uint8List> buildBackup(
+  PlateStore store, {
+  bool includeExamples = false,
+}) async {
   final result = BytesBuilder(copy: false);
-  await for (final chunk in buildBackupStream(store)) {
+  await for (final chunk in buildBackupStream(
+    store,
+    includeExamples: includeExamples,
+  )) {
     result.add(chunk);
   }
   return result.takeBytes();
@@ -95,7 +108,10 @@ Future<RestoreSummary> restoreBackup(PlateStore store, Uint8List zip) async {
     for (final c in m['zone_calibrations'] as List? ?? const [])
       CalibrationProfile.fromJson(c as Map<String, dynamic>),
   ];
-  final wasEmpty = store.records.isEmpty && store.zoneRecords.isEmpty;
+  // The built-in examples do not count: a new phone has them.
+  final wasEmpty =
+      store.records.every((r) => r.isExample) &&
+      store.zoneRecords.every((r) => r.isExample);
   final (added, skipped, samplesAdded) = await store.importAll(
     plates,
     samples,

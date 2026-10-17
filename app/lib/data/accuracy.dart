@@ -90,12 +90,13 @@ class CountErrors {
   }
 }
 
-/// Accuracy of the automatic count on the user's own checked plates.
+/// Accuracy of the automatic count on the user's own checked plates (never
+/// the built-in examples).
 class AccuracyReport {
   AccuracyReport(List<PlateRecord> records)
     : points = [
         for (final r in records)
-          if (r.verified) AccuracyPoint(r),
+          if (r.verified && !r.isExample) AccuracyPoint(r),
       ];
 
   final List<AccuracyPoint> points;

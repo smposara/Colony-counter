@@ -83,6 +83,7 @@ class PlateStore extends ChangeNotifier implements ExportSource {
           theme,
           zoneSetup,
           zoneDisclaimerSeen,
+          examplesOffered,
         );
         _sampleIndex = null;
         _pendingWrites = {};
@@ -139,6 +140,7 @@ class PlateStore extends ChangeNotifier implements ExportSource {
           theme = settings.$8;
           zoneSetup = settings.$9;
           zoneDisclaimerSeen = settings.$10;
+          examplesOffered = settings.$11;
           _sampleIndex = null;
           _recordsIndexed = indexed.$1;
           _zonesIndexed = indexed.$2;
@@ -214,6 +216,10 @@ class PlateStore extends ChangeNotifier implements ExportSource {
 
   /// The zone-measurement disclaimer has been accepted.
   bool zoneDisclaimerSeen = false;
+
+  /// The built-in example data was offered at first launch (loaded if the
+  /// app was empty), so it is never offered again.
+  bool examplesOffered = false;
 
   static const _recordsKey = 'plates';
   static const _settingsKey = 'settings';
@@ -315,6 +321,7 @@ class PlateStore extends ChangeNotifier implements ExportSource {
           ? ZoneSetup.fromJson(zs)
           : const ZoneSetup();
       zoneDisclaimerSeen = s['zone_disclaimer_seen'] as bool? ?? false;
+      examplesOffered = s['examples_offered'] as bool? ?? false;
     }
     notifyListeners();
   }
@@ -525,6 +532,11 @@ class PlateStore extends ChangeNotifier implements ExportSource {
 
   Future<void> acceptZoneDisclaimer() => _mutate(() async {
     zoneDisclaimerSeen = true;
+    await _saveSettings();
+  });
+
+  Future<void> setExamplesOffered() => _mutate(() async {
+    examplesOffered = true;
     await _saveSettings();
   });
 
@@ -796,6 +808,7 @@ class PlateStore extends ChangeNotifier implements ExportSource {
         'theme': theme,
         'zone_setup': zoneSetup.toJson(),
         'zone_disclaimer_seen': zoneDisclaimerSeen,
+        'examples_offered': examplesOffered,
       }),
     );
   }

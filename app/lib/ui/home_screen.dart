@@ -8,6 +8,7 @@ import 'package:share_plus/share_plus.dart';
 import '../core/calculator.dart';
 import '../core/pipeline.dart';
 import '../core/plate.dart';
+import '../data/examples.dart';
 import '../data/export.dart';
 import '../data/export_jobs.dart';
 import '../data/zip_delivery/zip_delivery.dart';
@@ -19,6 +20,7 @@ import '../l10n/labels.dart';
 import 'about_screen.dart';
 import 'accuracy_screen.dart';
 import 'compare_screen.dart';
+import 'examples_ui.dart';
 import 'format.dart';
 import 'insets.dart';
 import 'multi_plate_screen.dart';
@@ -155,7 +157,12 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 1200),
-                child: body,
+                child: Column(
+                  children: [
+                    ExamplesBanner(store: store),
+                    Expanded(child: body),
+                  ],
+                ),
               ),
             ),
           ),
@@ -383,10 +390,11 @@ class _DataMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final empty =
-        store.records.isEmpty &&
-        store.samplePlans.isEmpty &&
-        store.zoneRecords.isEmpty;
+    // Exports leave the built-in examples out.
+    final plates = store.records.any((r) => !r.isExample);
+    final samples = store.samplePlans.any((s) => !isExampleSample(store, s));
+    final zonePlates = store.zoneRecords.any((r) => !r.isExample);
+    final empty = !plates && !samples && !zonePlates;
     return PopupMenuButton<String>(
       onSelected: (v) => switch (v) {
         'csv' => _exportCsv(context),
@@ -406,9 +414,7 @@ class _DataMenu extends StatelessWidget {
       itemBuilder: (_) => [
         PopupMenuItem(
           value: 'csv',
-          enabled: zones
-              ? store.zoneRecords.isNotEmpty
-              : store.records.isNotEmpty || store.samplePlans.isNotEmpty,
+          enabled: zones ? zonePlates : plates || samples,
           child: Text(zones ? tr.zoneExportCsv : tr.homeExportCsv),
         ),
         PopupMenuItem(
@@ -425,7 +431,7 @@ class _DataMenu extends StatelessWidget {
         PopupMenuItem(value: 'accuracy', child: Text(tr.accuracyTitle)),
         PopupMenuItem(
           value: 'training',
-          enabled: store.records.isNotEmpty,
+          enabled: plates,
           child: Text(tr.homeExportTraining),
         ),
         const PopupMenuDivider(),
@@ -548,6 +554,23 @@ class _SettingsLauncher {
                 ],
                 onChanged: (f) => store.setDefaults(format: f),
               ),
+              const SizedBox(height: 20),
+              Text(
+                tr.settingsExamples,
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+              const SizedBox(height: 8),
+              hasExamples(store)
+                  ? OutlinedButton.icon(
+                      icon: const Icon(Icons.delete_outline),
+                      label: Text(tr.settingsRemoveExamples),
+                      onPressed: () => confirmRemoveExamples(context, store),
+                    )
+                  : OutlinedButton.icon(
+                      icon: const Icon(Icons.lightbulb_outline),
+                      label: Text(tr.settingsAddExamples),
+                      onPressed: () => addExampleData(context, store),
+                    ),
             ],
           ),
         ),
@@ -641,7 +664,7 @@ class RecordTile extends StatelessWidget {
         leading: ClipOval(
           child: PhotoThumbnail(store: store, path: r.imagePath),
         ),
-        title: Text(plateLabel(r)),
+        title: titleWithBadge(Text(plateLabel(r)), r.isExample),
         subtitle: Text(
           r.isFilm
               ? '${shortDate(r.createdAt)}\n${filmSummary(r)}'

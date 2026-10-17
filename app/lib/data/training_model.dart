@@ -22,16 +22,18 @@ bool correctedPlate(PlateRecord r) =>
     r.colonies.any((c) => c.manual) ||
     r.count != r.autoCount;
 
-/// Plates matching [selection], newest first.
+/// Plates matching [selection], newest first. The built-in example plates
+/// are never training data.
 List<PlateRecord> trainingPlates(
   ExportSource store,
   TrainingSelection selection,
 ) => [
   for (final r in store.records)
-    if (switch (selection) {
-      TrainingSelection.checked => r.verified,
-      TrainingSelection.corrected => r.verified || correctedPlate(r),
-      TrainingSelection.all => true,
-    })
+    if (!r.isExample &&
+        switch (selection) {
+          TrainingSelection.checked => r.verified,
+          TrainingSelection.corrected => r.verified || correctedPlate(r),
+          TrainingSelection.all => true,
+        })
       r,
 ];

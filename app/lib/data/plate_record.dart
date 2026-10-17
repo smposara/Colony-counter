@@ -10,6 +10,10 @@ import '../core/spots.dart';
 import '../core/stats.dart';
 import 'drop_results.dart';
 
+/// Plate and zone-plate ids of the built-in example data start with this
+/// (see data/examples.dart).
+const kExampleIdPrefix = 'example-';
+
 /// One counted plate, as saved in the history.
 class PlateRecord {
   PlateRecord({
@@ -100,6 +104,9 @@ class PlateRecord {
   final List<(int, int)> excludedSquares;
 
   bool get isDropPlate => spots.isNotEmpty;
+
+  /// One of the built-in example plates.
+  bool get isExample => id.startsWith(kExampleIdPrefix);
 
   bool get isFilm => format.isFilm;
 

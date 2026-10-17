@@ -693,6 +693,34 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get examplesBanner => 'These are examples to explore.';
+
+  @override
+  String get examplesRemove => 'Remove examples';
+
+  @override
+  String get examplesBadge => 'Example';
+
+  @override
+  String get examplesRemoveTitle => 'Remove the examples?';
+
+  @override
+  String get examplesRemoveBody =>
+      'The example plates, samples and zone plate are deleted. Your own data is kept. You can add the examples again in Settings.';
+
+  @override
+  String get examplesRemoveAction => 'Remove';
+
+  @override
+  String get settingsExamples => 'Example data';
+
+  @override
+  String get settingsAddExamples => 'Add example data';
+
+  @override
+  String get settingsRemoveExamples => 'Remove example data';
+
+  @override
   String get homeSamples => 'Samples';
 
   @override

@@ -458,6 +458,15 @@
       }
     }
   },
+  "examplesBanner": "These are examples to explore.",
+  "examplesRemove": "Remove examples",
+  "examplesBadge": "Example",
+  "examplesRemoveTitle": "Remove the examples?",
+  "examplesRemoveBody": "The example plates, samples and zone plate are deleted. Your own data is kept. You can add the examples again in Settings.",
+  "examplesRemoveAction": "Remove",
+  "settingsExamples": "Example data",
+  "settingsAddExamples": "Add example data",
+  "settingsRemoveExamples": "Remove example data",
   "homeSamples": "Samples",
   "homeCompare": "Compare",
   "homePlates": "Plates",
