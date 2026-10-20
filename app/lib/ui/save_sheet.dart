@@ -80,9 +80,30 @@ class _SaveSheetState extends State<SaveSheet> {
     return _drop ? v / 1000 : v;
   }
 
+  /// Why this plate cannot join the typed sample: its plan is for another
+  /// kind of plate (a spread plan and a membrane, say), whose volume, rule
+  /// and unit would not fit. Null when it fits or there is no plan.
+  String? _planMismatch(String sample) {
+    if (widget.fixedSample || sample == widget.draft.sampleId) return null;
+    if (!widget.store.hasPlan(sample)) return null;
+    final plan = widget.store.sampleInfo(sample);
+    final d = widget.draft;
+    final fits =
+        plan.isMembrane == d.format.membrane &&
+        plan.isDrop == d.isDropPlate &&
+        (plan.isFilm ? d.format == plan.format : !d.isFilm);
+    if (fits) return null;
+    return tr.saveSheetPlanMismatch(
+      sample,
+      plan.isFilm ? plan.format.text : plan.method.text,
+      d.isDropPlate ? tr.methodDrop : d.format.text,
+    );
+  }
+
   PlateRecord? _build() {
     final v = _volumeMl;
     if (v == null) return null;
+    if (_planMismatch(_sample.text.trim()) != null) return null;
     return widget.draft.copyWith(
       sampleId: _sample.text.trim(),
       dilutionExp: _dilutionExp,
@@ -112,6 +133,7 @@ class _SaveSheetState extends State<SaveSheet> {
     final record = _build();
     final rule = widget.store.rule;
     final sample = _sample.text.trim();
+    final mismatch = _planMismatch(sample);
     final plan = widget.store.hasPlan(sample)
         ? widget.store.sampleInfo(sample)
         : null;
@@ -189,6 +211,8 @@ class _SaveSheetState extends State<SaveSheet> {
                     decoration: InputDecoration(
                       labelText: tr.saveSheetSampleId,
                       helperText: tr.saveSheetSampleHelp,
+                      errorText: mismatch,
+                      errorMaxLines: 4,
                       border: const OutlineInputBorder(),
                       suffixIcon: IconButton(
                         tooltip: tr.saveSheetScan,

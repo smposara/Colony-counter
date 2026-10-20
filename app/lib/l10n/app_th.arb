@@ -540,6 +540,7 @@
   "saveSheetTitle": "รายละเอียดเพลต",
   "saveSheetSampleId": "รหัสตัวอย่าง",
   "saveSheetSampleHelp": "เพลตที่มีรหัสตัวอย่างเดียวกันจะรวมกันเพื่อคำนวณ CFU/mL",
+  "saveSheetPlanMismatch": "ตัวอย่าง {sample} วางแผนไว้เป็น {planned} แต่เพลตนี้เป็น {plate} เปลี่ยนชนิดจานในเมนู หรือใช้รหัสตัวอย่างอื่น",
   "saveSheetScan": "สแกนฉลากเพลต",
   "saveSheetDilution": "ระดับการเจือจางที่เพาะ",
   "saveSheetReplicate": "ซ้ำที่",

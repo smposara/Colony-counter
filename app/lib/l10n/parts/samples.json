@@ -436,6 +436,21 @@
   "en": "Plates with the same sample ID are pooled for CFU/mL",
   "th": "เพลตที่มีรหัสตัวอย่างเดียวกันจะรวมกันเพื่อคำนวณ CFU/mL"
  },
+ "saveSheetPlanMismatch": {
+  "en": "{sample} is planned as {planned}, but this plate is {plate}. Change the plate type in the menu, or use another sample ID.",
+  "th": "ตัวอย่าง {sample} วางแผนไว้เป็น {planned} แต่เพลตนี้เป็น {plate} เปลี่ยนชนิดจานในเมนู หรือใช้รหัสตัวอย่างอื่น",
+  "placeholders": {
+   "sample": {
+    "type": "String"
+   },
+   "planned": {
+    "type": "String"
+   },
+   "plate": {
+    "type": "String"
+   }
+  }
+ },
  "saveSheetScan": {
   "en": "Scan plate label",
   "th": "สแกนฉลากเพลต"

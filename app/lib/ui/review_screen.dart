@@ -31,6 +31,23 @@ import 'timelapse_screen.dart';
 
 const double kRimFraction = 0.95;
 
+/// A whole plate's result for its photo banner, in the unit the app reports
+/// it in: the sample plan's (CFU/g for a solid sample), else CFU/100 mL for a
+/// membrane and CFU/mL otherwise, as in the save sheet.
+String plateBannerCfu(PlateRecord r, int count, SampleInfo? plan) {
+  final factor = plan?.unitFactor ?? (r.format.membrane ? 100.0 : 1.0);
+  final unit = plan?.unitLabel ?? (r.format.membrane ? 'CFU/100 mL' : 'CFU/mL');
+  return '${sciValue(count / (r.volumeMl * r.dilution) * factor)} $unit';
+}
+
+/// The sample ID for a photo banner: "Unlabelled" when there is none, and
+/// left out when the ASCII-only image font cannot draw it (Thai, say).
+String? bannerSampleId(String id) => id.isEmpty
+    ? 'Unlabelled'
+    : asciiDrawable(id)
+    ? id
+    : null;
+
 enum _Mode { zoom, edit, plate, spots, colour, gas, yellow, squares }
 
 /// Default drop diameter for a 10 µL drop on agar.
@@ -93,8 +110,10 @@ class _ReviewScreenState extends State<ReviewScreen> {
   int _autoCount = 0;
   List<String> _flags = [];
   double _kSigma = 4.0;
-  final List<(List<Colony>, List<Spot>, List<Colony>, Set<(int, int)>)> _undo =
-      [];
+  final List<
+    (List<Colony>, List<Spot>, List<Colony>, Set<(int, int)>, bool, ColourMode)
+  >
+  _undo = [];
   bool _dirty = false;
 
   /// Drops of a drop plate (empty for whole plates).
@@ -554,7 +573,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
   }
 
   void _push() {
-    _undo.add((_colonies, _spots, _rejected, _excluded));
+    _undo.add((_colonies, _spots, _rejected, _excluded, _drop, _colourMode));
     _dirty = true;
     _pendingSave = null;
   }
@@ -648,11 +667,14 @@ class _ReviewScreenState extends State<ReviewScreen> {
   void _undoLast() {
     if (_undo.isEmpty) return;
     setState(() {
-      final (colonies, spots, rejected, excluded) = _undo.removeLast();
+      final (colonies, spots, rejected, excluded, drop, colourMode) = _undo
+          .removeLast();
       _excluded = excluded;
       _colonies = colonies;
       _spots = spots;
       _rejected = rejected;
+      _drop = drop;
+      _colourMode = colourMode;
     });
   }
 
@@ -719,6 +741,9 @@ class _ReviewScreenState extends State<ReviewScreen> {
       final existing = widget.record;
       final base = widget.laterPhotoOf;
       final details = _pendingSave ?? existing;
+      // A plate with no drops left is counted whole, so it never takes the
+      // drop volume.
+      final drops = _drop && _spots.isNotEmpty;
       final draft = PlateRecord(
         id: existing?.id ?? _draftId,
         createdAt: existing?.createdAt ?? DateTime.now(),
@@ -744,10 +769,11 @@ class _ReviewScreenState extends State<ReviewScreen> {
         volumeMl:
             _sameKind(details)?.volumeMl ??
             _sameKind(base)?.volumeMl ??
-            (widget.preset?.info.isFilm == _film
+            (widget.preset?.info.isFilm == _film &&
+                    widget.preset?.info.isDrop == drops
                 ? widget.preset?.info.unitVolumeMl
                 : null) ??
-            (_drop
+            (drops
                 ? 0.01
                 : _format.membrane
                 ? 100
@@ -773,7 +799,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
             base?.replicate ??
             widget.preset?.slot.replicate ??
             1,
-        spots: _drop ? _spots : const [],
+        spots: drops ? _spots : const [],
         colourMode: _colourMode,
         format: _format,
         rejected: _rejected,
@@ -856,7 +882,11 @@ class _ReviewScreenState extends State<ReviewScreen> {
   /// [r] when it is the same kind of plate (film or not) as the one being
   /// saved, else null.
   PlateRecord? _sameKind(PlateRecord? r) =>
-      r != null && r.isFilm == _film ? r : null;
+      r != null &&
+          r.isFilm == _film &&
+          r.isDropPlate == (_drop && _spots.isNotEmpty)
+      ? r
+      : null;
 
   /// [p] with radius [r]. A film's scale comes from its printed grid, so its
   /// diameter in mm follows the radius; a dish keeps its nominal size.
@@ -965,7 +995,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
       for (var i = 0; i < cells.length; i += 3)
         cells.sublist(i, math.min(i + 3, cells.length)).join(' | '),
       if (e.cfuPerMl.isFinite)
-        '$q${sciValue(e.cfuPerMl)} CFU/mL, '
+        '$q${sciValue(e.cfuPerMl * (plan?.unitFactor ?? 1))} '
+            '${plan?.unitLabel ?? 'CFU/mL'}, '
             '${mode == DropMode.first ? 'first countable' : 'pooled'} '
             '${window.$1}-${window.$2}'
             '${e.dilutionsUsed.isEmpty ? '' : ' from ${e.dilutionsUsed.map((d) => '1e-$d').join(', ')}'}',
@@ -1025,7 +1056,10 @@ class _ReviewScreenState extends State<ReviewScreen> {
       ].join(' / ');
     }
     if (r != null && !_drop && !_film && r.volumeMl > 0) {
-      count += ' · ${sciValue(_count / (r.volumeMl * r.dilution))} CFU/mL';
+      final plan = widget.store.hasPlan(r.sampleId)
+          ? widget.store.sampleInfo(r.sampleId)
+          : null;
+      count += ' · ${plateBannerCfu(r, _count, plan)}';
     }
     // Films whose rules use gas: every kind with and without it.
     final gas = _film && _plate != null && filmUsesGas(_filmType)
@@ -1038,7 +1072,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
           ].join(' / ')
         : '';
     return [
-      '${sample.isEmpty ? 'Unlabelled' : sample} · $what',
+      [?bannerSampleId(sample), what].join(' · '),
       count,
       if (gas.isNotEmpty) gas,
       if (_drop) ..._dropBannerLines(),

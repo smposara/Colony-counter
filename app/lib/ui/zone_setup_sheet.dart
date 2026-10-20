@@ -117,6 +117,9 @@ class _ZoneSetupSheetState extends State<ZoneSetupSheet> {
   /// The experiment and organism [_replicate] was last worked out for.
   late var _replicateFor = _startFor;
 
+  /// The user set the replicate with − or +; it then stays as they set it.
+  bool _replicateSet = false;
+
   @override
   void initState() {
     super.initState();
@@ -127,10 +130,11 @@ class _ZoneSetupSheetState extends State<ZoneSetupSheet> {
   }
 
   /// A new plate's replicate follows the experiment and organism: the next
-  /// free one for them, so a new experiment starts at 1.
+  /// free one for them, so a new experiment starts at 1. Not once the user
+  /// has set the replicate themselves.
   void _followExperiment() {
     final now = (_experiment.text.trim(), _organism.text.trim());
-    if (now == _replicateFor) return;
+    if (_replicateSet || now == _replicateFor) return;
     _replicateFor = now;
     setState(
       () => _replicate = nextZoneReplicate(
@@ -315,7 +319,10 @@ class _ZoneSetupSheetState extends State<ZoneSetupSheet> {
                 Expanded(child: Text(tr.zoneReplicate, style: t.titleSmall)),
                 IconButton(
                   onPressed: _replicate > 1
-                      ? () => setState(() => _replicate--)
+                      ? () => setState(() {
+                          _replicate--;
+                          _replicateSet = true;
+                        })
                       : null,
                   icon: const Icon(Icons.remove),
                 ),
@@ -328,7 +335,10 @@ class _ZoneSetupSheetState extends State<ZoneSetupSheet> {
                   ),
                 ),
                 IconButton(
-                  onPressed: () => setState(() => _replicate++),
+                  onPressed: () => setState(() {
+                    _replicate++;
+                    _replicateSet = true;
+                  }),
                   icon: const Icon(Icons.add),
                 ),
               ],

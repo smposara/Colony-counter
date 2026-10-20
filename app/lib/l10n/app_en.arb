@@ -1372,6 +1372,20 @@
   "saveSheetTitle": "Plate details",
   "saveSheetSampleId": "Sample ID",
   "saveSheetSampleHelp": "Plates with the same sample ID are pooled for CFU/mL",
+  "saveSheetPlanMismatch": "{sample} is planned as {planned}, but this plate is {plate}. Change the plate type in the menu, or use another sample ID.",
+  "@saveSheetPlanMismatch": {
+    "placeholders": {
+      "sample": {
+        "type": "String"
+      },
+      "planned": {
+        "type": "String"
+      },
+      "plate": {
+        "type": "String"
+      }
+    }
+  },
   "saveSheetScan": "Scan plate label",
   "saveSheetDilution": "Plated dilution",
   "saveSheetReplicate": "Replicate",

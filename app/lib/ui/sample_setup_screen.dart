@@ -104,6 +104,9 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
           ? PlatingMethod.membrane
           : PlatingMethod.spread);
   late PlateFormat _format = _base?.format ?? widget.store.defaultFormat;
+
+  /// The user picked the dish size from the plate-type list on this screen.
+  bool _formatPicked = false;
   late bool _solid = _base?.solid ?? false;
   late final _weight = TextEditingController(
     text: fixed(_base?.sampleWeightG ?? 25, 0),
@@ -298,11 +301,19 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
       createdAt: widget.edit?.createdAt,
     );
     widget.store.upsertSample(info, previousId: widget.edit?.sampleId);
-    // Remember operator and medium for the next sample.
+    // Remember operator and medium for the next sample, and a dish size the
+    // user picked for a new sample. The plate type itself (dish, membrane,
+    // film) is only changed in Settings.
     widget.store.setDefaults(
       operator: info.operator,
       medium: info.medium,
-      format: _format.isDish ? _format : null,
+      format:
+          widget.edit == null &&
+              _formatPicked &&
+              _format.isDish &&
+              widget.store.defaultFormat.isDish
+          ? _format
+          : null,
     );
     Navigator.of(context).pop(info);
   }
@@ -673,7 +684,10 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
                   if (film ? f.isFilm : f.isDish)
                     DropdownMenuItem(value: f, child: Text(f.text)),
               ],
-              onChanged: (v) => setState(() => _format = v!),
+              onChanged: (v) => setState(() {
+                _format = v!;
+                _formatPicked = true;
+              }),
             ),
           gap,
           Row(

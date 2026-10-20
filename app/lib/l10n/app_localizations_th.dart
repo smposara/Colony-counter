@@ -1931,6 +1931,11 @@ class AppLocalizationsTh extends AppLocalizations {
       'เพลตที่มีรหัสตัวอย่างเดียวกันจะรวมกันเพื่อคำนวณ CFU/mL';
 
   @override
+  String saveSheetPlanMismatch(String sample, String planned, String plate) {
+    return 'ตัวอย่าง $sample วางแผนไว้เป็น $planned แต่เพลตนี้เป็น $plate เปลี่ยนชนิดจานในเมนู หรือใช้รหัสตัวอย่างอื่น';
+  }
+
+  @override
   String get saveSheetScan => 'สแกนฉลากเพลต';
 
   @override

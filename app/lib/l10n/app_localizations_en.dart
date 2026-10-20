@@ -2041,6 +2041,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'Plates with the same sample ID are pooled for CFU/mL';
 
   @override
+  String saveSheetPlanMismatch(String sample, String planned, String plate) {
+    return '$sample is planned as $planned, but this plate is $plate. Change the plate type in the menu, or use another sample ID.';
+  }
+
+  @override
   String get saveSheetScan => 'Scan plate label';
 
   @override

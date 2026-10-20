@@ -193,7 +193,7 @@ void main() {
       expect(zones[0].text, '6 mm (no zone) DMSO');
       expect(zones[0].radiusPx.isNaN, isTrue);
       expect(zones[1].text, '11 mm EtOH');
-      expect(zones[2].text, '17 mm 3');
+      expect(zones[2].text, '17 mm #3');
       final header = zoneAnnotationHeader(r);
       expect(header[0], 'Extracts - Rep 1');
       expect(header[1], startsWith('Disks 6 mm - 6 zones'));

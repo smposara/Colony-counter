@@ -3338,6 +3338,12 @@ abstract class AppLocalizations {
   /// **'Plates with the same sample ID are pooled for CFU/mL'**
   String get saveSheetSampleHelp;
 
+  /// No description provided for @saveSheetPlanMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'{sample} is planned as {planned}, but this plate is {plate}. Change the plate type in the menu, or use another sample ID.'**
+  String saveSheetPlanMismatch(String sample, String planned, String plate);
+
   /// No description provided for @saveSheetScan.
   ///
   /// In en, this message translates to:

@@ -555,11 +555,12 @@ class _SlotChip extends StatelessWidget {
         onPressed: onShoot,
       );
     }
-    final warn = p.spreader || p.tntc;
-    // A drop plate counts only the colonies in the drops kept, as the drop
-    // table does.
+    // A drop plate counts only the colonies in the countable drops kept, as
+    // the drop table does; a TNTC drop warns like a TNTC plate.
+    final drops = p.isDropPlate ? p.observations() : const <Observation>[];
+    final warn = p.spreader || p.tntc || drops.any((o) => o.count.tntc);
     final count = p.isDropPlate
-        ? p.observations().fold(0, (s, o) => s + o.count.count)
+        ? drops.where((o) => !o.count.tntc).fold(0, (s, o) => s + o.count.count)
         : p.count;
     return ActionChip(
       avatar: Icon(

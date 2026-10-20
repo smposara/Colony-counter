@@ -402,12 +402,19 @@ void main() {
         marks: [
           base.marks[0].copyWith(label: 'เอทานอล'),
           base.marks[1].copyWith(label: 'EtOH'),
-          ...base.marks.skip(2),
+          // A label that is itself a number must not read as disk 1.
+          base.marks[2].copyWith(label: '1'),
+          ...base.marks.skip(3),
         ],
       );
       final zones = zoneAnnotations(r);
-      expect(zones[0].text, endsWith(' 1'));
+      expect(zones[0].text, endsWith(' #1'));
       expect(zones[1].text, endsWith(' EtOH'));
+      expect(zones[2].text, endsWith(' 1'));
+      expect(
+        zones[2].text.split(' ').last,
+        isNot(zones[0].text.split(' ').last),
+      );
       for (final z in zones) {
         expect(asciiDrawable(z.text), isTrue, reason: z.text);
       }

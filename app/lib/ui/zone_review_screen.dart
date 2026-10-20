@@ -909,14 +909,15 @@ class _ZoneReviewScreenState extends State<ZoneReviewScreen> {
 
 /// The zones as drawn on a shared photo: size in whole mm and label. The
 /// image fonts are ASCII only, so a label they cannot draw (Thai, say) is
-/// replaced by the disk's number.
+/// replaced by the disk's number, as "#3" so it cannot be read as a label
+/// that is itself a number.
 List<AnnotatedZone> zoneAnnotations(ZoneRecord r) => [
   for (var i = 0; i < r.marks.length; i++)
     () {
       final m = r.marks[i];
       final mm = m.roundedMm(r.diskMm);
       final name = m.label.isEmpty || !asciiDrawable(m.label)
-          ? '${i + 1}'
+          ? '#${i + 1}'
           : m.label;
       return AnnotatedZone(
         m.x,
