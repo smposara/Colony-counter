@@ -1,9 +1,11 @@
 import 'dart:typed_data';
 
+import 'package:flutter/widgets.dart' show StringCharacters;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 import '../core/labels.dart';
+import '../l10n/l10n.dart';
 import 'sample_info.dart';
 
 /// One printed label: the code plus a second line of context.
@@ -130,14 +132,13 @@ Future<Uint8List> buildLabelSheet(
                           mainAxisAlignment: pw.MainAxisAlignment.center,
                           crossAxisAlignment: pw.CrossAxisAlignment.start,
                           children: [
-                            pw.Text(
+                            _sampleIdText(
                               spec.label.sampleId,
-                              style: pw.TextStyle(
+                              pw.TextStyle(
                                 font: bold,
                                 fontSize: 11,
                                 fontFallback: boldFallback,
                               ),
-                              maxLines: 2,
                             ),
                             pw.SizedBox(height: 2),
                             pw.RichText(
@@ -180,12 +181,63 @@ Future<Uint8List> buildLabelSheet(
   return doc.save();
 }
 
+/// Smallest size (pt) a sample ID shrinks to before it is shortened.
+const _minIdSize = 7.0;
+
+/// [id] in at most two lines: at [style]'s size if it fits, else at the
+/// largest size down to [_minIdSize] that does; an ID too long even then
+/// loses its middle ("Lake-A-2026…-0042"), so IDs that differ only at the
+/// end still print apart.
+pw.Widget _sampleIdText(String id, pw.TextStyle style) => pw.LayoutBuilder(
+  builder: (context, constraints) {
+    pw.Text text(String s, double size, [int? maxLines]) => pw.Text(
+      s,
+      style: style.copyWith(fontSize: size),
+      maxLines: maxLines,
+    );
+    // Whole when two lines are as tall as all of it.
+    bool fits(String s, double size) {
+      double height(int? maxLines) {
+        final t = text(s, size, maxLines)
+          ..layout(context, pw.BoxConstraints(maxWidth: constraints!.maxWidth));
+        return t.box!.height;
+      }
+
+      return height(null) <= height(2) + 0.01;
+    }
+
+    for (var size = style.fontSize!; size >= _minIdSize; size -= 0.5) {
+      if (fits(id, size)) return text(id, size, 2);
+    }
+    // The most characters kept around "…", a little more of the end.
+    final chars = id.characters.toList();
+    String cut(int keep) {
+      final tail = (keep + 1) ~/ 2;
+      return '${chars.take(keep - tail).join()}…'
+          '${chars.skip(chars.length - tail).join()}';
+    }
+
+    var lo = 0, hi = chars.length - 1;
+    while (lo < hi) {
+      final mid = (lo + hi + 1) ~/ 2;
+      if (fits(cut(mid), _minIdSize)) {
+        lo = mid;
+      } else {
+        hi = mid - 1;
+      }
+    }
+    return text(cut(lo), _minIdSize, 2);
+  },
+);
+
 /// "10⁻⁴  R2" as spans: superscript glyphs when the PDF has a font for them,
 /// otherwise a smaller "-4" raised above the line.
 List<pw.InlineSpan> _codeLine(PlateLabel label, {required bool superscripts}) {
   final exp = label.dilutionExp;
   return [
-    if (exp != null) ...[
+    if (exp == 0)
+      pw.TextSpan(text: tr.neat)
+    else if (exp != null) ...[
       const pw.TextSpan(text: '10'),
       superscripts
           ? pw.TextSpan(

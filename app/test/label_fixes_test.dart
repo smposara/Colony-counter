@@ -121,6 +121,55 @@ void main() {
       expect(plain, isNot(contains('^')));
       expect(plain, contains('-4'));
     });
+
+    test('dilution 0 is printed as Neat', () async {
+      for (final symbols in [true, false]) {
+        final text = await _pdfText(
+          await buildLabelSheet(
+            [
+              const LabelSpec(
+                PlateLabel('Lake-A', dilutionExp: 0, replicate: 1),
+                '',
+              ),
+            ],
+            fontData: _font('Roboto-Regular.ttf'),
+            boldFontData: _font('Roboto-Bold.ttf'),
+            symbolFontData: symbols ? _font('ColonySymbols-Regular.ttf') : null,
+          ),
+        );
+        expect(text, contains('Neat'));
+        expect(text, isNot(contains('10')));
+      }
+    });
+
+    test('long sample IDs shrink to fit, then keep their end', () async {
+      /// The printed ID of a label for [id], its lines joined.
+      Future<String> printedId(String id) async {
+        final text = await _pdfText(
+          await buildLabelSheet(
+            [LabelSpec(PlateLabel(id, dilutionExp: 4, replicate: 1), '')],
+            fontData: _font('Roboto-Regular.ttf'),
+            boldFontData: _font('Roboto-Bold.ttf'),
+            symbolFontData: _font('ColonySymbols-Regular.ttf'),
+          ),
+        );
+        return text.split('10⁻⁴').first.split('\n').map((l) => l.trim()).join();
+      }
+
+      // Two lines at 11 pt cannot hold it; a smaller size can, whole.
+      const mid = 'ESTUARY-SITE-07-INFLUENT-COMPOSITE-01';
+      expect(await printedId(mid), mid);
+      // 60 characters do not fit at all: the end is kept, after "…".
+      const long =
+          'ESTUARY-SITE-07-2026-10-20-MORNING-INFLUENT-COMPOSITE-A-0041';
+      expect(long.length, 60);
+      final a = await printedId(long);
+      final b = await printedId(long.replaceAll('0041', '0042'));
+      expect(a, contains('…'));
+      expect(a, startsWith('ESTUARY'));
+      expect(a, endsWith('A-0041'));
+      expect(b, endsWith('A-0042'));
+    });
   });
 
   test('a scanned label caption uses the dilution helper', () {

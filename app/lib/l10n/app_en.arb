@@ -484,6 +484,7 @@
   "homeNoPlatesToExport": "No plates to export.",
   "homePreparingExport": "Preparing export…",
   "homePreparingBackup": "Preparing backup…",
+  "homeExportRunning": "This export is still in progress.",
   "homeNPlates": "{n, plural, =1{1 plate} other{{n} plates}}",
   "@homeNPlates": {
     "placeholders": {
@@ -948,7 +949,8 @@
   "multiLayPlates": "Lay the plates side by side, lids off, on a dark surface, and photograph them from straight above.",
   "multiTakePhoto": "Take photo",
   "multiChoosePhoto": "Choose photo",
-  "multiNoPlatesFound": "No plates found in this photo.",
+  "multiNoPlatesFound": "No plates found in this photo. Use the pencil to mark them by hand.",
+  "multiOtherSizes": "Plates of a different size were not marked; add them with the pencil.",
   "multiPlatesInPhoto": "Plates in photo",
   "multiPlatesFound": "{n, plural, =1{1 plate found} other{{n} plates found}}",
   "@multiPlatesFound": {

@@ -72,6 +72,7 @@ Future<PlatesInPhoto> findPlatesInBackground(
     [for (final p in r['plates'] as List) Plate.fromJson(object(p))],
     r['width'] as int,
     r['height'] as int,
+    otherSizes: r['other_sizes'] as bool? ?? false,
   );
 }
 

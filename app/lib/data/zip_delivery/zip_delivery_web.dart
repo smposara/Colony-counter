@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 import 'dart:typed_data';
@@ -16,6 +17,10 @@ external JSString objectUrl(JSObject blob);
 external void revokeUrl(JSString url);
 @JS('document')
 external JSObject get document;
+
+/// How long a downloaded ZIP's Blob URL stays valid. iOS Safari reads it
+/// only once the user confirms its "Download?" prompt.
+const _keepUrl = Duration(minutes: 2);
 
 /// Chrome desktop writes directly to disk. Other browsers assemble immutable
 /// Blob parts, avoiding an aggregate Dart byte buffer and duplicate ZIP copy.
@@ -66,7 +71,7 @@ Future<void> deliverZip(
   body.callMethod<JSAny?>('appendChild'.toJS, anchor);
   anchor.callMethod<JSAny?>('click'.toJS);
   anchor.callMethod<JSAny?>('remove'.toJS);
-  // Keep the URL alive while Safari/Chrome begins reading the download.
-  await Future<void>.delayed(const Duration(seconds: 1));
-  revokeUrl(url);
+  // Keep the URL alive until the browser has read the download (not awaited:
+  // the export is done for the app).
+  Timer(_keepUrl, () => revokeUrl(url));
 }

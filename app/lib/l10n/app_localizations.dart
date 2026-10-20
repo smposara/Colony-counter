@@ -1352,6 +1352,12 @@ abstract class AppLocalizations {
   /// **'Preparing backup…'**
   String get homePreparingBackup;
 
+  /// No description provided for @homeExportRunning.
+  ///
+  /// In en, this message translates to:
+  /// **'This export is still in progress.'**
+  String get homeExportRunning;
+
   /// No description provided for @homeNPlates.
   ///
   /// In en, this message translates to:
@@ -2297,8 +2303,14 @@ abstract class AppLocalizations {
   /// No description provided for @multiNoPlatesFound.
   ///
   /// In en, this message translates to:
-  /// **'No plates found in this photo.'**
+  /// **'No plates found in this photo. Use the pencil to mark them by hand.'**
   String get multiNoPlatesFound;
+
+  /// No description provided for @multiOtherSizes.
+  ///
+  /// In en, this message translates to:
+  /// **'Plates of a different size were not marked; add them with the pencil.'**
+  String get multiOtherSizes;
 
   /// No description provided for @multiPlatesInPhoto.
   ///

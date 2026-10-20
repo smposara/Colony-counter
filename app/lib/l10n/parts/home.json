@@ -15,6 +15,7 @@
   "homeNoPlatesToExport": {"en": "No plates to export.", "th": "ไม่มีเพลตให้ส่งออก"},
   "homePreparingExport": {"en": "Preparing export…", "th": "กำลังเตรียมส่งออก…"},
   "homePreparingBackup": {"en": "Preparing backup…", "th": "กำลังเตรียมข้อมูลสำรอง…"},
+  "homeExportRunning": {"en": "This export is still in progress.", "th": "การส่งออกนี้ยังดำเนินการอยู่"},
   "homeNPlates": {"en": "{n, plural, =1{1 plate} other{{n} plates}}", "th": "{n} เพลต", "placeholders": {"n": {"type": "int"}}},
   "homeNSamples": {"en": "{n, plural, =1{1 sample} other{{n} samples}}", "th": "{n} ตัวอย่าง", "placeholders": {"n": {"type": "int"}}},
   "homeRestored": {"en": "Restored {plates} and {samples}.", "th": "กู้คืน {plates} และ {samples} แล้ว", "placeholders": {"plates": {"type": "String"}, "samples": {"type": "String"}}},

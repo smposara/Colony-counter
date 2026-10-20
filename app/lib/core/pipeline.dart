@@ -182,13 +182,23 @@ CountResult countPhoto(
   );
 }
 
-/// Plates found in a photo with several dishes, in the photo's pixels.
+/// Plates found in a photo with several dishes, in the photo's pixels (none
+/// when the finder saw no dish: the photo's size is still known).
 class PlatesInPhoto {
-  const PlatesInPhoto(this.plates, this.width, this.height);
+  const PlatesInPhoto(
+    this.plates,
+    this.width,
+    this.height, {
+    this.otherSizes = false,
+  });
 
   final List<Plate> plates;
   final int width;
   final int height;
+
+  /// Circles of another size than the plates found were left out (see
+  /// [findPlates]).
+  final bool otherSizes;
 }
 
 /// Two chroma channels (blue and red difference from luminance) of a decoded
@@ -223,16 +233,17 @@ PlatesInPhoto findPlatesInPhoto((Uint8List, PlateFormat) job) {
     height: (photo.height * scale).round(),
     interpolation: img.Interpolation.average,
   );
-  final plates = findPlates(
+  final found = findPlates(
     grayFromImage(work),
     colour: chromaFromImage(work),
     format: job.$2,
     workSize: kFindPlatesWorkSize,
   );
   return PlatesInPhoto(
-    [for (final p in plates) p.scaled(1 / scale)],
+    [for (final p in found.plates) p.scaled(1 / scale)],
     photo.width,
     photo.height,
+    otherSizes: found.otherSizes,
   );
 }
 

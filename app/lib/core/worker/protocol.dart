@@ -226,6 +226,7 @@ Map<String, dynamic> processPhotoJob(Uint8List bytes, Map<String, dynamic> j) {
         'plates': [for (final p in r.plates) p.toJson()],
         'width': r.width,
         'height': r.height,
+        'other_sizes': r.otherSizes,
       };
     case 'crop':
       final (crop, p) = cropToPlate((bytes, plate!));

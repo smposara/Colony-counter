@@ -68,7 +68,7 @@ void main() {
     ];
     final bytes = synthPhoto(1600, 1050, plates, seed: 4);
     final gray = grayFromImage(img.decodeImage(bytes)!);
-    final found = findPlates(gray);
+    final found = findPlates(gray).plates;
     expect(found.length, 4);
     for (var i = 0; i < 4; i++) {
       expect(found[i].cx, closeTo(plates[i].cx, 10));

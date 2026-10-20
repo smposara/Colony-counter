@@ -444,7 +444,10 @@ Plate findPlate(
 }
 
 /// Finds every round plate in a photo with several dishes, in reading order
-/// (top row first, left to right).
+/// (top row first, left to right); none when no circle clears the noise.
+/// [otherSizes] tells that a circle outside the plates' size band (step 2)
+/// would have counted as a plate by itself: probably a dish of another size,
+/// which is not marked.
 ///
 /// 1. Edge pixels (gradient above the channel's noise, thinned to the ridge)
 ///    vote for a centre along their gradient, at every distance a plate's
@@ -465,13 +468,13 @@ Plate findPlate(
 /// [colour] adds channels (e.g. chroma) whose edges count as well, for dishes
 /// that differ from the surround more in colour than in brightness.
 /// [minRadius] and [maxRadius] bound a plate's radius as fractions of the
-/// image's shorter side.
-List<Plate> findPlates(
+/// image's shorter side (a tenth: five 90 mm dishes fill a 4:3 photo).
+({List<Plate> plates, bool otherSizes}) findPlates(
   GrayImage image, {
   List<GrayImage> colour = const [],
   PlateFormat format = PlateFormat.dish90,
   int maxPlates = 12,
-  double minRadius = 1 / 8,
+  double minRadius = 1 / 10,
   double maxRadius = 0.6,
   double minRelativeScore = 0.05,
   int workSize = 480,
@@ -571,7 +574,7 @@ List<Plate> findPlates(
         rMax,
       ),
   ];
-  if (first.isEmpty) throw StateError('No plate found in image');
+  if (first.isEmpty) return (plates: const <Plate>[], otherSizes: false);
   final top = first.reduce((p, q) => q.score > p.score ? q : p);
   final lo = math.max(rMin, top.r / 1.4), hi = math.min(rMax, top.r * 1.4);
   final fits = [
@@ -583,6 +586,10 @@ List<Plate> findPlates(
   ]..sort((p, q) => q.score.compareTo(p.score));
 
   // 3. Best first, with the noise, overlap and nesting rules.
+  bool clashes(_Fit c, List<_Fit> found) => found.any((f) {
+    final d = math.sqrt(math.pow(f.cx - c.cx, 2) + math.pow(f.cy - c.cy, 2));
+    return d < f.r || d < c.r || d < (f.r + c.r) * 0.95;
+  });
   final found = <_Fit>[];
   for (final c in fits) {
     if (found.length >= maxPlates) break;
@@ -590,13 +597,18 @@ List<Plate> findPlates(
     if (found.isNotEmpty && c.score < found.first.score * minRelativeScore) {
       break;
     }
-    final clash = found.any((f) {
-      final d = math.sqrt(math.pow(f.cx - c.cx, 2) + math.pow(f.cy - c.cy, 2));
-      return d < f.r || d < c.r || d < (f.r + c.r) * 0.95;
-    });
-    if (!clash) found.add(c);
+    if (!clashes(c, found)) found.add(c);
   }
-  if (found.isEmpty) throw StateError('No plate found in image');
+  if (found.isEmpty) return (plates: const <Plate>[], otherSizes: false);
+  // A circle of another size that would pass the same rules and lies clear
+  // of every plate taken (not colonies inside one, not a dish's wall).
+  final otherSizes = first.any(
+    (f) =>
+        (f.r < lo || f.r > hi) &&
+        f.score > _minScore &&
+        f.score >= found.first.score * minRelativeScore &&
+        !clashes(f, found),
+  );
   final largest = found.map((f) => f.r).reduce(math.max);
 
   // Reading order: rows of plates whose centres are within a radius in y.
@@ -609,11 +621,14 @@ List<Plate> findPlates(
       rows.add([f]);
     }
   }
-  return [
-    for (final row in rows)
-      for (final f in row..sort((a, b) => a.cx.compareTo(b.cx)))
-        _toPlate(f, e, format),
-  ];
+  return (
+    plates: [
+      for (final row in rows)
+        for (final f in row..sort((a, b) => a.cx.compareTo(b.cx)))
+          _toPlate(f, e, format),
+    ],
+    otherSizes: otherSizes,
+  );
 }
 
 /// Rim score of the circle ([cx], [cy], [r]): how clearly *all* of it

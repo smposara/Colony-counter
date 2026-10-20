@@ -774,6 +774,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homePreparingBackup => 'Preparing backup…';
 
   @override
+  String get homeExportRunning => 'This export is still in progress.';
+
+  @override
   String homeNPlates(int n) {
     String _temp0 = intl.Intl.pluralLogic(
       n,
@@ -1382,7 +1385,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get multiChoosePhoto => 'Choose photo';
 
   @override
-  String get multiNoPlatesFound => 'No plates found in this photo.';
+  String get multiNoPlatesFound =>
+      'No plates found in this photo. Use the pencil to mark them by hand.';
+
+  @override
+  String get multiOtherSizes =>
+      'Plates of a different size were not marked; add them with the pencil.';
 
   @override
   String get multiPlatesInPhoto => 'Plates in photo';

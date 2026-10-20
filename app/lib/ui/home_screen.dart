@@ -251,6 +251,30 @@ class _DataMenu extends StatelessWidget {
   static String _stamp() =>
       DateTime.now().toIso8601String().substring(0, 19).replaceAll(':', '-');
 
+  /// Exports being prepared or shared (one of each kind at a time, from
+  /// either tab's menu).
+  static final _running = <String>{};
+
+  /// Runs the export [kind] unless one is already running.
+  Future<void> _once(
+    BuildContext context,
+    String kind,
+    Future<void> Function(BuildContext) export,
+  ) async {
+    if (!_running.add(kind)) {
+      // In place of its "Preparing…", which would hold this one back.
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(tr.homeExportRunning)));
+      return;
+    }
+    try {
+      await export(context);
+    } finally {
+      _running.remove(kind);
+    }
+  }
+
   Future<void> _share(
     List<(String, List<int>, String)> files,
     String subject,
@@ -398,13 +422,13 @@ class _DataMenu extends StatelessWidget {
     final empty = !plates && !samples && !zonePlates;
     return PopupMenuButton<String>(
       onSelected: (v) => switch (v) {
-        'csv' => _exportCsv(context),
-        'backup' => _backup(context),
+        'csv' => _once(context, v, _exportCsv),
+        'backup' => _once(context, v, _backup),
         'restore' => _restore(context),
         'accuracy' => Navigator.of(context).push(
           MaterialPageRoute<void>(builder: (_) => AccuracyScreen(store: store)),
         ),
-        'training' => _trainingExport(context),
+        'training' => _once(context, v, _trainingExport),
         'calibration' => openZoneCalibration(context, store),
         'manual' => openManual(context),
         'about' => Navigator.of(

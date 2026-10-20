@@ -749,6 +749,9 @@ class AppLocalizationsTh extends AppLocalizations {
   String get homePreparingBackup => 'กำลังเตรียมข้อมูลสำรอง…';
 
   @override
+  String get homeExportRunning => 'การส่งออกนี้ยังดำเนินการอยู่';
+
+  @override
   String homeNPlates(int n) {
     return '$n เพลต';
   }
@@ -1321,7 +1324,12 @@ class AppLocalizationsTh extends AppLocalizations {
   String get multiChoosePhoto => 'เลือกภาพ';
 
   @override
-  String get multiNoPlatesFound => 'ไม่พบเพลตในภาพนี้';
+  String get multiNoPlatesFound =>
+      'ไม่พบเพลตในภาพนี้ ใช้ปุ่มดินสอเพื่อระบุตำแหน่งเพลตเอง';
+
+  @override
+  String get multiOtherSizes =>
+      'เพลตที่มีขนาดต่างออกไปไม่ได้ถูกระบุ เพิ่มได้ด้วยปุ่มดินสอ';
 
   @override
   String get multiPlatesInPhoto => 'เพลตในภาพ';

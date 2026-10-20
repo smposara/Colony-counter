@@ -102,6 +102,9 @@ class _MultiPlateScreenState extends State<MultiPlateScreen> {
   bool _editing = false;
   String? _error;
 
+  /// The finder left out circles of another size (see [findPlates]).
+  bool _otherSizes = false;
+
   /// Saved record per plate index.
   final Map<int, PlateRecord> _done = {};
 
@@ -120,9 +123,11 @@ class _MultiPlateScreenState extends State<MultiPlateScreen> {
         _plates = res.plates;
         _w = res.width;
         _h = res.height;
+        _otherSizes = res.otherSizes;
       });
     } catch (e) {
-      if (mounted) setState(() => _error = tr.multiNoPlatesFound);
+      // The photo could not be read: there is nothing to mark plates on.
+      if (mounted) setState(() => _error = tr.photoProcessFailed('$e'));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -237,7 +242,7 @@ class _MultiPlateScreenState extends State<MultiPlateScreen> {
               : tr.multiPlatesFound(_plates.length),
         ),
         actions: [
-          if (_plates.isNotEmpty || _error == null)
+          if (_error == null)
             IconButton(
               tooltip: _editing ? tr.multiDone : tr.multiAddRemove,
               isSelected: _editing,
@@ -251,7 +256,7 @@ class _MultiPlateScreenState extends State<MultiPlateScreen> {
       body: Column(
         children: [
           Expanded(
-            child: _error != null && _plates.isEmpty && !_editing
+            child: _error != null
                 ? Center(child: Text(_error!))
                 : _w == 0
                 ? const Center(child: CircularProgressIndicator())
@@ -303,59 +308,66 @@ class _MultiPlateScreenState extends State<MultiPlateScreen> {
                     ],
                   ),
           ),
-          Material(
-            elevation: 3,
-            child: SafeArea(
-              top: false,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(
-                      _editing
-                          ? tr.multiEditHint
-                          : _plates.isEmpty
-                          ? tr.multiUsePencil
-                          : left == 0
-                          ? tr.multiAllSaved
-                          : tr.multiTapToCount(left),
-                      style: t.bodyMedium,
-                    ),
-                    if (_plates.isNotEmpty) ...[
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 6,
-                        runSpacing: 6,
-                        children: [
-                          for (var i = 0; i < _plates.length; i++)
-                            ActionChip(
-                              avatar: Icon(
-                                _done.containsKey(i)
-                                    ? Icons.check_circle
-                                    : Icons.radio_button_unchecked,
-                                size: 18,
-                              ),
-                              label: Text(
-                                _done.containsKey(i)
-                                    ? '${i + 1}: ${plateLabel(_done[i]!)} · ${_done[i]!.count}'
-                                    : slots[i] == null
-                                    ? '${i + 1}'
-                                    : '${i + 1}: ${_slotLabel(slots[i]!)}',
-                              ),
-                              onPressed: _busy || _editing
-                                  ? null
-                                  : () => _open(i),
-                            ),
-                        ],
+          if (_error == null)
+            Material(
+              elevation: 3,
+              child: SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        _editing
+                            ? tr.multiEditHint
+                            : _plates.isEmpty
+                            ? (_busy || _w == 0
+                                  ? tr.multiUsePencil
+                                  : tr.multiNoPlatesFound)
+                            : left == 0
+                            ? tr.multiAllSaved
+                            : tr.multiTapToCount(left),
+                        style: t.bodyMedium,
                       ),
+                      if (_otherSizes && _plates.isNotEmpty && !_editing) ...[
+                        const SizedBox(height: 4),
+                        Text(tr.multiOtherSizes, style: t.bodySmall),
+                      ],
+                      if (_plates.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          children: [
+                            for (var i = 0; i < _plates.length; i++)
+                              ActionChip(
+                                avatar: Icon(
+                                  _done.containsKey(i)
+                                      ? Icons.check_circle
+                                      : Icons.radio_button_unchecked,
+                                  size: 18,
+                                ),
+                                label: Text(
+                                  _done.containsKey(i)
+                                      ? '${i + 1}: ${plateLabel(_done[i]!)} · ${_done[i]!.count}'
+                                      : slots[i] == null
+                                      ? '${i + 1}'
+                                      : '${i + 1}: ${_slotLabel(slots[i]!)}',
+                                ),
+                                onPressed: _busy || _editing
+                                    ? null
+                                    : () => _open(i),
+                              ),
+                          ],
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
             ),
-          ),
         ],
       ),
     );
