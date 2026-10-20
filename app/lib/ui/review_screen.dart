@@ -2386,7 +2386,7 @@ class _SpotDialogState extends State<_SpotDialog> {
                         border: const OutlineInputBorder(),
                       ),
                       items: [
-                        for (var r = 1; r <= 12; r++)
+                        for (final r in replicateChoices(_s.replicate))
                           DropdownMenuItem(value: r, child: Text('R$r')),
                       ],
                       onChanged: (v) =>
@@ -2486,3 +2486,10 @@ class _SpotDialogState extends State<_SpotDialog> {
     );
   }
 }
+
+/// The replicates a drop can be given: R1–R12, and always its own (a plain
+/// plate can suggest more than 12 drops, numbered R13 and up).
+@visibleForTesting
+List<int> replicateChoices(int current) => [
+  for (var r = 1; r <= math.max(12, current); r++) r,
+];

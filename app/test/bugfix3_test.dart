@@ -397,4 +397,10 @@ void main() {
       expect(saved?.volumeMl, 100);
     });
   });
+
+  test('a drop numbered past R12 keeps its own replicate in the dialog', () {
+    expect(replicateChoices(1), List.generate(12, (i) => i + 1));
+    expect(replicateChoices(15), contains(15));
+    expect(replicateChoices(15).toSet().length, 15);
+  });
 }
