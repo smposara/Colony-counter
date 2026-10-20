@@ -50,9 +50,17 @@ class _CompareTabState extends State<CompareTab> {
             ),
           );
         }
+        // By default, one of the user's own experiments before the examples.
+        final mine = {
+          for (final s in store.allSamples())
+            if (!s.isExample) s.experiment,
+        };
         final exp = experiments.contains(_experiment)
             ? _experiment!
-            : experiments.first;
+            : experiments.firstWhere(
+                mine.contains,
+                orElse: () => experiments.first,
+              );
         final samples = store
             .allSamples()
             .where((s) => s.experiment == exp)

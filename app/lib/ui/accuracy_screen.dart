@@ -24,7 +24,7 @@ class AccuracyScreen extends StatelessWidget {
       body: ListenableBuilder(
         listenable: store,
         builder: (context, _) {
-          final report = AccuracyReport(store.records);
+          final report = AccuracyReport.of(store);
           return ListView(
             padding: scrollPadding(
               context,

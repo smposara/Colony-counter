@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 
 import '../core/worker/client.dart';
-import 'examples.dart';
 import 'export_metadata.dart';
+import 'export_source.dart';
 import 'plate_store.dart';
 
 Future<Map<String, dynamic>> prepareExport(
@@ -17,7 +17,7 @@ Future<Map<String, dynamic>> prepareExport(
   // packs them includes them).
   final records = [
     for (final r in store.records)
-      if (includeExamples || !r.isExample) r,
+      if (includeExamples || !isExamplePlate(store, r)) r,
   ];
   final zones = [
     for (final r in store.zoneRecords)
@@ -43,7 +43,7 @@ Future<Map<String, dynamic>> prepareExport(
     },
     'samples': [
       for (final s in store.samplePlans)
-        if (includeExamples || !isExampleSample(store, s)) s.toJson(),
+        if (includeExamples || !s.isExample) s.toJson(),
     ],
     'calibrations': [for (final s in store.calibrations) s.toJson()],
     'panels': [for (final s in store.zonePanels) s.toJson()],

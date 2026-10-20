@@ -13,6 +13,19 @@ import 'plate_record.dart';
 /// The tag on the built-in example samples (see data/examples.dart).
 const kExampleTag = 'example';
 
+/// The IDs of the built-in example samples. Only these, with [kExampleTag],
+/// are examples: a sample of the user's own never is, whatever its tags.
+const kExampleSampleIds = {
+  'Example – lake water',
+  'Example – control 0 h',
+  'Example – control 2 h',
+  'Example – treated 0 h',
+  'Example – treated 2 h',
+};
+
+/// The start of the example samples' and experiments' names.
+const kExampleNamePrefix = 'Example – ';
+
 enum PlatingMethod {
   spread('Spread / pour plate'),
   drop('Drop plate (Miles–Misra)'),
@@ -228,8 +241,10 @@ class SampleInfo {
   /// Free labels for finding samples later, e.g. "thesis", "batch 3".
   final List<String> tags;
 
-  /// Part of the built-in example data (tagged [kExampleTag]).
-  bool get isExample => tags.contains(kExampleTag);
+  /// One of the built-in example samples ([kExampleSampleIds], tagged
+  /// [kExampleTag]).
+  bool get isExample =>
+      kExampleSampleIds.contains(sampleId) && tags.contains(kExampleTag);
 
   /// True when [query] (case-insensitive, every word) appears in any of the
   /// sample's text fields.

@@ -625,7 +625,10 @@ class PlateStore extends ChangeNotifier implements ExportSource {
       });
 
   /// Adds plates, samples and photos from a backup. Items whose ID already
-  /// exists here are skipped. Returns (plates added, plates skipped, samples added).
+  /// exists here are skipped. With [onlyIntoEmpty], nothing is added unless
+  /// there are no plates, samples or zone plates here when the import runs
+  /// (checked in the same mutation, so nothing saved meanwhile is missed).
+  /// Returns (plates added, plates skipped, samples added).
   Future<(int, int, int)> importAll(
     List<PlateRecord> plates,
     List<SampleInfo> sampleInfos,
@@ -633,7 +636,14 @@ class PlateStore extends ChangeNotifier implements ExportSource {
     List<ZoneRecord> zonePlates = const [],
     List<ZonePanel> zonePanels = const [],
     List<CalibrationProfile> calibrations = const [],
+    bool onlyIntoEmpty = false,
   }) => _mutate(() async {
+    if (onlyIntoEmpty &&
+        (_records.isNotEmpty ||
+            _samples.isNotEmpty ||
+            _zoneRecords.isNotEmpty)) {
+      return (0, 0, 0);
+    }
     final have = {for (final r in _records) r.id};
     final usedNames = {
       for (final r in _records) r.imagePath,

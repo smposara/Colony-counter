@@ -4,6 +4,14 @@ import 'sample_info.dart';
 import 'zone_calibration_record.dart';
 import 'zone_record.dart';
 
+/// Example data: a built-in example plate, or any plate in an example sample
+/// (everything in an example sample is example data, so in-app results,
+/// exports and "Remove examples" agree).
+bool isExamplePlate(ExportSource store, PlateRecord r) =>
+    r.isExample ||
+    (kExampleSampleIds.contains(r.sampleId) &&
+        store.sampleInfo(r.sampleId).isExample);
+
 /// Pure data interface, usable by export workers without Flutter or storage.
 abstract interface class ExportSource {
   List<PlateRecord> get records;

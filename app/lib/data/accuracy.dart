@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import '../core/pipeline.dart';
+import 'export_source.dart';
 import 'plate_record.dart';
 
 /// One plate whose every colony was checked by hand: the automatic count
@@ -98,6 +99,14 @@ class AccuracyReport {
         for (final r in records)
           if (r.verified && !r.isExample) AccuracyPoint(r),
       ];
+
+  /// The checked plates of [store] that are not example data (see
+  /// [isExamplePlate]).
+  AccuracyReport.of(ExportSource store)
+    : this([
+        for (final r in store.records)
+          if (!isExamplePlate(store, r)) r,
+      ]);
 
   final List<AccuracyPoint> points;
 

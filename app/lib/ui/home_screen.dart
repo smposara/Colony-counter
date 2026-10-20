@@ -11,6 +11,7 @@ import '../core/plate.dart';
 import '../data/examples.dart';
 import '../data/export.dart';
 import '../data/export_jobs.dart';
+import '../data/export_source.dart';
 import '../data/zip_delivery/zip_delivery.dart';
 import '../data/plate_record.dart';
 import '../data/plate_store.dart';
@@ -391,8 +392,8 @@ class _DataMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Exports leave the built-in examples out.
-    final plates = store.records.any((r) => !r.isExample);
-    final samples = store.samplePlans.any((s) => !isExampleSample(store, s));
+    final plates = store.records.any((r) => !isExamplePlate(store, r));
+    final samples = store.samplePlans.any((s) => !s.isExample);
     final zonePlates = store.zoneRecords.any((r) => !r.isExample);
     final empty = !plates && !samples && !zonePlates;
     return PopupMenuButton<String>(
@@ -664,7 +665,7 @@ class RecordTile extends StatelessWidget {
         leading: ClipOval(
           child: PhotoThumbnail(store: store, path: r.imagePath),
         ),
-        title: titleWithBadge(Text(plateLabel(r)), r.isExample),
+        title: titleWithBadge(Text(plateLabel(r)), isExamplePlate(store, r)),
         subtitle: Text(
           r.isFilm
               ? '${shortDate(r.createdAt)}\n${filmSummary(r)}'

@@ -15,6 +15,7 @@ import '../core/pipeline.dart';
 import '../core/plate.dart';
 import '../core/spots.dart';
 import '../data/drop_results.dart';
+import '../data/export_source.dart';
 import '../data/plate_record.dart';
 import '../data/plate_store.dart';
 import '../data/sample_info.dart';
@@ -883,7 +884,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
     if (widget.record != null || every <= 0) return false;
     var since = 0;
     for (final r in widget.store.records) {
-      if (r.isExample) continue;
+      if (isExamplePlate(widget.store, r)) continue;
       if (r.verified) break;
       since++;
     }

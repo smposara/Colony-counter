@@ -8,6 +8,7 @@ import '../core/plate.dart';
 import 'plate_record.dart';
 import 'plate_store.dart';
 import 'export_jobs.dart';
+import 'export_source.dart';
 import 'streaming_zip.dart';
 export 'csv_export.dart';
 import 'sample_info.dart';
@@ -69,8 +70,13 @@ class RestoreSummary {
 }
 
 /// Merges a backup made by [buildBackup] into [store]; plates already present
-/// (same ID) are kept as they are.
-Future<RestoreSummary> restoreBackup(PlateStore store, Uint8List zip) async {
+/// (same ID) are kept as they are. With [onlyIntoEmpty], nothing is added
+/// unless the store holds no plates, samples or zone plates at that moment.
+Future<RestoreSummary> restoreBackup(
+  PlateStore store,
+  Uint8List zip, {
+  bool onlyIntoEmpty = false,
+}) async {
   final Archive archive;
   try {
     archive = ZipDecoder().decodeBytes(zip);
@@ -110,7 +116,7 @@ Future<RestoreSummary> restoreBackup(PlateStore store, Uint8List zip) async {
   ];
   // The built-in examples do not count: a new phone has them.
   final wasEmpty =
-      store.records.every((r) => r.isExample) &&
+      store.records.every((r) => isExamplePlate(store, r)) &&
       store.zoneRecords.every((r) => r.isExample);
   final (added, skipped, samplesAdded) = await store.importAll(
     plates,
@@ -122,6 +128,7 @@ Future<RestoreSummary> restoreBackup(PlateStore store, Uint8List zip) async {
     zonePlates: zonePlates,
     zonePanels: zonePanels,
     calibrations: calibrations,
+    onlyIntoEmpty: onlyIntoEmpty,
   );
   final settings = m['settings'];
   if (wasEmpty && settings is Map<String, dynamic>) {

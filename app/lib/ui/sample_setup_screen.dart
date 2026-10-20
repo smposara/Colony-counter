@@ -46,7 +46,9 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
   late final _id = TextEditingController(
     text: widget.edit?.sampleId ?? widget.initialId ?? _suggestId(),
   );
-  late final _experiment = TextEditingController(text: _base?.experiment ?? '');
+  late final _experiment = TextEditingController(
+    text: _own(_base?.experiment ?? ''),
+  );
   late final _condition = TextEditingController(text: _base?.condition ?? '');
   late final _time = TextEditingController(
     text: _base?.timeH == null
@@ -88,7 +90,12 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
   late final _operator = TextEditingController(
     text: _base?.operator ?? widget.store.defaultOperator,
   );
-  late final _tags = TextEditingController(text: _base?.tags.join(', ') ?? '');
+  late final _tags = TextEditingController(
+    text: [
+      for (final t in _base?.tags ?? const <String>[])
+        if (widget.template == null || t != kExampleTag) t,
+    ].join(', '),
+  );
   late PlatingMethod _method =
       _base?.method ??
       (widget.store.defaultFormat.isFilm
@@ -151,11 +158,20 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
   late int _replicates = _base?.replicates ?? 3;
   String? _idError;
 
+  /// [name] without the "Example – " start when copying an example sample:
+  /// the copy is the user's own (it also drops the example tag), so it
+  /// should not look like an example.
+  String _own(String name) =>
+      (widget.template?.isExample ?? false) &&
+          name.startsWith(kExampleNamePrefix)
+      ? name.substring(kExampleNamePrefix.length)
+      : name;
+
   /// "Lake-A-2" after "Lake-A", or "S1", "S2"… for a fresh start.
   String _suggestId() {
     final t = widget.template;
     final existing = widget.store.allSamples().map((s) => s.sampleId).toSet();
-    final stem = t == null ? 'S' : '${t.sampleId}-';
+    final stem = t == null ? 'S' : '${_own(t.sampleId)}-';
     for (var i = t == null ? 1 : 2; ; i++) {
       final id = '$stem$i';
       if (!existing.contains(id)) return id;

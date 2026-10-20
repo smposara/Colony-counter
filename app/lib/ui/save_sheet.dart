@@ -201,6 +201,16 @@ class _SaveSheetState extends State<SaveSheet> {
                   );
                 },
               ),
+            // Everything in an example sample is example data.
+            if (plan?.isExample ?? false)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  tr.examplesSaveNote,
+                  key: const ValueKey('exampleSaveNote'),
+                  style: t.bodySmall,
+                ),
+              ),
             const SizedBox(height: 16),
             if (!_drop) ...[
               Row(

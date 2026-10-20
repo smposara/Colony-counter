@@ -8,7 +8,6 @@ import '../core/labels.dart';
 import '../core/plate.dart';
 import '../core/stats.dart';
 import '../data/drop_results.dart';
-import '../data/examples.dart';
 import '../data/plate_record.dart';
 import '../data/label_sheet.dart';
 import '../data/plate_store.dart';
@@ -274,7 +273,7 @@ class _SampleTile extends StatelessWidget {
             '${qualifiedMean(info.analyse(plates, store.rule, result: k), info)}',
     ];
     return ListTile(
-      title: titleWithBadge(Text(info.sampleId), isExampleSample(store, info)),
+      title: titleWithBadge(Text(info.sampleId), info.isExample),
       subtitle: Text(
         '${details.join(' · ')}\n'
         '${film.length > 1 ? film.join(' · ') : resultSummary(res, info)}',

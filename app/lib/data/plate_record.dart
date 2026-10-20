@@ -105,7 +105,8 @@ class PlateRecord {
 
   bool get isDropPlate => spots.isNotEmpty;
 
-  /// One of the built-in example plates.
+  /// One of the built-in example plates (by ID). A plate the user adds to an
+  /// example sample is example data too: see `isExamplePlate`.
   bool get isExample => id.startsWith(kExampleIdPrefix);
 
   bool get isFilm => format.isFilm;

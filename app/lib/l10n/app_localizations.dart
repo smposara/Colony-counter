@@ -1223,8 +1223,14 @@ abstract class AppLocalizations {
   /// No description provided for @examplesRemoveBody.
   ///
   /// In en, this message translates to:
-  /// **'The example plates, samples and zone plate are deleted. Your own data is kept. You can add the examples again in Settings.'**
+  /// **'The example plates, samples and zone plate are deleted, with any plates you added to the example samples. Your other data is kept. You can add the examples again in Settings.'**
   String get examplesRemoveBody;
+
+  /// No description provided for @examplesSaveNote.
+  ///
+  /// In en, this message translates to:
+  /// **'This plate joins the example and is removed with it.'**
+  String get examplesSaveNote;
 
   /// No description provided for @examplesRemoveAction.
   ///

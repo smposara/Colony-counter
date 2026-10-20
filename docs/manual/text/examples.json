@@ -19,7 +19,7 @@
       "title": {"en": "Remove them", "th": "ลบข้อมูลสาธิต"},
       "steps": [
         {"shot": "examples-6-remove", "marks": [{"en": "Tap Remove examples", "th": "แตะ ลบข้อมูลสาธิต"}]},
-        {"shot": "examples-7-confirm", "marks": [{"en": "Tap Remove", "th": "แตะ ลบ"}], "tip": {"en": "Your own data is kept. Add the examples again in Settings.", "th": "ข้อมูลของคุณยังอยู่ เพิ่มข้อมูลสาธิตอีกครั้งได้ในการตั้งค่า"}},
+        {"shot": "examples-7-confirm", "marks": [{"en": "Tap Remove", "th": "แตะ ลบ"}], "tip": {"en": "Plates you added to an example go with it; the rest of your data is kept. Add the examples again in Settings.", "th": "เพลตที่คุณเพิ่มลงในตัวอย่างสาธิตจะถูกลบไปด้วย ข้อมูลอื่นของคุณยังอยู่ เพิ่มข้อมูลสาธิตอีกครั้งได้ในการตั้งค่า"}},
         {"shot": "examples-8-empty", "caption": {"en": "Ready for your own plates.", "th": "พร้อมสำหรับเพลตของคุณ"}}
       ]
     }

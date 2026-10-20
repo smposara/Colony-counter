@@ -21,6 +21,9 @@ _Screenshots from the web build in Chromium on synthetic plates and demo data._
   They are marked *Example*, a banner on every tab removes them, and Settings →
   *Example data* adds them again. Apps that already hold data never get them.
   Examples stay out of CSVs, backups, training data and counting accuracy.
+  Everything in an example sample is example data: a plate saved into one is
+  marked, left out and removed with it. Only the shipped sample IDs
+  (`kExampleSampleIds`) with the `example` tag are example samples.
 - **About** (menu → *About*): version, developer, contact email, website, source
   code, licence (GNU AGPL-3.0, see `LICENSE`) and the open-source licences of the
   libraries and bundled fonts. The details live in `lib/app_info.dart`; keep

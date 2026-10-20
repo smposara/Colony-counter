@@ -706,7 +706,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get examplesRemoveBody =>
-      'The example plates, samples and zone plate are deleted. Your own data is kept. You can add the examples again in Settings.';
+      'The example plates, samples and zone plate are deleted, with any plates you added to the example samples. Your other data is kept. You can add the examples again in Settings.';
+
+  @override
+  String get examplesSaveNote =>
+      'This plate joins the example and is removed with it.';
 
   @override
   String get examplesRemoveAction => 'Remove';
