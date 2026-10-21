@@ -339,6 +339,9 @@ class _Series {
   final List<(double, double, double, int)> points;
 }
 
+/// The time-kill chart's largest height (logical pixels).
+const double kMaxChartHeight = 380;
+
 class _TimeChart extends StatefulWidget {
   const _TimeChart({required this.series});
 
@@ -385,25 +388,31 @@ class _TimeChartState extends State<_TimeChart> {
             ],
           ),
         const SizedBox(height: 8),
-        AspectRatio(
-          aspectRatio: 1.5,
-          child: LayoutBuilder(
-            builder: (context, box) {
-              final painter = _ChartPainter(
-                series: series,
-                ink: cs.onSurfaceVariant,
-                grid: cs.outlineVariant.withValues(alpha: 0.5),
-                surface: cs.surface,
-                selected: sel,
-                labelStyle: t.labelSmall!.copyWith(color: cs.onSurfaceVariant),
-              );
-              return GestureDetector(
-                onTapUp: (d) => setState(
-                  () => _selected = painter.hit(d.localPosition, box.biggest),
-                ),
-                child: CustomPaint(size: box.biggest, painter: painter),
-              );
-            },
+        // 3:2 on phones; no taller than [kMaxChartHeight] on tablets and
+        // desktops, so the whole chart fits on screen.
+        LayoutBuilder(
+          builder: (context, outer) => SizedBox(
+            height: math.min(outer.maxWidth / 1.5, kMaxChartHeight),
+            child: LayoutBuilder(
+              builder: (context, box) {
+                final painter = _ChartPainter(
+                  series: series,
+                  ink: cs.onSurfaceVariant,
+                  grid: cs.outlineVariant.withValues(alpha: 0.5),
+                  surface: cs.surface,
+                  selected: sel,
+                  labelStyle: t.labelSmall!.copyWith(
+                    color: cs.onSurfaceVariant,
+                  ),
+                );
+                return GestureDetector(
+                  onTapUp: (d) => setState(
+                    () => _selected = painter.hit(d.localPosition, box.biggest),
+                  ),
+                  child: CustomPaint(size: box.biggest, painter: painter),
+                );
+              },
+            ),
           ),
         ),
         SizedBox(

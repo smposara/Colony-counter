@@ -22,6 +22,8 @@ answer to each form. Work through the checklist from top to bottom.
 | App icon | `graphics/icon-512.png` | 512 × 512 PNG, ≤ 1 MB |
 | Feature graphic | `graphics/feature-graphic-en.png`, `graphics/feature-graphic-th.png` | 1024 × 500 PNG/JPEG |
 | Phone screenshots | `screenshots/en-US/1…8.png`, `screenshots/th-TH/1…8.png` | 2–8 per language, 1080 × 1920 (9:16) |
+| Tablet screenshots (7-inch and 10-inch) | `screenshots/tablet/en-US/1…6.png`, `screenshots/tablet/th-TH/1…6.png` | up to 8, 2560 × 1440 (16:9) |
+| Chromebook screenshots | `screenshots/chromebook/en-US/1…6.png`, `screenshots/chromebook/th-TH/1…6.png` | 4–8, 2560 × 1440 (16:9) |
 | Store texts | `listing/en-US.md`, `listing/th-TH.md` (and one `.txt` per field for copy-paste) | name ≤ 30, short ≤ 80, full ≤ 4000, release notes ≤ 500 characters |
 | App bundle | CI artifact **colony-counter-aab** → `app-release.aab` | signed with the upload key |
 | Privacy policy | `app/web/privacy.html`, published with the web version | public URL |
@@ -38,7 +40,13 @@ To make them again after the app changes (and the two feature graphics):
    The headlines and the screen for each image are at the top of `make_graphics.js`;
    the layout is `frame.html` (screenshots) and `feature.html` (feature graphic).
 
-Tablet screenshots are optional; without them the listing is shown as a phone app.
+Tablet screenshots: the same 6 images go in both the 7-inch and the 10-inch slots
+(Play Console → Main store listing → Tablet screenshots). Chromebook screenshots show the
+web version in a browser window at cc.amphur.in.th; add them under Chromebook screenshots.
+They are made like the phone ones, from screens rendered at 1280 × 800 and 1440 × 900:
+`MANUAL_SIZE=1280x800 MANUAL_OUT=/tmp/tab flutter test test/manual/<chapter>_manual.dart`
+(and `1440x900` → `/tmp/desk`) for the examples, count, zones and multi chapters, then
+`node make_graphics.js /tmp/raw /tmp/tab /tmp/desk`.
 
 `screenshots/release-0.7.0/` shows the 0.7.0 feature, drop plates with a layout, in English
 and Thai: sample setup with rows of drops and the counting window, a 4 × 3 rows plate with

@@ -7,6 +7,12 @@ const { chromium } = require('playwright');
 const path = require('path'), fs = require('fs');
 
 const raw = path.resolve(process.argv[2]);
+// Optional: the same chapters rendered with MANUAL_SIZE=1280x800 (tablet) and
+// MANUAL_SIZE=1440x900 (desktop / Chromebook).
+const rawTablet = process.argv[3] && path.resolve(process.argv[3]);
+const rawDesktop = process.argv[4] && path.resolve(process.argv[4]);
+// Screens shown on tablets and Chromebooks (their headlines come from SHOTS).
+const WIDE = ['count-2-result', 'examples-3-result', 'examples-4-compare', 'multi-3-found', 'zones-10-review', 'examples-1-plates'];
 const store = path.resolve(__dirname, '..');
 // Order = order in the listing. h: headline, s: subline, n: footnote.
 const SHOTS = [
@@ -71,6 +77,25 @@ const FEATURE = {
     await fp.screenshot({ path: out });
     console.log(out);
     await fp.close();
+    for (const [kind, dir, folder] of [['tablet', rawTablet, 'tablet'], ['desktop', rawDesktop, 'chromebook']]) {
+      if (!dir) continue;
+      const wideDir = path.join(store, 'screenshots', folder, tag);
+      fs.mkdirSync(wideDir, { recursive: true });
+      for (const f of fs.readdirSync(wideDir)) if (f.endsWith('.png')) fs.unlinkSync(path.join(wideDir, f));
+      const wp = await b.newPage({ viewport: { width: 2560, height: 1440 } });
+      for (const [i, shot] of WIDE.entries()) {
+        const img = path.join(dir, `${shot}.${lang}.png`);
+        if (!fs.existsSync(img)) throw new Error(`missing ${img}`);
+        const text = SHOTS.find(([s]) => s === shot)[1][lang];
+        const q = new URLSearchParams({ lang, kind, img: 'file://' + img, ...text });
+        await wp.goto('file://' + path.join(__dirname, 'wide.html') + '?' + q);
+        await wp.waitForFunction(() => document.getElementById('img').complete && document.fonts.status === 'loaded');
+        const out = path.join(wideDir, `${i + 1}-${shot.split('-')[0]}.png`);
+        await wp.screenshot({ path: out });
+        console.log(out);
+      }
+      await wp.close();
+    }
   }
   await b.close();
 })().catch(e => { console.error('FAILED', e.message); process.exit(1); });
