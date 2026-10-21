@@ -26,10 +26,17 @@ answer to each form. Work through the checklist from top to bottom.
 | App bundle | CI artifact **colony-counter-aab** → `app-release.aab` | signed with the upload key |
 | Privacy policy | `app/web/privacy.html`, published with the web version | public URL |
 
-Screenshots, in order: review a count · plate list · samples · sample result with
-replicates · comparison (time-kill chart) · time-lapse · counting accuracy · several
-plates in one photo. They come from the web build with demo data and look the same
-as the Android app (same Flutter interface).
+Screenshots, in order (each a real app screen under a headline, English and Thai):
+count a plate · CFU/mL from a dilution series · compare conditions (time-kill chart) ·
+several plates in one photo · drop plates · Petrifilm® dry films (with the Neogen
+trademark note) · inhibition zones (beta) · built-in examples and picture manual.
+
+To make them again after the app changes (and the two feature graphics):
+1. Render the app screens with the manual's chapters, unannotated:
+   `cd app; for c in examples count drops petrifilm zones multi; do MANUAL_OUT=/tmp/raw flutter test test/manual/${c}_manual.dart; done`
+2. `cd store/design; node make_graphics.js /tmp/raw` (Playwright with Chromium).
+   The headlines and the screen for each image are at the top of `make_graphics.js`;
+   the layout is `frame.html` (screenshots) and `feature.html` (feature graphic).
 
 Tablet screenshots are optional; without them the listing is shown as a phone app.
 
@@ -52,8 +59,9 @@ allows 8 phone screenshots per language.
 ## Promo video (optional)
 
 `video/colony-counter-promo-en.mp4` and `video/colony-counter-promo-th.mp4`: 43 s,
-1920 × 1080, no voice or music. The video shows the colony count on a real demo
-photo, then the store screenshots with captions.
+1920 × 1080, no voice or music. The video shows the colony count on a demo photo,
+then seven real app screens with captions: check and correct, CFU/mL, compare, several
+plates, drop plates, inhibition zones, examples and manual.
 
 Play takes a **YouTube link**, not a file:
 1. Upload each video to YouTube (studio.youtube.com → Create → Upload videos).
@@ -65,9 +73,10 @@ Play takes a **YouTube link**, not a file:
 3. Play Console → Main store listing → **Video** → paste the English link.
    In the Thai (th-TH) translation, paste the Thai link.
 
-To rebuild the video after the screenshots change, run `node render.js en video
+To rebuild the video after the app changes, copy the new app screens (step 1 above) to
+`video/screens/<en|th>/<name>.jpg`, then run `node render.js en video
 colony-counter-promo-en.mp4` (and `th`) in `video/`. It needs Playwright with
-Chromium and ffmpeg. The captions are in `video/promo.html`.
+Chromium and ffmpeg. The captions and the list of screens are in `video/promo.html`.
 
 ## Before you start
 

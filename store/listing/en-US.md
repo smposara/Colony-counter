@@ -12,15 +12,19 @@ Colony Counter – CFU counting
 Count bacterial colonies (CFU) on agar plates with your phone camera.
 ```
 
-## Full description (3130/4000 characters)
+## Full description (3437/4000 characters)
 
 ```
 Colony Counter counts bacterial and fungal colonies on agar plates from a photo, and turns plate counts into CFU/mL, CFU/g or CFU/100 mL. Built for microbiology research and teaching labs.
 
+START IN A MINUTE
+• Built-in example plates, samples and a time-kill comparison: try every feature before you count your own plates, then remove them with one tap.
+• A step-by-step picture manual for every feature, in Thai and English (menu → User manual).
+
 HOW IT WORKS
 • Photograph a plate. A guide circle and live checks for level, focus and glare help you take a good photo.
 • The app finds the dish and counts the colonies automatically, splitting touching colonies and estimating clusters.
-• Check the count on the photo: tap to remove or add a colony, long-press to set a cluster size. Undo any change.
+• Check the count on the photo: switch to Edit, tap to remove or add a colony, long-press to set a cluster size. Undo any change.
 
 RESULTS YOU CAN USE
 • CFU/mL from a dilution series, with the FDA BAM (25–250), ISO 7218 (10–300) or 30–300 counting rules.
@@ -49,7 +53,7 @@ TRUST THE COUNT
 
 RECORDS AND EXPORT
 • Sample plans, experiment details (strain, medium, batch, incubation, operator, tags) and search.
-• Print QR plate labels and scan them to fill in the sample.
+• Print QR plate labels (A4, 3 × 8 labels of 70 × 37 mm) and scan them to fill in the sample.
 • Export CSV (plates, samples, every colony, zones), annotated photos, full backups, and training data for your own models.
 
 PRIVATE AND OFFLINE

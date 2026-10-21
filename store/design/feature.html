@@ -1,0 +1,50 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+/* Play Store feature graphic: 1024 × 500. Key content stays clear of the
+   edges (Play may crop or overlay a play button in the middle). */
+@font-face { font-family: Roboto; font-weight: 700; src: url(../../app/assets/fonts/Roboto-Bold.ttf); }
+@font-face { font-family: Roboto; src: url(../../app/assets/fonts/Roboto-Regular.ttf); }
+@font-face { font-family: PlexThai; font-weight: 700; src: url(../../app/assets/fonts/IBMPlexSansThai-Bold.ttf); }
+@font-face { font-family: PlexThai; src: url(../../app/assets/fonts/IBMPlexSansThai-Regular.ttf); }
+@font-face { font-family: Sym; src: url(../../app/assets/fonts/ColonySymbols-Regular.ttf); }
+* { margin: 0; box-sizing: border-box; }
+html, body { width: 1024px; height: 500px; overflow: hidden; }
+body { font-family: Roboto, PlexThai, Sym, sans-serif; color: #fff;
+  background: radial-gradient(90% 120% at 15% 20%, #1e74d6 0%, #1565c0 50%, #0d4a94 100%); }
+.left { position: absolute; left: 56px; top: 0; bottom: 0; width: 480px;
+  display: flex; flex-direction: column; justify-content: center; gap: 18px; }
+.brand { display: flex; align-items: center; gap: 20px; }
+.brand img { width: 96px; height: 96px; border-radius: 22px; box-shadow: 0 8px 24px rgba(0,0,0,.3); }
+h1 { font-size: 50px; font-weight: 700; line-height: 1.05; }
+h2 { font-size: 34px; font-weight: 700; line-height: 1.25; }
+:lang(th) h2 { font-size: 30px; line-height: 1.35; }
+p { font-size: 22px; opacity: .9; line-height: 1.35; }
+.bar { width: 72px; height: 8px; border-radius: 4px; background: #ff9800; }
+.phones { position: absolute; right: 24px; top: 36px; width: 400px; height: 600px; }
+.phone { position: absolute; width: 210px; padding: 9px; border-radius: 30px; background: #0f151f;
+  box-shadow: 0 18px 40px rgba(0,0,0,.4); }
+.phone img { display: block; width: 100%; border-radius: 22px; }
+.p1 { left: 0; top: 40px; transform: rotate(-6deg); }
+.p2 { left: 180px; top: 0; transform: rotate(5deg); }
+</style></head>
+<body>
+<div class="left">
+  <div class="brand"><img src="../../app/assets/icon/icon-256.png" alt=""><h1>Colony Counter</h1></div>
+  <div class="bar"></div>
+  <h2 id="t"></h2>
+  <p id="s"></p>
+</div>
+<div class="phones">
+  <div class="phone p1"><img id="a" alt=""></div>
+  <div class="phone p2"><img id="b" alt=""></div>
+</div>
+<script>
+const q = new URLSearchParams(location.search);
+document.documentElement.lang = q.get('lang');
+document.getElementById('t').textContent = q.get('t');
+document.getElementById('s').textContent = q.get('s');
+document.getElementById('a').src = q.get('a');
+document.getElementById('b').src = q.get('b');
+</script>
+</body></html>

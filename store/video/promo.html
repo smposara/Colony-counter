@@ -6,11 +6,11 @@ html,body{margin:0;background:#0D47A1}
  background:radial-gradient(circle at 80% 15%,#1E88E5 0,transparent 55%),linear-gradient(135deg,#1976D2,#1565C0 45%,#0D47A1)}
 .ring{position:absolute;border-radius:50%;border:3px solid rgba(255,255,255,.08)}
 .abs{position:absolute}
-#phone{left:390px;top:106px;width:500px;height:867px;border-radius:58px;background:#0a0f1a;box-shadow:0 30px 80px rgba(0,0,0,.45)}
-#screen{position:absolute;left:14px;top:14px;width:472px;height:839px;border-radius:46px;overflow:hidden;background:#000}
-#screen img.shot{position:absolute;top:0;width:472px;height:839px}
-#strip{position:absolute;top:0;left:0;height:839px}
-.pane{position:absolute;top:0;width:472px;height:839px;background:#fff;overflow:hidden}
+#phone{left:420px;top:80px;width:440px;height:921px;border-radius:54px;background:#0a0f1a;box-shadow:0 30px 80px rgba(0,0,0,.45)}
+#screen{position:absolute;left:14px;top:14px;width:412px;height:893px;border-radius:42px;overflow:hidden;background:#000}
+#screen img.shot{position:absolute;top:0;width:412px;height:893px}
+#strip{position:absolute;top:0;left:0;height:893px}
+.pane{position:absolute;top:0;width:412px;height:893px;background:#fff;overflow:hidden}
 #cap{left:1010px;width:800px;top:0;height:1080px}
 .capbox{position:absolute;left:0;width:800px}
 .kick{display:inline-block;background:#FF9800;color:#2B1700;font-weight:700;font-size:26px;padding:6px 18px;border-radius:30px;margin-bottom:26px}
@@ -43,7 +43,8 @@ html,body{margin:0;background:#0D47A1}
 </div>
 <script>
 const LANG = new URLSearchParams(location.search).get('lang') || 'en';
-const DIR = LANG === 'th' ? 'th-TH' : 'en-US';
+// Real app screens (360 × 780 at 2×), made by app/test/manual.
+const DIR = 'screens/' + (LANG === 'th' ? 'th' : 'en');
 const TXT = {
  en: {
   tag: 'Count colonies with your phone camera',
@@ -51,13 +52,13 @@ const TXT = {
   out: ['Free', 'No ads', 'Works offline', 'Thai & English'],
   scenes: [
    ['Snap a plate', 'Colonies are found and counted automatically, in seconds.'],
-   ['Check and correct', 'Tap to add or remove a colony. You stay in control of every count.'],
-   ['Every plate in order', 'Saved with its sample, dilution and replicate.'],
+   ['Check and correct', 'Switch to Edit, then tap to add or remove a colony. You stay in control.'],
    ['CFU/mL, CFU/g, CFU/100 mL', 'Mean ± SD and log₁₀ from replicates, following FDA BAM or ISO 7218.'],
-   ['Compare over time', 'Time-kill and growth curves, ready to share.'],
-   ['Time-lapse', 'Follow colonies as they appear and grow.'],
+   ['Compare over time', 'Log reduction and time-kill or growth curves, ready to share.'],
    ['Several plates, one photo', 'Each plate is found for you, then counted one by one.'],
-   ['Know your accuracy', 'Compare automatic counts with the counts you checked.'],
+   ['Drop plates', 'Every drop is found, with a drop table and a 95 % interval.'],
+   ['Inhibition zones (beta)', 'Zone diameters in mm, checked against your own calliper.'],
+   ['Try it right away', 'Built-in example data and a picture manual for every feature.'],
   ]},
  th: {
   tag: 'นับโคโลนีแบคทีเรียด้วยกล้องโทรศัพท์',
@@ -65,16 +66,16 @@ const TXT = {
   out: ['ฟรี', 'ไม่มีโฆษณา', 'ใช้งานออฟไลน์', 'ภาษาไทยและอังกฤษ'],
   scenes: [
    ['ถ่ายภาพเพลต', 'แอปหาและนับโคโลนีให้อัตโนมัติ ภายในไม่กี่วินาที'],
-   ['ตรวจและแก้ไขได้', 'แตะเพื่อเพิ่มหรือลบโคโลนี ทุกผลนับอยู่ในการควบคุมของคุณ'],
-   ['ทุกเพลตเป็นระเบียบ', 'บันทึกพร้อมตัวอย่าง ระดับการเจือจาง และซ้ำที่'],
+   ['ตรวจและแก้ไขได้', 'เลือก แก้ไข แล้วแตะเพื่อเพิ่มหรือลบโคโลนี ทุกผลนับอยู่ในการควบคุมของคุณ'],
    ['CFU/mL, CFU/g, CFU/100 mL', 'ค่าเฉลี่ย ± SD และ log₁₀ จากค่าซ้ำ ตาม FDA BAM หรือ ISO 7218'],
-   ['เปรียบเทียบตามเวลา', 'กราฟ time-kill และกราฟการเจริญ พร้อมแชร์'],
-   ['ไทม์แลปส์', 'ติดตามโคโลนีที่เกิดขึ้นใหม่และขยายขนาดตามเวลา'],
+   ['เปรียบเทียบตามเวลา', 'log reduction และกราฟ time-kill หรือกราฟการเจริญ พร้อมแชร์'],
    ['หลายเพลตในภาพเดียว', 'แอปหาแต่ละเพลตให้ แล้วนับทีละเพลต'],
-   ['รู้ความแม่นยำ', 'เทียบผลนับอัตโนมัติกับผลที่คุณตรวจแล้ว'],
+   ['ดรอปเพลต', 'หาทุกหยดให้ พร้อมตารางหยดและช่วงความเชื่อมั่น 95 %'],
+   ['โซนยับยั้ง (เบต้า)', 'วัดเส้นผ่านศูนย์กลางโซนเป็นมม. เทียบกับเวอร์เนียร์ของคุณ'],
+   ['ลองใช้ได้ทันที', 'มีข้อมูลสาธิตในตัว และคู่มือภาพครบทุกฟีเจอร์'],
   ]},
 }[LANG];
-const SHOTS = ['1-review', '2-plates', '4-sample-detail', '5-compare', '6-timelapse', '8-multi-plate', '7-accuracy'];
+const SHOTS = ['count-8-edit', 'examples-3-result', 'examples-4-compare', 'multi-3-found', 'drops-22-table', 'zones-10-review', 'examples-1-plates'];
 
 // Timeline (seconds)
 const T_INTRO = 3.4, T_HERO = 7.0, T_SHOT = 3.9, T_SLIDE = 0.55, T_OUTRO = 5.0;
@@ -88,16 +89,14 @@ const easeOut = x => 1 - Math.pow(1 - clamp(x), 3);
 const $ = id => document.getElementById(id);
 
 // Panes: hero (canvas) + one pane per screenshot, laid out side by side.
-const W = 472, H = 839;
+const W = 412, H = 893;
 const strip = $('strip');
 const hero = document.createElement('div'); hero.className = 'pane'; hero.id = 'hero';
-hero.innerHTML = '<canvas width="944" height="1678" style="width:472px;height:839px"></canvas><div id="status"></div><div id="count"><b>0</b><span></span></div>';
+hero.innerHTML = '<canvas width="824" height="1786" style="width:412px;height:893px"></canvas><div id="status"></div><div id="count"><b>0</b><span></span></div>';
 strip.appendChild(hero);
 SHOTS.forEach((s, i) => {
  const p = document.createElement('div'); p.className = 'pane'; p.style.left = (i + 1) * W + 'px';
- // Screenshots are 1080x1920; the screen is a little taller, so pin to the top
- // and fill below with the app's bottom colour.
- p.innerHTML = `<img class="shot" src="${DIR}/${s}.png" style="height:${W * 1920 / 1080}px">`;
+ p.innerHTML = `<img class="shot" src="${DIR}/${s}.jpg">`;
  strip.appendChild(p);
 });
 $('itag').textContent = TXT.tag; $('otag').textContent = TXT.tag;
@@ -120,7 +119,7 @@ function drawHero(p) { // p = progress 0..1 of the counting animation
  const sc = 2; ctx.setTransform(sc, 0, 0, sc, 0, 0);
  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
  // Fit the plate (circle) to the screen width with a margin.
- const R = 210, cx = W / 2, cy = H / 2 - 20;
+ const R = 190, cx = W / 2, cy = H / 2 - 20;
  const k = R / col.r;
  ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, R + 26, 0, Math.PI * 2); ctx.clip();
  ctx.drawImage(img, cx - col.cx * k, cy - col.cy * k, img.width * k, img.height * k);
