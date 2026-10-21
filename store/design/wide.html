@@ -1,0 +1,56 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+/* Play Store tablet and Chromebook screenshots: 2560 × 1440 (16:9). A headline
+   on the left, a real app screen in a tablet or a browser window on the right.
+   Parameters come from the URL (see make_graphics.js). */
+@font-face { font-family: Roboto; src: url(../../app/assets/fonts/Roboto-Regular.ttf); }
+@font-face { font-family: Roboto; font-weight: 500; src: url(../../app/assets/fonts/Roboto-Medium.ttf); }
+@font-face { font-family: Roboto; font-weight: 700; src: url(../../app/assets/fonts/Roboto-Bold.ttf); }
+@font-face { font-family: PlexThai; src: url(../../app/assets/fonts/IBMPlexSansThai-Regular.ttf); }
+@font-face { font-family: PlexThai; font-weight: 700; src: url(../../app/assets/fonts/IBMPlexSansThai-Bold.ttf); }
+@font-face { font-family: Sym; src: url(../../app/assets/fonts/ColonySymbols-Regular.ttf); }
+:root { --orange: #ff9800; --frame: #0f151f; }
+* { margin: 0; box-sizing: border-box; }
+html, body { width: 2560px; height: 1440px; overflow: hidden; }
+body { font-family: Roboto, PlexThai, Sym, sans-serif; color: #fff;
+  background: radial-gradient(80% 110% at 10% 10%, #1e74d6 0%, #1565c0 45%, #0d4a94 100%); }
+.text { position: absolute; left: 110px; top: 0; bottom: 0; width: 600px;
+  display: flex; flex-direction: column; justify-content: center; }
+.bar { width: 110px; height: 12px; border-radius: 6px; background: var(--orange); margin-bottom: 44px; }
+h1 { font-size: 92px; line-height: 1.1; font-weight: 700; letter-spacing: -0.5px; }
+:lang(th) h1 { font-size: 84px; line-height: 1.28; }
+p { margin-top: 32px; font-size: 44px; line-height: 1.35; opacity: .9; }
+.note { margin-top: 48px; font-size: 26px; opacity: .8; line-height: 1.4; }
+/* Tablet: 1640 px of screen in a dark bezel. */
+.tablet { position: absolute; right: 100px; top: 50%; transform: translateY(-50%);
+  width: 1712px; padding: 36px; border-radius: 64px; background: var(--frame);
+  box-shadow: 0 40px 100px rgba(0,0,0,.4), inset 0 0 0 3px #2a3442; }
+.tablet img { display: block; width: 100%; border-radius: 22px; }
+/* Desktop: a browser window showing the web app. */
+.window { position: absolute; right: 100px; top: 50%; transform: translateY(-50%);
+  width: 1720px; border-radius: 22px; overflow: hidden; background: #f1f3f6;
+  box-shadow: 0 40px 100px rgba(0,0,0,.45); }
+.chrome { height: 72px; display: flex; align-items: center; gap: 14px; padding: 0 28px;
+  background: #e6e9ee; border-bottom: 1px solid #d3d8df; }
+.dot { width: 20px; height: 20px; border-radius: 50%; }
+.url { margin-left: 28px; flex: 1; height: 44px; border-radius: 22px; background: #fff;
+  display: flex; align-items: center; padding: 0 26px; font-size: 24px; color: #3c4655; }
+.url b { font-weight: 500; color: #1d2633; }
+.window img { display: block; width: 100%; }
+</style></head>
+<body>
+<div class="text"><div class="bar"></div><h1 id="h"></h1><p id="s"></p><div class="note" id="n"></div></div>
+<div id="device"></div>
+<script>
+const q = new URLSearchParams(location.search);
+document.documentElement.lang = q.get('lang') || 'en';
+for (const k of ['h', 's', 'n']) document.getElementById(k).textContent = q.get(k) || '';
+const img = `<img id="img" alt="" src="${q.get('img')}">`;
+document.getElementById('device').outerHTML = q.get('kind') === 'desktop'
+  ? `<div class="window"><div class="chrome"><span class="dot" style="background:#ff5f57"></span>`
+    + `<span class="dot" style="background:#febc2e"></span><span class="dot" style="background:#28c840"></span>`
+    + `<span class="url"><b>cc.amphur.in.th</b></span></div>${img}</div>`
+  : `<div class="tablet">${img}</div>`;
+</script>
+</body></html>

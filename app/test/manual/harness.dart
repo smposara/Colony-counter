@@ -21,8 +21,18 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker_platform_interface/image_picker_platform_interface.dart';
 
 /// Phone screen: 360 × 780 logical pixels, saved at 2× (720 × 1560).
-const kPhone = Size(360, 780);
-const kDpr = 2.0;
+/// MANUAL_SIZE=1280x800 renders a tablet or desktop screen instead (the
+/// store's tablet and Chromebook screenshots); MANUAL_DPR sets the scale.
+final kPhone =
+    _size(Platform.environment['MANUAL_SIZE']) ?? const Size(360, 780);
+final kDpr = double.tryParse(Platform.environment['MANUAL_DPR'] ?? '') ?? 2.0;
+
+Size? _size(String? s) {
+  final m = RegExp(r'^(\d+)x(\d+)$').firstMatch(s ?? '');
+  return m == null
+      ? null
+      : Size(double.parse(m.group(1)!), double.parse(m.group(2)!));
+}
 
 final _outDir = Platform.environment['MANUAL_OUT'] ?? 'build/manual';
 
