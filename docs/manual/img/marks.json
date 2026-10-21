@@ -1,89 +1,23 @@
 {
- "examples-1-plates": [
+ "data-1-csv": [
+  "tap"
+ ],
+ "data-2-backup": [
+  "tap"
+ ],
+ "data-3-restore": [
+  "tap"
+ ],
+ "data-4-restored": [
   "look",
   "look"
  ],
- "examples-2-samples": [
+ "data-5-training": [
   "tap"
  ],
- "examples-3-result": [
-  "look",
-  "tap"
- ],
- "examples-4-compare": [
-  "look"
- ],
- "examples-5-zones": [
-  "look"
- ],
- "examples-6-remove": [
-  "tap"
- ],
- "examples-7-confirm": [
-  "tap"
- ],
- "examples-8-empty": [],
- "start-1-plates": [
-  "tap",
-  "look",
-  "tap"
- ],
- "start-10-defaults": [
+ "data-6-choose": [
   "tap",
   "tap",
-  "tap"
- ],
- "start-11-plate-type": [
-  "tap"
- ],
- "start-12-accuracy": [
-  "look",
-  "tap"
- ],
- "start-13-menu-about": [
-  "tap"
- ],
- "start-14-about": [
-  "look",
-  "tap"
- ],
- "start-15-about-more": [
-  "tap",
-  "look",
-  "look"
- ],
- "start-2-plates-tools": [
-  "tap",
-  "tap"
- ],
- "start-3-samples": [
-  "tap",
-  "tap",
-  "tap"
- ],
- "start-4-compare": [
-  "tap",
-  "look"
- ],
- "start-5-zones": [
-  "tap",
-  "tap"
- ],
- "start-6-menu": [
-  "tap",
-  "tap",
-  "tap"
- ],
- "start-7-menu-more": [
-  "tap",
-  "tap",
-  "tap"
- ],
- "start-8-settings": [
-  "tap",
-  "tap"
- ],
- "start-9-dark": [
   "tap"
  ]
 }

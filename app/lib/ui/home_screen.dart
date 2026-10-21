@@ -342,22 +342,25 @@ class _DataMenu extends StatelessWidget {
           .showSnackBar(SnackBar(content: Text(tr.homeNoPlatesToExport)));
       return;
     }
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.showSnackBar(SnackBar(content: Text(tr.homePreparingExport)));
-    try {
-      await deliverZip(
-        buildTrainingExportStream(store, selection: selection),
-        'training_${_stamp()}.zip',
-        tr.homeShareTraining,
-      );
-    } catch (e) {
-      messenger.hideCurrentSnackBar();
-      if (context.mounted) {
-        messenger.showSnackBar(SnackBar(content: Text(tr.saveFailed('$e'))));
+    // Only the export itself counts as running, not the choice above.
+    await _once(context, 'training', (context) async {
+      final messenger = ScaffoldMessenger.of(context);
+      messenger.showSnackBar(SnackBar(content: Text(tr.homePreparingExport)));
+      try {
+        await deliverZip(
+          buildTrainingExportStream(store, selection: selection),
+          'training_${_stamp()}.zip',
+          tr.homeShareTraining,
+        );
+      } catch (e) {
+        messenger.hideCurrentSnackBar();
+        if (context.mounted) {
+          messenger.showSnackBar(SnackBar(content: Text(tr.saveFailed('$e'))));
+        }
+        return;
       }
-      return;
-    }
-    messenger.hideCurrentSnackBar();
+      messenger.hideCurrentSnackBar();
+    });
   }
 
   Future<void> _backup(BuildContext context) async {
@@ -428,7 +431,7 @@ class _DataMenu extends StatelessWidget {
         'accuracy' => Navigator.of(context).push(
           MaterialPageRoute<void>(builder: (_) => AccuracyScreen(store: store)),
         ),
-        'training' => _once(context, v, _trainingExport),
+        'training' => _trainingExport(context),
         'calibration' => openZoneCalibration(context, store),
         'manual' => openManual(context),
         'about' => Navigator.of(
