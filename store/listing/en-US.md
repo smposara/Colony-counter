@@ -62,12 +62,14 @@ Reads Neogen® Petrifilm® plates. Petrifilm and Neogen are trademarks of Neogen
 Intended use: for research and teaching. Colony Counter is not a medical or diagnostic device. Always check the automatic count.
 ```
 
-## Release notes (What's new) (311/500 characters)
+## Release notes (What's new) (438/500 characters)
 
 ```
-Version 0.9.4
-• Example data to explore on first launch: a dilution series, a disinfectant time-kill comparison and a zone plate
-• Examples are marked; remove them with one tap, or add them again in Settings
-• Your own data and settings are never changed by the examples
-• Manual: new chapter "Try the examples"
+Version 0.9.5
+• Fixed: Undo after Drop plate could save a plate with the drop volume (CFU/mL 10× too high)
+• "New sample like this" from an example now makes your own sample; plates added to examples stay examples
+• Several plates in one photo: mark plates by hand when none are found; smaller plates found
+• Labels: Neat plates, long sample IDs
+• Settings default plate type and zone replicates are kept
+• Safer exports and web downloads
 ```
