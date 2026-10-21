@@ -7,6 +7,11 @@ class ReviewLayout extends StatelessWidget {
   final Widget image;
   final Widget? panel;
 
+  /// Whether [context] is in the side panel of the wide layout, which
+  /// scrolls as a whole and has the full screen height.
+  static bool inSidePanel(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<_SidePanel>() != null;
+
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, box) {
@@ -16,7 +21,10 @@ class ReviewLayout extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(child: image),
-            SizedBox(width: 400, child: SingleChildScrollView(child: panel!)),
+            SizedBox(
+              width: 400,
+              child: SingleChildScrollView(child: _SidePanel(child: panel!)),
+            ),
           ],
         );
       }
@@ -28,4 +36,29 @@ class ReviewLayout extends StatelessWidget {
       );
     },
   );
+}
+
+/// Panel details that scroll on their own below the photo, capped at 40 %
+/// of the screen height so the actions after them stay in view on short
+/// phones. The side panel has room for them in full.
+class ReviewDetails extends StatelessWidget {
+  const ReviewDetails({super.key, required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => ConstrainedBox(
+    constraints: BoxConstraints(
+      maxHeight: ReviewLayout.inSidePanel(context)
+          ? double.infinity
+          : MediaQuery.sizeOf(context).height * 0.4,
+    ),
+    child: child,
+  );
+}
+
+class _SidePanel extends InheritedWidget {
+  const _SidePanel({required super.child});
+
+  @override
+  bool updateShouldNotify(_SidePanel oldWidget) => false;
 }

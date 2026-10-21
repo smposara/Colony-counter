@@ -651,7 +651,9 @@ class _ZoneReviewScreenState extends State<ZoneReviewScreen> {
                   panEnabled: !_plateMode,
                   scaleEnabled: !_plateMode,
                   onInteractionUpdate: (_) => setState(() {}),
-                  child: Center(
+                  // Tight constraints, so a photo with fewer pixels than
+                  // the area is scaled up to fill it, as _fitScale assumes.
+                  child: SizedBox.expand(
                     child: FittedBox(
                       child: SizedBox(
                         width: w,

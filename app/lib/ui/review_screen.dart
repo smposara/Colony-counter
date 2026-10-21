@@ -1316,7 +1316,9 @@ class _ReviewScreenState extends State<ReviewScreen> {
                   scaleEnabled: !lockView,
                   onInteractionUpdate: (_) =>
                       setState(() {}), // keep stroke widths crisp
-                  child: Center(
+                  // Tight constraints, so a photo with fewer pixels than
+                  // the area is scaled up to fill it, as _fitScale assumes.
+                  child: SizedBox.expand(
                     child: FittedBox(
                       child: SizedBox(
                         width: _imageW.toDouble(),
@@ -1432,10 +1434,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
           children: [
             // Details scroll on short phones; the Save / Recount actions below
             // always stay visible.
-            ConstrainedBox(
-              constraints: BoxConstraints(
-                maxHeight: MediaQuery.sizeOf(context).height * 0.4,
-              ),
+            ReviewDetails(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
                 child: Column(

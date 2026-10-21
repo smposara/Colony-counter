@@ -185,6 +185,11 @@ ThemeData appTheme(Brightness brightness) {
       foregroundColor: dark ? null : Colors.white,
       systemOverlayStyle: SystemUiOverlayStyle.light,
     ),
+    // Material 3 dialogs are at most 560 wide, so long text wraps instead
+    // of spanning a tablet or desktop screen.
+    dialogTheme: const DialogThemeData(
+      constraints: BoxConstraints(minWidth: 280, maxWidth: 560),
+    ),
     floatingActionButtonTheme: const FloatingActionButtonThemeData(
       backgroundColor: kBrandOrange,
       foregroundColor: onOrange,

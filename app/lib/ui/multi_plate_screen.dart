@@ -267,7 +267,9 @@ class _MultiPlateScreenState extends State<MultiPlateScreen> {
                           color: Colors.black,
                           child: InteractiveViewer(
                             maxScale: 6,
-                            child: Center(
+                            // Tight constraints, so a photo with fewer
+                            // pixels than the area is scaled up to fill it.
+                            child: SizedBox.expand(
                               child: FittedBox(
                                 child: SizedBox(
                                   width: _w.toDouble(),
