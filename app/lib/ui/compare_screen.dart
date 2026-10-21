@@ -339,9 +339,6 @@ class _Series {
   final List<(double, double, double, int)> points;
 }
 
-/// The time-kill chart's largest height (logical pixels).
-const double kMaxChartHeight = 380;
-
 class _TimeChart extends StatefulWidget {
   const _TimeChart({required this.series});
 

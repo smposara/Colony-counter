@@ -18,7 +18,7 @@ const _moved = Offset(600, 640);
 const _dropR = 50.0;
 
 Finder _nav(String label) =>
-    find.descendant(of: find.byType(NavigationBar), matching: find.text(label));
+    find.descendant(of: navBar, matching: find.text(label));
 
 /// The label of a filled button found by [button].
 Finder _label(Finder button) =>

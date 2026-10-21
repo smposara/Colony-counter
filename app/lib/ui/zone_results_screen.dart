@@ -52,7 +52,7 @@ class _ZoneResultsScreenState extends State<ZoneResultsScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(tr.zoneResults)),
       body: ListView(
-        padding: scrollPadding(context, const EdgeInsets.all(16)),
+        padding: readablePadding(context, const EdgeInsets.all(16)),
         children: [
           DropdownButtonFormField<String>(
             key: ValueKey('exp$_experiment'),

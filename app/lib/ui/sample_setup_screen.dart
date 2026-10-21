@@ -536,7 +536,7 @@ class _SampleSetupScreenState extends State<SampleSetupScreen> {
         ),
       ),
       body: ListView(
-        padding: scrollPadding(
+        padding: readablePadding(
           context,
           const EdgeInsets.fromLTRB(16, 8, 16, 32),
         ),

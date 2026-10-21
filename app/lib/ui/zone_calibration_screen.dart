@@ -202,7 +202,7 @@ class ZoneCalibrationScreen extends StatelessWidget {
             );
           }
           return ListView(
-            padding: scrollPadding(
+            padding: readablePadding(
               context,
               const EdgeInsets.fromLTRB(16, 8, 16, 96),
             ),
@@ -633,7 +633,10 @@ class _ZoneCalibrationWizardState extends State<ZoneCalibrationWizard> {
     final t = Theme.of(context).textTheme;
     final adding = _draft != null;
     return SingleChildScrollView(
-      padding: scrollPadding(context, const EdgeInsets.fromLTRB(16, 8, 16, 24)),
+      padding: readablePadding(
+        context,
+        const EdgeInsets.fromLTRB(16, 8, 16, 24),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -901,10 +904,19 @@ class _ReadingsStepState extends State<_ReadingsStep> {
   Widget build(BuildContext context) {
     final t = Theme.of(context).textTheme;
     final pair = _pair;
+    final screen = MediaQuery.sizeOf(context);
     return Column(
       children: [
         SizedBox(
-          height: 260,
+          // 260 high on phones; larger with the width on tablets, up to
+          // [kMaxPlatePhotoSide] and leaving room for the readings.
+          height: math.max(
+            260,
+            math.min(
+              math.min(screen.width * 0.6, screen.height * 0.45),
+              kMaxPlatePhotoSide,
+            ),
+          ),
           child: ColoredBox(
             color: Colors.black,
             child: widget.photo == null
@@ -934,7 +946,7 @@ class _ReadingsStepState extends State<_ReadingsStep> {
         ),
         Expanded(
           child: SingleChildScrollView(
-            padding: scrollPadding(
+            padding: readablePadding(
               context,
               const EdgeInsets.fromLTRB(16, 12, 16, 24),
             ),
@@ -1185,7 +1197,7 @@ class _ResultStep extends StatelessWidget {
     ];
     final advice = _advice(s);
     return SingleChildScrollView(
-      padding: scrollPadding(
+      padding: readablePadding(
         context,
         const EdgeInsets.fromLTRB(16, 12, 16, 24),
       ),

@@ -436,7 +436,7 @@ class SampleDetailScreen extends StatelessWidget {
             ],
           ),
           body: ListView(
-            padding: scrollPadding(
+            padding: readablePadding(
               context,
               const EdgeInsets.fromLTRB(16, 8, 16, 32),
             ),

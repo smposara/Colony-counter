@@ -480,9 +480,17 @@ class _SettingsLauncher {
   final PlateStore store;
 
   void _showSettings(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
     showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
+      // As tall as the settings need on a tablet (in landscape the usual
+      // 9/16 of the height is a short panel), up to 90 %; 9/16 on phones.
+      isScrollControlled: true,
+      constraints: BoxConstraints(
+        maxWidth: 640,
+        maxHeight: size.height * (size.shortestSide >= 600 ? 0.9 : 9 / 16),
+      ),
       builder: (context) => ListenableBuilder(
         listenable: store,
         builder: (context, _) => SingleChildScrollView(

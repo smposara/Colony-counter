@@ -21,7 +21,7 @@ const _ebRed = Offset(679.3, 729.2);
 const _colonyR = 75.0;
 
 Finder _nav(String label) =>
-    find.descendant(of: find.byType(NavigationBar), matching: find.text(label));
+    find.descendant(of: navBar, matching: find.text(label));
 
 Finder _label(Finder button) =>
     find.descendant(of: button, matching: find.byType(Text));

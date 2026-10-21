@@ -60,10 +60,10 @@ Future<void> _seed(Manual m, PlateStore store) async {
   }
 }
 
-/// The time-kill chart (a CustomPaint inside an AspectRatio).
-final _chart = find.descendant(
-  of: find.byType(AspectRatio),
-  matching: find.byType(CustomPaint),
+/// The time-kill chart.
+final _chart = find.byWidgetPredicate(
+  (w) =>
+      w is CustomPaint && w.painter.runtimeType.toString() == '_ChartPainter',
 );
 
 void main() {

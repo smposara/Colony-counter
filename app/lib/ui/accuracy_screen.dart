@@ -26,7 +26,7 @@ class AccuracyScreen extends StatelessWidget {
         builder: (context, _) {
           final report = AccuracyReport.of(store);
           return ListView(
-            padding: scrollPadding(
+            padding: readablePadding(
               context,
               const EdgeInsets.fromLTRB(16, 8, 16, 32),
             ),
@@ -199,7 +199,7 @@ class _ScatterCardState extends State<_ScatterCard> {
               ],
             ),
             const SizedBox(height: 8),
-            AspectRatio(
+            ChartBox(
               aspectRatio: 1.2,
               child: LayoutBuilder(
                 builder: (context, box) => GestureDetector(

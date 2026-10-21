@@ -157,7 +157,9 @@ void main() {
       ),
     ]);
     await clearPins(m);
-    await t.drag(find.byType(ListTile), const Offset(-300, 0));
+    // Most of the way across the row, whatever the screen's width.
+    final row = find.byType(ListTile);
+    await t.drag(row, Offset(-0.6 * t.getSize(row).width, 0));
     await m.settle();
     await m.shot('17-delete', [(find.text(tr.homeDelete), Mark.tap)]);
     await m.tap(find.text(tr.homeCancel));

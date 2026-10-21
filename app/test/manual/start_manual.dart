@@ -29,10 +29,8 @@ void main() {
       },
     );
     final t = m.tester;
-    Finder tab(String label) => find.descendant(
-      of: find.byType(NavigationBar),
-      matching: find.text(label),
-    );
+    Finder tab(String label) =>
+        find.descendant(of: navBar, matching: find.text(label));
 
     // --- The four tabs ----------------------------------------------------
     await m.shot('1-plates', [

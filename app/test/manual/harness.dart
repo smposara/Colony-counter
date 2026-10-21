@@ -36,6 +36,12 @@ Size? _size(String? s) {
 
 final _outDir = Platform.environment['MANUAL_OUT'] ?? 'build/manual';
 
+/// The home screen's tabs: the bottom bar on phones, the rail at the side on
+/// wide screens.
+final navBar = find.byWidgetPredicate(
+  (w) => w is NavigationBar || w is NavigationRail,
+);
+
 Uint8List fixture(String name) => File('test/fixtures/$name').readAsBytesSync();
 
 /// What a callout points at.

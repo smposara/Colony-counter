@@ -93,7 +93,11 @@ void main() {
     final detail = await _tapWorstDot(m);
     await m.shot('5-chart', [
       (
-        find.descendant(of: scatter, matching: find.byType(AspectRatio)),
+        find.byWidgetPredicate(
+          (w) =>
+              w is CustomPaint &&
+              w.painter.runtimeType.toString() == '_ScatterPainter',
+        ),
         Mark.look,
       ),
       (detail, Mark.look),

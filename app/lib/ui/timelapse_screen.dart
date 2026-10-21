@@ -159,7 +159,7 @@ class _CountChart extends StatelessWidget {
           children: [
             Text(tr.timelapseChartTitle, style: t.titleMedium),
             const SizedBox(height: 8),
-            AspectRatio(
+            ChartBox(
               aspectRatio: 1.8,
               child: CustomPaint(
                 painter: _LinePainter(
@@ -394,25 +394,35 @@ class _AppearanceMapState extends State<_AppearanceMap> {
           builder: (context, snap) {
             final bytes = snap.data;
             if (bytes == null) return const SizedBox(height: 200);
-            return AspectRatio(
-              aspectRatio: r.imageWidth / r.imageHeight,
-              child: FittedBox(
-                child: SizedBox(
-                  width: r.imageWidth.toDouble(),
-                  height: r.imageHeight.toDouble(),
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      Image.memory(bytes, fit: BoxFit.fill),
-                      CustomPaint(
-                        painter: _AppearancePainter(
-                          frame: res.frames.last,
-                          tracks: res.tracks,
-                          hours: hours,
-                          colours: colours,
-                        ),
+            // The page's width on phones; on tablets no larger than
+            // [kMaxPlatePhotoSide], so the whole plate fits on screen.
+            return Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxWidth: kMaxPlatePhotoSide,
+                  maxHeight: kMaxPlatePhotoSide,
+                ),
+                child: AspectRatio(
+                  aspectRatio: r.imageWidth / r.imageHeight,
+                  child: FittedBox(
+                    child: SizedBox(
+                      width: r.imageWidth.toDouble(),
+                      height: r.imageHeight.toDouble(),
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          Image.memory(bytes, fit: BoxFit.fill),
+                          CustomPaint(
+                            painter: _AppearancePainter(
+                              frame: res.frames.last,
+                              tracks: res.tracks,
+                              hours: hours,
+                              colours: colours,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
               ),
