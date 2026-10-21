@@ -2,6 +2,10 @@
 
 Messages to send to closed-test testers.
 
+> **The closed test is over.** Colony Counter is now public on Google Play, and
+> `join.html` is a download page (Google Play, iPhone/iPad web app, manual,
+> feedback group). The text below is kept for reference only.
+
 **Easiest:** send one link, **https://cc.amphur.in.th/join.html**. The page (from
 `app/web/join.html`, published with the web version) walks testers through joining
 the Google Group, becoming a tester and installing, in Thai or English, and
