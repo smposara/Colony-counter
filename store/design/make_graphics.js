@@ -11,8 +11,6 @@ const raw = path.resolve(process.argv[2]);
 // MANUAL_SIZE=1440x900 (desktop / Chromebook).
 const rawTablet = process.argv[3] && path.resolve(process.argv[3]);
 const rawDesktop = process.argv[4] && path.resolve(process.argv[4]);
-// Screens shown on tablets and Chromebooks (their headlines come from SHOTS).
-const WIDE = ['count-2-result', 'examples-3-result', 'examples-4-compare', 'multi-3-found', 'zones-10-review', 'examples-1-plates'];
 const store = path.resolve(__dirname, '..');
 // Order = order in the listing. h: headline, s: subline, n: footnote.
 const SHOTS = [
@@ -43,6 +41,8 @@ const SHOTS = [
     en: { h: 'Try it now with examples', s: 'Built-in example data and a picture manual' },
     th: { h: 'ลองใช้ได้ทันทีด้วยข้อมูลสาธิต', s: 'มีข้อมูลสาธิตในตัว พร้อมคู่มือภาพทุกฟีเจอร์' } }],
 ];
+// Screens shown on tablets and Chromebooks (their headlines come from SHOTS).
+const WIDE = SHOTS.map(([shot]) => shot);
 const FEATURE = {
   en: { t: 'Count CFU on agar plates with your phone', s: 'Dilution series · drop plates · Petrifilm® · inhibition zones' },
   th: { t: 'นับโคโลนี (CFU) บนจานเพาะเชื้อด้วยโทรศัพท์', s: 'ชุดการเจือจาง · ดรอปเพลต · Petrifilm® · โซนยับยั้ง' },

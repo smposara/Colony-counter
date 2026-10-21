@@ -22,8 +22,8 @@ answer to each form. Work through the checklist from top to bottom.
 | App icon | `graphics/icon-512.png` | 512 × 512 PNG, ≤ 1 MB |
 | Feature graphic | `graphics/feature-graphic-en.png`, `graphics/feature-graphic-th.png` | 1024 × 500 PNG/JPEG |
 | Phone screenshots | `screenshots/en-US/1…8.png`, `screenshots/th-TH/1…8.png` | 2–8 per language, 1080 × 1920 (9:16) |
-| Tablet screenshots (7-inch and 10-inch) | `screenshots/tablet/en-US/1…6.png`, `screenshots/tablet/th-TH/1…6.png` | up to 8, 2560 × 1440 (16:9) |
-| Chromebook screenshots | `screenshots/chromebook/en-US/1…6.png`, `screenshots/chromebook/th-TH/1…6.png` | 4–8, 2560 × 1440 (16:9) |
+| Tablet screenshots (7-inch and 10-inch) | `screenshots/tablet/en-US/1…8.png`, `screenshots/tablet/th-TH/1…8.png` | up to 8, 2560 × 1440 (16:9) |
+| Chromebook screenshots | `screenshots/chromebook/en-US/1…8.png`, `screenshots/chromebook/th-TH/1…8.png` | 4–8, 2560 × 1440 (16:9) |
 | Store texts | `listing/en-US.md`, `listing/th-TH.md` (and one `.txt` per field for copy-paste) | name ≤ 30, short ≤ 80, full ≤ 4000, release notes ≤ 500 characters |
 | App bundle | CI artifact **colony-counter-aab** → `app-release.aab` | signed with the upload key |
 | Privacy policy | `app/web/privacy.html`, published with the web version | public URL |
